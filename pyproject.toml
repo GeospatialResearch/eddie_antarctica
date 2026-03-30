@@ -6,7 +6,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "eddie_template"
+name = "eddie_antartica"
 version = "0.0.1"
 description = "A module for EDDIE."
 readme = "README.md"

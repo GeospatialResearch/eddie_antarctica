@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_template/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -29,7 +29,7 @@ from eddie.check_celery_alive import check_celery_alive
 from eddie.digitaltwin.utils import setup_logging
 from eddie.discover_plugins import discover_plugins
 from eddie.geoserver import get_terria_catalog
-from src.eddie_template import blueprint as eddie_template_blueprint
+from src.eddie_antartica import blueprint as eddie_antartica_blueprint
 
 setup_logging()
 
@@ -54,7 +54,7 @@ for name, module in eddie_plugins.items():
     app.register_blueprint(module.blueprint.blueprint)
 
 # Flood Resilience specific blueprint
-app.register_blueprint(eddie_template_blueprint.blueprint)
+app.register_blueprint(eddie_antartica_blueprint.blueprint)
 
 
 @app.route('/')

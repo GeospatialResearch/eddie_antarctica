@@ -1,5 +1,5 @@
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_template/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,7 +28,7 @@ COPY environment.yml .
 RUN mamba env create -f environment.yml
 
 # Make RUN commands use the new environment:
-SHELL ["conda", "run", "-n", "eddie_template_project", "/bin/bash", "-c"]
+SHELL ["conda", "run", "-n", "eddie_antartica", "/bin/bash", "-c"]
 COPY lib/ lib
 RUN pip install lib/eddie
 
@@ -36,10 +36,10 @@ RUN <<EOF
     # Export conda environment
     echo "Check GeoFabrics is installed to test environment"
     python -c "import geofabrics"
-    echo "Packaging conda environment - eddie_template_project"
+    echo "Packaging conda environment - eddie_antartica"
     # Pack conda environment to be shared to runtime image
     # Pack current conda environment to temporary tarball
-    conda-pack --ignore-missing-files -n eddie_template_project -o /tmp/env.tar
+    conda-pack --ignore-missing-files -n eddie_antartica -o /tmp/env.tar
     mkdir /venv
     cd /venv
     # Extract tarball to /venv

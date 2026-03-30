@@ -7,5 +7,5 @@ source /venv/bin/activate
 
 # Run health-checker application, which reports back on the health of this container.
 # And in parallel run the celery workers
-health-checker --listener 0.0.0.0:5001 --log-level error --script-timeout 10 --script "celery -A src.eddie_template.tasks inspect ping"  \
-& celery -A src.eddie_template.tasks worker -P threads --loglevel=INFO
+health-checker --listener 0.0.0.0:5001 --log-level error --script-timeout 10 --script "celery -A src.eddie_antartica.tasks inspect ping"  \
+& celery -A src.eddie_antartica.tasks worker -P threads --loglevel=INFO

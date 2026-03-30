@@ -25,7 +25,7 @@ from eddie.run_all import create_sample_polygon, main
 DEFAULT_MODULES_TO_PARAMETERS = {
     retrieve_from_instructions: {
         "log_level": LogLevel.INFO,
-        "instruction_json_path": pathlib.Path("src/eddie_template/static_boundary_instructions.json").as_posix()
+        "instruction_json_path": pathlib.Path("src/eddie_antartica/static_boundary_instructions.json").as_posix()
     },
     cache_new_results: {
         "log_level": LogLevel.INFO,

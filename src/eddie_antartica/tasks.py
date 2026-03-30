@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_template/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -31,11 +31,11 @@ import xarray
 from eddie.digitaltwin import cache_new_results, check_cache_results, retrieve_from_instructions, setup_environment
 from eddie.digitaltwin.utils import setup_logging
 from eddie.tasks import OnFailureStateTask, add_base_data_to_db, app, wkt_to_gdf  # pylint: disable=cyclic-import
-from src.eddie_template.dynamic_boundary_conditions.rainfall import main_rainfall
-from src.eddie_template.dynamic_boundary_conditions.river import main_river
-from src.eddie_template.dynamic_boundary_conditions.tide import main_tide_slr
-from src.eddie_template.flood_model import bg_flood_model, process_hydro_dem
-from src.eddie_template.run_all import DEFAULT_MODULES_TO_PARAMETERS
+from src.eddie_antartica.dynamic_boundary_conditions.rainfall import main_rainfall
+from src.eddie_antartica.dynamic_boundary_conditions.river import main_river
+from src.eddie_antartica.dynamic_boundary_conditions.tide import main_tide_slr
+from src.eddie_antartica.flood_model import bg_flood_model, process_hydro_dem
+from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
 
 setup_logging()
 log = logging.getLogger(__name__)
