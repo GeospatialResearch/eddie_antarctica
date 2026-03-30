@@ -1,0 +1,54 @@
+[build-system]
+requires = [
+    "setuptools>=61.0.0",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eddie_template"
+version = "0.0.1"
+description = "A module for EDDIE."
+readme = "README.md"
+authors = [{ name = "Luke Parkinson", email = "luke.parkinson@canterbury.ac.nz" }]
+license = { file = "LICENSE" }
+keywords = ["EDDIE", "Digital Twin", "Geospatial"]
+dependencies = [
+    "aiohttp",
+    "botocore",
+    "celery",
+    "flask",
+    "flask-cors",
+    "flask_swagger_ui",
+    "geoalchemy",
+    "geoapis",
+    "geocube",
+    "geopandas",
+    "geovoronoi",
+    "lxml",
+    "NewZeaLiDAR",
+    "OWSLib",
+    "pandas",
+    "plotly",
+    "psycopg2",
+    "pyarrow",
+    "pytest",
+    "python-dotenv",
+    "python-pdal",
+    "pywps",
+    "rasterio",
+    "scrapy",
+    "selenium",
+    "sqlalchemy",
+    "validators",
+]
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["eddie_floodresilience"]
+
+[project.optional-dependencies]
+dev = ["python-dotenv", "pip-tools", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/GeospatialResearch/Digital-Twins"
