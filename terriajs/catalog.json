@@ -1,0 +1,17 @@
+{
+  "homeCamera": {
+    "west": 151.04,
+    "south": -78.60,
+    "east": 172.98,
+    "north": -76.45
+  },
+  "catalog": [
+  ],
+  "baseMaps": {
+    "enabledBaseMaps": [
+      "basemap-openstreetmap"
+    ],
+    "defaultBaseMapId": "basemap-openstreetmap",
+    "previewBaseMapId": "basemap-openstreetmap"
+  }
+}

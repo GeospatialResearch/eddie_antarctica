@@ -31,10 +31,6 @@ import xarray
 from eddie.digitaltwin import cache_new_results, check_cache_results, retrieve_from_instructions, setup_environment
 from eddie.digitaltwin.utils import setup_logging
 from eddie.tasks import OnFailureStateTask, add_base_data_to_db, app, wkt_to_gdf  # pylint: disable=cyclic-import
-from src.eddie_antartica.dynamic_boundary_conditions.rainfall import main_rainfall
-from src.eddie_antartica.dynamic_boundary_conditions.river import main_river
-from src.eddie_antartica.dynamic_boundary_conditions.tide import main_tide_slr
-from src.eddie_antartica.flood_model import bg_flood_model, process_hydro_dem
 from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
 
 setup_logging()

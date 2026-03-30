@@ -4,47 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8b5c724-00d1-4efb-8d82-cf162d596342" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.env.docker-override" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.env.template" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.flake8" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gitattributes" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.github/pull_request_template.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.github/workflows/run-tests.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gitmodules" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.pylintrc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CONTRIBUTING.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api_keys.env.template" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose-dev.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker/eddie.Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/environment.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/eddie" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pull_request_template.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/selected_polygon.geojson" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sonar-project.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/backend_entrypoint.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/celery_worker_entrypoint.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/eddie_template/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/eddie_template/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/eddie_template/blueprint.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/eddie_template/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/eddie_template/run_all.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/eddie_template/static_boundary_instructions.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/eddie_template/tasks.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pywps.cfg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/run-tests.yml" afterDir="false" />
+    <list default="true" id="a8b5c724-00d1-4efb-8d82-cf162d596342" name="Changes" comment="Rename template name to eddie_antartica">
+      <change afterPath="$PROJECT_DIR$/terriajs/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/terriajs/catalog.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/terriajs/client_config.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/terriajs/entrypoint.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/terriajs/server_config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose-dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose-dev.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/eddie.Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/eddie.Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/eddie_antartica/blueprint.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/eddie_antartica/blueprint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/eddie_antartica/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/eddie_antartica/tasks.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,24 +29,23 @@
     </option>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="41" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "LukeParky"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;LukeParky&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/GeospatialResearch/eddie_template.git",
-    "accountId": "d5356b7d-6680-4a15-b68b-7113c42ecfc1"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/GeospatialResearch/eddie_template.git&quot;,
+    &quot;accountId&quot;: &quot;d5356b7d-6680-4a15-b68b-7113c42ecfc1&quot;
   }
-}]]></component>
+}</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -96,9 +66,11 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
     "ai.playground.ignore.import.keys.banner.in.settings": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/dev/eddie_plugins/eddie_template",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "D:/dev/eddie_plugins/eddie_antartica",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -109,6 +81,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\dev\eddie_plugins\eddie_antartica" />
       <recent name="D:\dev\eddie_plugins\eddie_template" />
       <recent name="D:\dev\eddie_plugins\eddie_template\.github" />
     </key>
@@ -133,10 +106,35 @@
       <updated>1774827573600</updated>
       <workItem from="1774827576581" duration="8000" />
       <workItem from="1774827715728" duration="1315000" />
+      <workItem from="1774832922257" duration="2379000" />
     </task>
+    <task id="LOCAL-00001" summary="Rename template name to eddie_antartica">
+      <option name="closed" value="true" />
+      <created>1774833085628</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1774833085628</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Rename template name to eddie_antartica" />
+    <option name="LAST_COMMIT_MESSAGE" value="Rename template name to eddie_antartica" />
   </component>
 </project>

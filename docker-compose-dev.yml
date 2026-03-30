@@ -19,12 +19,12 @@
 # Use with `docker compose -f docker-compose.yml docker-compose-dev.yml`
 volumes:
   # Separate the database volume from the base services because this one will contain local file paths
-  postgres_db_vol_dev:
+  antarctic_postgres_db_vol_dev:
 
 services:
   db_postgres:
     volumes:
-    - postgres_db_vol_dev:/var/lib/postgresql/data
+    - antarctirc_postgres_db_vol_dev:/var/lib/postgresql/data
 
   backend:
     volumes:

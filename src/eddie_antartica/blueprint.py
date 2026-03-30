@@ -7,7 +7,6 @@ from flask import Blueprint, jsonify, make_response, Response
 
 from eddie.check_celery_alive import check_celery_alive
 from src.eddie_antartica import tasks
-from src.eddie_antartica.flood_model.flood_scenario_process_service import FloodScenarioProcessService
 
 os.environ.pop("Path", None)
 # See issue https://github.com/GeospatialResearch/eddie_floodresilience/issues/1 for reason behind disabled QA
