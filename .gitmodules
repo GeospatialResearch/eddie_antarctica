@@ -1,4 +1,4 @@
 [submodule "lib/eddie"]
 	path = lib/eddie
 	url = https://github.com/GeospatialResearch/Digital-Twins.git
-	branch = v3.0.0
+	branch = v4.0.0
