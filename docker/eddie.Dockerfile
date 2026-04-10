@@ -60,6 +60,7 @@ ADD --chmod=555 https://github.com/gruntwork-io/health-checker/releases/download
  /usr/local/bin/health-checker
 
 RUN <<EOF
+    set -ex
     # Install dependencies
     apt-get update
     apt-get install -y --no-install-recommends \
@@ -79,6 +80,7 @@ RUN <<EOF
     setfacl -R -m u:nonroot:rwx /stored_data
     # Create geoserver shared directory
     mkdir /stored_data/geoserver
+    mkdir -p /stored_data/geoserver/workspaces
 
     # Create PyWPS required logging and output directories
     for NEW_DIRECTORY in "outputs" "workdir" "logs"
