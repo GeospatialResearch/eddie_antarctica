@@ -24,17 +24,12 @@ volumes:
 services:
   db_postgres:
     volumes:
-    - antarctirc_postgres_db_vol_dev:/var/lib/postgresql/data
-
-  backend:
-    volumes:
-    - ${DATA_DIR_MODEL_OUTPUT}:/stored_data/model_output
+    - antarctic_postgres_db_vol_dev:/var/lib/postgresql/data
 
   celery_worker:
     volumes:
     # Bind host data directories to container, allowing different instances to share data sources.
     - ${DATA_DIR}:/stored_data
-    - ${DATA_DIR_MODEL_OUTPUT}:/stored_data/model_output
     - ${DATA_DIR_GEOSERVER}:/stored_data/geoserver
 
   terria_map:
