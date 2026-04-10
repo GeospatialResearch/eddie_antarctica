@@ -37,7 +37,6 @@ setup_logging()
 log = logging.getLogger(__name__)
 
 
-
 @signals.worker_ready.connect
 def on_startup(sender: Consumer, **_kwargs: None) -> None:  # pylint: disable=missing-param-doc
     """

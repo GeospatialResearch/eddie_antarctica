@@ -43,6 +43,7 @@ services:
     build:
       context: .
       dockerfile: docker/eddie.Dockerfile
+    image: eddie_antarctica:0.0.1
     container_name: backend_digital_twin
     entrypoint: ["src/backend_entrypoint.sh"]
     env_file:
