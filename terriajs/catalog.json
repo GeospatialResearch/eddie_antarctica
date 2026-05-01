@@ -8,10 +8,7 @@
   "catalog": [
   ],
   "baseMaps": {
-    "enabledBaseMaps": [
-      "basemap-openstreetmap"
-    ],
-    "defaultBaseMapId": "basemap-openstreetmap",
-    "previewBaseMapId": "basemap-openstreetmap"
+    "defaultBaseMapId": "basemap-bing-aerial-with-labels",
+    "previewBaseMapId": "basemap-bing-aerial-with-labels"
   }
 }
