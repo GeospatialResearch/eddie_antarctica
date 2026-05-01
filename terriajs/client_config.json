@@ -12,7 +12,7 @@
     "brandBarSmallElements": [
       "<div style=\"display: flex; align-items: center;\">\n  <h3 style=\"color: white;\">Antarctic Digital Twin</h3>\n</div>"
     ],
-    "useCesiumIonTerrain": false,
+    "cesiumIonAccessToken": "$CESIUM_ACCESS_TOKEN",
     "relatedMaps": []
   }
 }
