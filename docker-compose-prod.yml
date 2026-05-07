@@ -30,7 +30,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - postgres_db_vol:/var/lib/postgresql/data
+      - antarctic_postgres_db_vol:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -50,7 +50,7 @@ services:
       - api_keys.env
       - .env.docker-override
     volumes:
-      - stored_data:/stored_data
+      - antarctic_stored_data:/stored_data
     healthcheck:
       test: curl --fail -s http://localhost:5000/ || exit 1
       interval: 10s
@@ -82,8 +82,8 @@ services:
       - .env.docker-override
     volumes:
       # Bind host data directories to container, allowing different instances to share data sources.
-      - stored_data:/stored_data
-      - geoserver_data:/stored_data/geoserver
+      - antarctic_stored_data:/stored_data
+      - antarctic_geoserver_data:/stored_data/geoserver
     ports:
       - "5001:5001"
     healthcheck:
@@ -103,7 +103,7 @@ services:
       dockerfile: geoserver.Dockerfile
     container_name: geoserver_digital_twin
     volumes:
-      - geoserver_data:/opt/geoserver_data
+      - antarctic_geoserver_data:/opt/geoserver_data
     depends_on:
       - db_postgres
     environment:
