@@ -1,0 +1,159 @@
+# Copyright © 2021-2025 Geospatial Research Institute Toi Hangarau
+# LICENSE: https://github.com/GeospatialResearch/Digital-Twins/blob/master/LICENSE
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Defines services, their images, and interactions between services.
+
+volumes:
+  antarctic_postgres_db_vol:
+  antarctic_stored_data:
+  antarctic_geoserver_data:
+
+services:
+  db_postgres:
+    # Database to store all vector data, states, and links to raster data.
+    image: postgis/postgis:16-3.4
+    container_name: db_postgres_digital_twin
+    restart: always
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_db_vol:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: pg_isready -h 127.0.0.1 -U $POSTGRES_USER -d $POSTGRES_DB
+
+  backend:
+    # Performs analysis, computation, handles web requests, facilitates database interactions
+    build:
+      context: .
+      dockerfile: docker/eddie.Dockerfile
+    container_name: backend_digital_twin
+    entrypoint: [ "src/backend_entrypoint.sh" ]
+    env_file:
+      - .env
+      - api_keys.env
+      - .env.docker-override
+    volumes:
+      - stored_data:/stored_data
+    healthcheck:
+      test: curl --fail -s http://localhost:5000/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db_postgres
+      - message_broker
+      - geoserver
+    environment:
+      VIRTUAL_HOST: ${BACKEND_VIRTUAL_HOST}
+      LETSENCRYPT_HOST: ${BACKEND_VIRTUAL_HOST}
+      LETSENCRYPT_EMAIL: gri-enquiries@canterbury.ac.nz
+    restart: always
+
+  celery_worker:
+    # Performs tasks such as complex computation asynchronously on behalf of backend
+    build:
+      context: .
+      dockerfile: docker/eddie.Dockerfile
+    container_name: celery_worker_digital_twin
+    entrypoint: [ "src/celery_worker_entrypoint.sh" ]
+    restart: always
+    env_file:
+      - .env
+      - api_keys.env
+      - .env.docker-override
+    volumes:
+      # Bind host data directories to container, allowing different instances to share data sources.
+      - stored_data:/stored_data
+      - geoserver_data:/stored_data/geoserver
+    ports:
+      - "5001:5001"
+    healthcheck:
+      test: curl --fail -s http://localhost:5001/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      - db_postgres
+      - message_broker
+      - geoserver
+
+  geoserver:
+    # Serves geospatial web data through interactions with files and database
+    build:
+      context: lib/eddie
+      dockerfile: geoserver.Dockerfile
+    container_name: geoserver_digital_twin
+    volumes:
+      - geoserver_data:/opt/geoserver_data
+    depends_on:
+      - db_postgres
+    environment:
+      - SKIP_DEMO_DATA=true
+      - CORS_ENABLED=true
+      - ROOT_WEBAPP_REDIRECT=true
+      - GEOSERVER_ADMIN_USER=$GEOSERVER_ADMIN_NAME
+      - GEOSERVER_ADMIN_PASSWORD=$GEOSERVER_ADMIN_PASSWORD
+      - VIRTUAL_HOST=${GEOSERVER_VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${GEOSERVER_VIRTUAL_HOST}
+      - LETSENCRYPT_EMAIL=gri-enquiries@canterbury.ac.nz
+    restart: always
+    healthcheck:
+      test: curl --fail -s http://localhost:8080/geoserver || exit 1
+      timeout: 5s
+      retries: 10
+
+  terria_map:
+    # Front-end using terria.js
+    build:
+      context: terriajs
+    ports:
+      - "${WWW_PORT}:3001"
+    environment:
+      - CESIUM_ACCESS_TOKEN=$CESIUM_ACCESS_TOKEN
+      - BACKEND_HOST=$BACKEND_HOST
+      - BACKEND_PORT=$BACKEND_PORT
+      - VIRTUAL_HOST=${WWW_VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${WWW_VIRTUAL_HOST}
+      - LETSENCRYPT_EMAIL=gri-enquiries@canterbury.ac.nz
+    healthcheck:
+      test: curl --fail -s http://localhost:3001/ || exit 1
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  message_broker:
+    # Communicates between backend and workers to assign tasks and store state
+    image: redis:7
+    container_name: message_broker_digital_twin
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: redis-cli ping | grep PONG
+      timeout: 1s
+      retries: 10
+
+    restart: always
+
+networks:
+  default:
+    name: webproxy
+    external: true
