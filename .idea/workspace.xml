@@ -4,18 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8b5c724-00d1-4efb-8d82-cf162d596342" name="Changes" comment="Rename template name to eddie_antartica">
-      <change afterPath="$PROJECT_DIR$/terriajs/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terriajs/catalog.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terriajs/client_config.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terriajs/entrypoint.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terriajs/server_config.json" afterDir="false" />
+    <list default="true" id="a8b5c724-00d1-4efb-8d82-cf162d596342" name="Changes" comment="Enable bing maps cesium ion basemaps">
+      <change afterPath="$PROJECT_DIR$/src/static/geo/ant_air_temp_2005-07-01.sld" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/static/geo/gia_anomaly.sld" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/static/geo/gia_global_bed_topography_mv1e21_fr1e24_w0p0_weakEarth_t20.sld" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/static/geo/lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka.sld" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/static/geo/pskrips_atmosphere_daily_mean_U10V10_2017-02-01.sld" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/static/geo/pskrips_atmosphere_daily_mean_t2C_2017-02-01.sld" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/static/geo/pskrips_atmosphere_daily_mean_t2K_2017-02-01.sld" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/static/geo/tankersley_2023_sediment_thick.sld" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose-dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose-dev.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/eddie.Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/eddie.Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/eddie_antartica/blueprint.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/eddie_antartica/blueprint.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/eddie_antartica/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/eddie_antartica/tasks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/eddie" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddie" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,11 +28,34 @@
       <option value="repository" />
     </option>
   </component>
-  <component name="EmbeddingIndexingInfo">
-    <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform)); sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo, NoAppException&#10;for module in [&quot;main.py&quot;, &quot;wsgi.py&quot;, &quot;app.py&quot;]:&#10;    try: locals().update(ScriptInfo(app_import_path=module, create_app=None).load_app().make_shell_context()); print(&quot;\nFlask App: %s&quot; % app.import_name); break&#10;    except NoAppException: pass">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform)); sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo, NoAppException&#10;for module in [&quot;main.py&quot;, &quot;wsgi.py&quot;, &quot;app.py&quot;]:&#10;    try: locals().update(ScriptInfo(app_import_path=module, create_app=None).load_app().make_shell_context()); print(&quot;\nFlask App: %s&quot; % app.import_name); break&#10;    except NoAppException: pass" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="add-graticule" />
+        <entry key="$PROJECT_DIR$/lib/eddie" value="add-graticules" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="SOFT" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -62,38 +85,100 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.graticules.executor": "Run",
     "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
     "ai.playground.ignore.import.keys.banner.in.settings": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "main",
+    "git.auto.fetch.suggestion.counter": "2",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/dev/eddie_plugins/eddie_antartica",
+    "last_opened_file_path": "D:/dev/eddie_plugins/eddie_antartica/notebook",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\dev\eddie_plugins\eddie_antartica\notebook" />
+      <recent name="D:\dev\eddie_plugins\eddie_antartica\src\eddie_antartica\static\geo" />
+      <recent name="D:\dev\eddie_plugins\eddie_antartica\src\eddie_antartica\EXPLORING_DATA" />
+      <recent name="D:\dev\eddie_plugins\eddie_antartica\src\eddie_antartica" />
       <recent name="D:\dev\eddie_plugins\eddie_antartica" />
-      <recent name="D:\dev\eddie_plugins\eddie_template" />
-      <recent name="D:\dev\eddie_plugins\eddie_template\.github" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\dev\eddie_plugins\eddie_antartica\notebook" />
+      <recent name="D:\dev\eddie_plugins\eddie_antartica" />
+      <recent name="D:\dev\eddie_plugins\eddie_antartica\lib\eddie\src\eddie\geoserver\templates\graticule" />
       <recent name="D:\dev\eddie_plugins\eddie_template" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="eddie_template" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="WSL (Ubuntu): (/home/lukeparkinson/miniforge3/envs/adt001/bin/python)" />
+      <option name="WORKING_DIRECTORY" value="D:\dev\eddie_plugins\eddie_antartica" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="graticules" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="eddie_template" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/graticules.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.32098.74" />
-        <option value="bundled-python-sdk-1cd77e80b48f-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.32098.74" />
+        <option value="bundled-js-predefined-d6986cc7102b-3bd3a6803838-JavaScript-PY-261.22158.340" />
+        <option value="bundled-python-sdk-b63d5a1f7c97-b61e75351b1f-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.22158.340" />
       </set>
     </attachedChunks>
   </component>
@@ -106,7 +191,21 @@
       <updated>1774827573600</updated>
       <workItem from="1774827576581" duration="8000" />
       <workItem from="1774827715728" duration="1315000" />
-      <workItem from="1774832922257" duration="2379000" />
+      <workItem from="1774832922257" duration="3583000" />
+      <workItem from="1774838767024" duration="4626000" />
+      <workItem from="1775687354728" duration="4758000" />
+      <workItem from="1775696305532" duration="869000" />
+      <workItem from="1775697255608" duration="1947000" />
+      <workItem from="1775703469517" duration="960000" />
+      <workItem from="1775704753666" duration="900000" />
+      <workItem from="1775705865858" duration="21989000" />
+      <workItem from="1775791080231" duration="2611000" />
+      <workItem from="1776030953479" duration="1846000" />
+      <workItem from="1776217293578" duration="1064000" />
+      <workItem from="1776978333170" duration="2014000" />
+      <workItem from="1776991020158" duration="4000" />
+      <workItem from="1777503132503" duration="11245000" />
+      <workItem from="1777598409312" duration="32445000" />
     </task>
     <task id="LOCAL-00001" summary="Rename template name to eddie_antartica">
       <option name="closed" value="true" />
@@ -116,18 +215,101 @@
       <option name="project" value="LOCAL" />
       <updated>1774833085628</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Add basic structure for Antarctic Digital Twin">
+      <option name="closed" value="true" />
+      <created>1774835352232</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1774835352232</updated>
+    </task>
+    <task id="LOCAL-00003" summary="update dependencies">
+      <option name="closed" value="true" />
+      <created>1775695530255</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1775695530255</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Correct workspace configuration for pywps docker">
+      <option name="closed" value="true" />
+      <created>1775695696357</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1775695696357</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Work towards graticule">
+      <option name="closed" value="true" />
+      <created>1775789690988</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1775789690988</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Remove unused docker-compose-dev volumes">
+      <option name="closed" value="true" />
+      <created>1775789858249</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1775789858249</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Enable cesium ion terrian">
+      <option name="closed" value="true" />
+      <created>1777599407366</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1777599407366</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Enable bing maps cesium ion basemaps">
+      <option name="closed" value="true" />
+      <created>1777601157344</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1777601157344</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="HEAD" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -135,6 +317,27 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Rename template name to eddie_antartica" />
-    <option name="LAST_COMMIT_MESSAGE" value="Rename template name to eddie_antartica" />
+    <MESSAGE value="Add basic structure for Antarctic Digital Twin" />
+    <MESSAGE value="update dependencies" />
+    <MESSAGE value="Correct workspace configuration for pywps docker" />
+    <MESSAGE value="Work towards graticule" />
+    <MESSAGE value="Remove unused docker-compose-dev volumes" />
+    <MESSAGE value="Enable cesium ion terrian" />
+    <MESSAGE value="Enable bing maps cesium ion basemaps" />
+    <option name="LAST_COMMIT_MESSAGE" value="Enable bing maps cesium ion basemaps" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/graticules.py</url>
+          <line>59</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/eddie_antartica$graticules.coverage" NAME="graticules Coverage Results" MODIFIED="1775784051892" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
