@@ -15,7 +15,6 @@
               </sld:GrayChannel>
             </sld:ChannelSelection>
             <sld:ColorMap type="ramp">
-            <!-- added label m -->
               <sld:ColorMapEntry color="#ca0020" label="-1000.0000 m" quantity="-1000"/>
               <sld:ColorMapEntry color="#db4247" label="-800.0000 m" quantity="-800"/>
               <sld:ColorMapEntry color="#ec846e" label="-600.0000 m" quantity="-600"/>

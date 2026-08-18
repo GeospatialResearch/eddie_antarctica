@@ -15,7 +15,6 @@
               </sld:GrayChannel>
             </sld:ChannelSelection>
             <sld:ColorMap type="ramp">
-            <!-- added label ℃-->
               <sld:ColorMapEntry color="#440154" label="-30.0000 ℃" quantity="-30"/>
               <sld:ColorMapEntry color="#472c7c" label="-26.2500 ℃" quantity="-26.25"/>
               <sld:ColorMapEntry color="#3b528b" label="-22.5000 ℃" quantity="-22.5"/>
