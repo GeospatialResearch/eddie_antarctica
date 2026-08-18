@@ -28,7 +28,6 @@ import geopandas as gpd
 
 from eddie.digitaltwin import retrieve_from_instructions
 from eddie.digitaltwin.utils import setup_logging
-# from eddie.tasks import OnFailureStateTask, add_base_data_to_db, app, wkt_to_gdf  # pylint: disable=cyclic-import
 from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
 
 setup_logging()
