@@ -87,6 +87,7 @@ RUN <<EOF
         setfacl -R -d -m u:nonroot:rwx "$NEW_DIRECTORY"
         setfacl -R -m u:nonroot:rwx "$NEW_DIRECTORY"
     done
+    getfacl outputs
 EOF
 
 # Copy python virtual environment from build layer
@@ -97,4 +98,3 @@ COPY --chown=root:root --chmod=444 selected_polygon.geojson .
 COPY --chown=root:root --chmod=555 src src/
 COPY --chown=nonroot:nonroot --chmod=644 src/pywps.cfg src/
 
-USER nonroot
