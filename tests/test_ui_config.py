@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
 # LICENSE: https://github.com/GeospatialResearch/Digital-Twins/blob/master/LICENSE
 #
@@ -15,25 +14,30 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This script runs each module in the Digital Twin using a Sample Polygon."""
+
+
+"""" Basic UI test on Terria's Frontend"""
+import json
+
+import pytest
 import pathlib
 
-from eddie.digitaltwin import cache_new_results, retrieve_from_instructions
-from eddie.digitaltwin.utils import LogLevel
-from eddie.run_all import create_sample_polygon, main
 
-DEFAULT_MODULES_TO_PARAMETERS = {
-    retrieve_from_instructions: {
-        "log_level": LogLevel.INFO,
-        "instruction_json_path": pathlib.Path("src/eddie_antartica/static_boundary_instructions.json").as_posix()
-    },
-    cache_new_results: {
-        "log_level": LogLevel.INFO,
+
+CATALOG_PATH = pathlib.Path(__file__).resolve().parent.parent /  "terriajs" / "catalog.json"
+
+
+def test_catalog_check_home_coords() -> None:
+    """terriajs/catalog.json should be pointing towards the Ross Sea bounding box."""
+    # flags changes in the home coordinates
+
+    catalog = json.loads(CATALOG_PATH.read_text())
+
+    assert catalog["homeCamera"] == {
+        "west": 151.04,
+        "south": -78.60,
+        "east": 172.98,
+        "north": -76.45
     }
-}
 
-if __name__ == '__main__':
-    sample_polygon = create_sample_polygon()
 
-    # Run all modules with sample polygon that intentionally contains slight rounding errors.
-    main(sample_polygon, DEFAULT_MODULES_TO_PARAMETERS)

@@ -20,22 +20,18 @@ Runs backend tasks using Celery. Allowing for multiple long-running tasks to com
 Allows the frontend to send tasks and retrieve status later.
 """
 import logging
-from typing import Dict, List, NamedTuple, Union
 
-from celery import result, signals
+from celery import signals
 from celery.worker.consumer import Consumer
 import geopandas as gpd
-from pyproj import Transformer
-import xarray
 
-from eddie.digitaltwin import cache_new_results, check_cache_results, retrieve_from_instructions, setup_environment
+
+from eddie.digitaltwin import retrieve_from_instructions
 from eddie.digitaltwin.utils import setup_logging
-from eddie.tasks import OnFailureStateTask, add_base_data_to_db, app, wkt_to_gdf  # pylint: disable=cyclic-import
 from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
 
 setup_logging()
 log = logging.getLogger(__name__)
-
 
 
 @signals.worker_ready.connect
