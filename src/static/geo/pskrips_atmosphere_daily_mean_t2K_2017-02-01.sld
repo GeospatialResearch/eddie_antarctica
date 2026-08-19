@@ -23,7 +23,7 @@
                             <sld:ColorMapEntry color="#26838e" label="258.1500 K" quantity="258.15"/>
                             <sld:ColorMapEntry color="#1e9e89" label="261.9000 K" quantity="261.9"/>
                             <sld:ColorMapEntry color="#35b779" label="265.6500 K" quantity="265.65"/>
-                            <sld:ColorMapEntry color="#6cce59" label="-269.4000 K" quantity="-269.4"/>
+                            <sld:ColorMapEntry color="#6cce59" label="269.4000 K" quantity="269.4"/>
                             <sld:ColorMapEntry color="#b4de2c" label="273.1500 K" quantity="273.15"/>
                             <sld:ColorMapEntry color="#fde725" label="0" quantity="0"/>
                         </sld:ColorMap>
