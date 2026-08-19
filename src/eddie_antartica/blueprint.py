@@ -1,12 +1,10 @@
 """Endpoints and flask configuration for this template example app"""
-from http.client import ACCEPTED
 import os
 import pathlib
 
-from flask import Blueprint, jsonify, make_response, Response
+from flask import Blueprint
 
 from eddie.check_celery_alive import check_celery_alive
-from src.eddie_antartica import tasks
 
 os.environ.pop("Path", None)
 # See issue https://github.com/GeospatialResearch/eddie_floodresilience/issues/1 for reason behind disabled QA

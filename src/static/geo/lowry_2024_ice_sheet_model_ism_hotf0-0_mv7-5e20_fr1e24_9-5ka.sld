@@ -15,10 +15,10 @@
               </sld:GrayChannel>
             </sld:ChannelSelection>
             <sld:ColorMap type="ramp">
-              <sld:ColorMapEntry color="#ffffff" label="0.0000" quantity="0"/>
-              <sld:ColorMapEntry color="#add8e6" label="1500.0000" quantity="1500"/>
-              <sld:ColorMapEntry color="#0000ff" label="3000.0000" quantity="3000"/>
-              <sld:ColorMapEntry color="#00008b" label="4500.0000" quantity="4500"/>
+              <sld:ColorMapEntry color="#ffffff" label="0.0000 m" quantity="0"/>
+              <sld:ColorMapEntry color="#add8e6" label="1500.0000 m" quantity="1500"/>
+              <sld:ColorMapEntry color="#0000ff" label="3000.0000 m" quantity="3000"/>
+              <sld:ColorMapEntry color="#00008b" label="4500.0000 m" quantity="4500"/>
             </sld:ColorMap>
           </sld:RasterSymbolizer>
         </sld:Rule>

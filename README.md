@@ -53,7 +53,7 @@ Create API keys for each of these services. You may need to create an account an
    unless a comment says you can leave it blank.
    Blank fields to fill in include fields such as `CESIUM_ACCESS_TOKEN` and `POSTGRES_PASSWORD`. `POSTGRES_PASSWORD` can
    be a password of your choosing. You may modify other configuration variables if needed to suit particular deployment
-   environemnts.
+   environments.
 
 1. From project root, run the command `docker compose up -d` to run the database, backend web servers, and helper
    services.
