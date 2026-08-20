@@ -4,18 +4,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8b5c724-00d1-4efb-8d82-cf162d596342" name="Changes" comment="Enable bing maps cesium ion basemaps">
-      <change afterPath="$PROJECT_DIR$/src/static/geo/ant_air_temp_2005-07-01.sld" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/static/geo/gia_anomaly.sld" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/static/geo/gia_global_bed_topography_mv1e21_fr1e24_w0p0_weakEarth_t20.sld" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/static/geo/lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka.sld" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/static/geo/pskrips_atmosphere_daily_mean_U10V10_2017-02-01.sld" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/static/geo/pskrips_atmosphere_daily_mean_t2C_2017-02-01.sld" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/static/geo/pskrips_atmosphere_daily_mean_t2K_2017-02-01.sld" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/static/geo/tankersley_2023_sediment_thick.sld" afterDir="false" />
+    <list default="true" id="a8b5c724-00d1-4efb-8d82-cf162d596342" name="Changes" comment="Remove basemap">
+      <change afterPath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/graticules.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/templates/graticule/graticule_featuretype_template.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/templates/graticule/graticule_layer_template.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/templates/graticule/graticule_store_template.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose-dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose-dev.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/eddie.Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/eddie.Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/eddie" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddie" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/eddie/geoserver.Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddie/geoserver.Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/eddie/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddie/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/eddie/src/eddie/digitaltwin/data_to_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddie/src/eddie/digitaltwin/data_to_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/database_layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/database_layers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/geoserver_common.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/geoserver_common.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/terria_catalogs.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddie/src/eddie/geoserver/terria_catalogs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/eddie_antartica/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/eddie_antartica/tasks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terriajs/catalog.json" beforeDir="false" afterPath="$PROJECT_DIR$/terriajs/catalog.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terriajs/client_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/terriajs/client_config.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,12 +58,10 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="add-graticule" />
-        <entry key="$PROJECT_DIR$/lib/eddie" value="add-graticules" />
+        <entry key="$PROJECT_DIR$/lib/eddie" value="bea0668f0d1a4b5f69c8a23f2bbed2fa10438f27" />
       </map>
     </option>
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="RESET_MODE" value="SOFT" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/lib/eddie" />
     <option name="ROOT_SYNC" value="DONT_SYNC" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -93,10 +100,10 @@
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
     "ai.playground.ignore.import.keys.banner.in.settings": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "master",
     "git.auto.fetch.suggestion.counter": "2",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/dev/eddie_plugins/eddie_antartica/notebook",
+    "last_opened_file_path": "D:/dev/eddie_plugins/eddie_antartica",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -108,15 +115,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\dev\eddie_plugins\eddie_antartica\notebook" />
-      <recent name="D:\dev\eddie_plugins\eddie_antartica\src\eddie_antartica\static\geo" />
-      <recent name="D:\dev\eddie_plugins\eddie_antartica\src\eddie_antartica\EXPLORING_DATA" />
-      <recent name="D:\dev\eddie_plugins\eddie_antartica\src\eddie_antartica" />
       <recent name="D:\dev\eddie_plugins\eddie_antartica" />
+      <recent name="D:\dev\eddie_plugins\eddie_template" />
+      <recent name="D:\dev\eddie_plugins\eddie_template\.github" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="D:\dev\eddie_plugins\eddie_antartica\notebook" />
-      <recent name="D:\dev\eddie_plugins\eddie_antartica" />
       <recent name="D:\dev\eddie_plugins\eddie_antartica\lib\eddie\src\eddie\geoserver\templates\graticule" />
       <recent name="D:\dev\eddie_plugins\eddie_template" />
     </key>
@@ -198,14 +201,7 @@
       <workItem from="1775697255608" duration="1947000" />
       <workItem from="1775703469517" duration="960000" />
       <workItem from="1775704753666" duration="900000" />
-      <workItem from="1775705865858" duration="21989000" />
-      <workItem from="1775791080231" duration="2611000" />
-      <workItem from="1776030953479" duration="1846000" />
-      <workItem from="1776217293578" duration="1064000" />
-      <workItem from="1776978333170" duration="2014000" />
-      <workItem from="1776991020158" duration="4000" />
-      <workItem from="1777503132503" duration="11245000" />
-      <workItem from="1777598409312" duration="32445000" />
+      <workItem from="1775705865858" duration="20613000" />
     </task>
     <task id="LOCAL-00001" summary="Rename template name to eddie_antartica">
       <option name="closed" value="true" />
@@ -239,77 +235,18 @@
       <option name="project" value="LOCAL" />
       <updated>1775695696357</updated>
     </task>
-    <task id="LOCAL-00005" summary="Work towards graticule">
-      <option name="closed" value="true" />
-      <created>1775789690988</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1775789690988</updated>
-    </task>
-    <task id="LOCAL-00006" summary="Remove unused docker-compose-dev volumes">
-      <option name="closed" value="true" />
-      <created>1775789858249</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1775789858249</updated>
-    </task>
-    <task id="LOCAL-00007" summary="Enable cesium ion terrian">
-      <option name="closed" value="true" />
-      <created>1777599407366</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1777599407366</updated>
-    </task>
-    <task id="LOCAL-00008" summary="Enable bing maps cesium ion basemaps">
-      <option name="closed" value="true" />
-      <created>1777601157344</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1777601157344</updated>
-    </task>
-    <option name="localTasksCounter" value="9" />
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
-    <option name="RECENT_FILTERS">
-      <map>
-        <entry key="Branch">
-          <value>
-            <list>
-              <RecentGroup>
-                <option name="FILTER_VALUES">
-                  <option value="HEAD" />
-                </option>
-              </RecentGroup>
-            </list>
-          </value>
-        </entry>
-      </map>
-    </option>
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="HEAD" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-            </State>
+            <State />
           </value>
         </entry>
       </map>
@@ -320,11 +257,7 @@
     <MESSAGE value="Add basic structure for Antarctic Digital Twin" />
     <MESSAGE value="update dependencies" />
     <MESSAGE value="Correct workspace configuration for pywps docker" />
-    <MESSAGE value="Work towards graticule" />
-    <MESSAGE value="Remove unused docker-compose-dev volumes" />
-    <MESSAGE value="Enable cesium ion terrian" />
-    <MESSAGE value="Enable bing maps cesium ion basemaps" />
-    <option name="LAST_COMMIT_MESSAGE" value="Enable bing maps cesium ion basemaps" />
+    <option name="LAST_COMMIT_MESSAGE" value="Correct workspace configuration for pywps docker" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
