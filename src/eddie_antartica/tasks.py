@@ -25,9 +25,10 @@ from celery import signals
 from celery.worker.consumer import Consumer
 import geopandas as gpd
 
-
 from eddie.digitaltwin import retrieve_from_instructions
 from eddie.digitaltwin.utils import setup_logging
+# app is required by the celery worker entrypoint, disable lint errors
+from eddie.tasks import app  # pylint: disable=unused-import  # noqa: F401
 from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
 
 setup_logging()
