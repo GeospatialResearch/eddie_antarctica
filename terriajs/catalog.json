@@ -6,6 +6,77 @@
     "north": -76.45
   },
   "catalog": [
+    {
+      "type": "group",
+      "name": "Static Files",
+      "isOpen": true,
+      "members": [
+        {
+          "type": "wms",
+          "name": "Antarctic Air Temperature 2005-07-01",
+          "description": "Antarctic air temperature on 1 July 2005.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "ant_air_temp_2005-07-01",
+          "styles": "ant_air_temp_2005-07-01"
+        },
+        {
+          "type": "wms",
+          "name": "GIA Anomaly",
+          "description": "Glacial isostatic adjustment anomaly, in metres.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "gia_anomaly",
+          "styles": "gia_anomaly"
+        },
+        {
+          "type": "wms",
+          "name": "GIA Global Bed Topography",
+          "description": "Bed topography from a glacial isostatic adjustment model run.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "gia_global_bed_topography_mv1e21_fr1e24_w0p0_weakEarth_t20",
+          "styles": "gia_global_bed_topography_mv1e21_fr1e24_w0p0_weakEarth_t20"
+        },
+        {
+          "type": "wms",
+          "name": "Lowry2024 Ice Sheet Model",
+          "description": "Ice sheet model output at 9.5 ka.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka",
+          "styles": "lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka"
+        },
+        {
+          "type": "wms",
+          "name": "PSKRIPS Atmosphere Daily Mean 2017-02-01",
+          "description": "Daily mean wind on 1 February 2017.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "pskrips_atmosphere_daily_mean_U10V10_2017-02-01",
+          "styles": "pskrips_atmosphere_daily_mean_U10V10_2017-02-01"
+        },
+        {
+          "type": "wms",
+          "name": "PSKRIPS Atmosphere Daily Mean in Celsius 2017-02-01",
+          "description": "Daily mean air temperature on 1 February 2017, in degrees Celsius.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "pskrips_atmosphere_daily_mean_t2C_2017-02-01",
+          "styles": "pskrips_atmosphere_daily_mean_t2C_2017-02-01"
+        },
+        {
+          "type": "wms",
+          "name": "PSKRIPS Atmosphere Daily Mean in Kelvin 2017-02-01",
+          "description": "Daily mean air temperature on 1 February 2017, in kelvin.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "pskrips_atmosphere_daily_mean_t2K_2017-02-01",
+          "styles": "pskrips_atmosphere_daily_mean_t2K_2017-02-01"
+        },
+        {
+          "type": "wms",
+          "name": "tankersley Sediment thickness 2023",
+          "description": "Sediment thickness across Antarctica, in metres.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "tankersley_2023_sediment_thick",
+          "styles": "tankersley_2023_sediment_thick"
+        }
+      ]
+    }
   ],
   "baseMaps": {
     "defaultBaseMapId": "basemap-bing-aerial-with-labels",

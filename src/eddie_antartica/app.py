@@ -102,6 +102,15 @@ def terria_catalog() -> Response:
         The HTTP Response. Expect OK if health check is successful
     """
     catalog = get_terria_catalog()
+
+    groups_needed = []
+
+    for group in catalog["catalog"]:
+        if group.get("name") != "Static Files":
+            groups_needed.append(group)
+
+    catalog["catalog"] = groups_needed
+
     return make_response(jsonify(catalog), OK)
 
 
