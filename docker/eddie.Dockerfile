@@ -80,6 +80,7 @@ RUN <<EOF
     setfacl -R -m u:nonroot:rwx /stored_data
     # Create geoserver shared directory
     mkdir /stored_data/geoserver
+    # Ensure workspaces directory is created with the appropriate permissions in the image, so code can directly edit workspaces later
     mkdir -p /stored_data/geoserver/workspaces
 
     # Create PyWPS required logging and output directories
