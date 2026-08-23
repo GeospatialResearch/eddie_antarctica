@@ -28,15 +28,15 @@ import geopandas as gpd
 
 from eddie.digitaltwin import retrieve_from_instructions
 from eddie.digitaltwin.utils import setup_logging
+from eddie.tasks import app  # noqa: F401  # pylint: disable=cyclic-import
 from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
-from eddie.tasks import app  # pylint: disable=cyclic-import
 
 setup_logging()
 log = logging.getLogger(__name__)
 
 
 @signals.worker_ready.connect
-def on_startup(sender: Consumer, **_kwargs: None) -> None:  # pylint: disable=missing-param-doc
+def on_startup(sender: Consumer, **_kwargs: None) -> None:  # pylint: disable=unused-import
     """
     Initialise database, runs when Celery instance is ready.
 
