@@ -16,15 +16,15 @@
                             </sld:GrayChannel>
                         </sld:ChannelSelection>
                         <sld:ColorMap type="ramp">
-                            <sld:ColorMapEntry color="#440154" label="-900 ℃ x 10" quantity="-900"/>
-                            <sld:ColorMapEntry color="#472878" label="-800 ℃ x 10" quantity="-800"/>
-                            <sld:ColorMapEntry color="#3e4a89" label="-700 ℃ x 10" quantity="-700"/>
-                            <sld:ColorMapEntry color="#31688e" label="-600 ℃ x 10" quantity="-600"/>
-                            <sld:ColorMapEntry color="#26838e" label="-500 ℃ x 10" quantity="-500"/>
-                            <sld:ColorMapEntry color="#1e9e89" label="-400 ℃ x 10" quantity="-400"/>
-                            <sld:ColorMapEntry color="#35b779" label="-300 ℃ x 10" quantity="-300"/>
-                            <sld:ColorMapEntry color="#6cce59" label="-200 ℃ x 10" quantity="-200"/>
-                            <sld:ColorMapEntry color="#b4de2c" label="-100 ℃ x 10" quantity="-100"/>
+                            <sld:ColorMapEntry color="#440154" label="-900.00 ℃ x 10" quantity="-900"/>
+                            <sld:ColorMapEntry color="#472878" label="-800.00 ℃ x 10" quantity="-800"/>
+                            <sld:ColorMapEntry color="#3e4a89" label="-700.00 ℃ x 10" quantity="-700"/>
+                            <sld:ColorMapEntry color="#31688e" label="-600.00 ℃ x 10" quantity="-600"/>
+                            <sld:ColorMapEntry color="#26838e" label="-500.00 ℃ x 10" quantity="-500"/>
+                            <sld:ColorMapEntry color="#1e9e89" label="-400.00 ℃ x 10" quantity="-400"/>
+                            <sld:ColorMapEntry color="#35b779" label="-300.00 ℃ x 10" quantity="-300"/>
+                            <sld:ColorMapEntry color="#6cce59" label="-200.00 ℃ x 10" quantity="-200"/>
+                            <sld:ColorMapEntry color="#b4de2c" label="-100.00 ℃ x 10" quantity="-100"/>
                             <sld:ColorMapEntry color="#fde725" label="0" quantity="0"/>
                         </sld:ColorMap>
                     </sld:RasterSymbolizer>
