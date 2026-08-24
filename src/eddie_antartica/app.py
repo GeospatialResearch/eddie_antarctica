@@ -106,7 +106,7 @@ def terria_catalog() -> Response:
         workspace_group["isOpen"] = False
     nested_catalog = {"catalog": [{
         "type": "group",
-        "name": "Intermediate Layer",
+        "name": "Intermediate Layers",
         "isOpen": False,
         "members": workspace_groups,
     }]}
