@@ -101,8 +101,16 @@ def terria_catalog() -> Response:
     Response
         The HTTP Response. Expect OK if health check is successful
     """
-    catalog = get_terria_catalog()
-    return make_response(jsonify(catalog), OK)
+    workspace_groups = get_terria_catalog()["catalog"]
+    for workspace_group in workspace_groups:
+        workspace_group["isOpen"] = False
+    nested_catalog = {"catalog": [{
+        "type": "group",
+        "name": "Intermediate Layers",
+        "isOpen": False,
+        "members": workspace_groups,
+    }]}
+    return make_response(jsonify(nested_catalog), OK)
 
 
 # Development server
