@@ -24,7 +24,7 @@
               <sld:ColorMapEntry color="#b1d5e7" label="200.00 to 400.00 m" quantity="400"/>
               <sld:ColorMapEntry color="#68abd0" label="400.00 to 600.00 m" quantity="600"/>
               <sld:ColorMapEntry color="#327cb7" label="600.00 to 800.00 m" quantity="800"/>
-              <sld:ColorMapEntry color="#124984" label="Greater than 800.00 m" quantity="1000000"/>
+              <sld:ColorMapEntry color="#124984" label="Greater than 800.00 m" quantity="1000"/>
             </sld:ColorMap>
             </sld:ColorMap>
           </sld:RasterSymbolizer>
