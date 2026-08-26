@@ -15,16 +15,17 @@
               </sld:GrayChannel>
             </sld:ChannelSelection>
             <sld:ColorMap type="intervals">
-              <sld:ColorMapEntry color="#8a0b25" label="-1000.00 to -800.00 m" quantity="-800"/>
-              <sld:ColorMapEntry color="#c43b3c" label="-800.00 to -600.00 m" quantity="-600"/>
-              <sld:ColorMapEntry color="#e58368" label="-600.00 to -400.00 m" quantity="-400"/>
-              <sld:ColorMapEntry color="#f8bfa4" label="-400.00 to -200.00 m" quantity="-200"/>
-              <sld:ColorMapEntry color="#fae9df" label="-200.00 to 0.00 m" quantity="0"/>
-              <sld:ColorMapEntry color="#e4eef4" label="0.00 to 200.00 m" quantity="200"/>
-              <sld:ColorMapEntry color="#b1d5e7" label="200.00 to 400.00 m" quantity="400"/>
-              <sld:ColorMapEntry color="#68abd0" label="400.00 to 600.00 m" quantity="600"/>
-              <sld:ColorMapEntry color="#327cb7" label="600.00 to 800.00 m" quantity="800"/>
-              <sld:ColorMapEntry color="#124984" label="800.00 to 1000.00 m" quantity="1000"/>
+              <sld:ColorMapEntry color="#67001f" label="-1000.00 m" quantity="-1000"/>
+              <sld:ColorMapEntry color="#8a0b25" label="-800.00 m" quantity="-800"/>
+              <sld:ColorMapEntry color="#c43b3c" label="-600.00 m" quantity="-600"/>
+              <sld:ColorMapEntry color="#e58368" label="-400.00 m" quantity="-400"/>
+              <sld:ColorMapEntry color="#f8bfa4" label="-200.00 m" quantity="-200"/>
+              <sld:ColorMapEntry color="#fae9df" label="0.00 m" quantity="0"/>
+              <sld:ColorMapEntry color="#e4eef4" label="200.00 m" quantity="200"/>
+              <sld:ColorMapEntry color="#b1d5e7" label="400.00 m" quantity="400"/>
+              <sld:ColorMapEntry color="#68abd0" label="600.00 m" quantity="600"/>
+              <sld:ColorMapEntry color="#327cb7" label="800.00 m" quantity="800"/>
+              <sld:ColorMapEntry color="#124984" label="1000.00 m" quantity="1000"/>
             </sld:ColorMap>
           </sld:RasterSymbolizer>
         </sld:Rule>
