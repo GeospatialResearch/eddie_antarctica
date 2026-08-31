@@ -14,18 +14,17 @@
                 <sld:SourceChannelName>1</sld:SourceChannelName>
               </sld:GrayChannel>
             </sld:ChannelSelection>
-            <sld:ColorMap type="ramp">
-              <sld:ColorMapEntry color="#ca0020" label="-1000.00 m" quantity="-1000"/>
-              <sld:ColorMapEntry color="#db4247" label="-800.00 m" quantity="-800"/>
-              <sld:ColorMapEntry color="#ec846e" label="-600.00 m" quantity="-600"/>
-              <sld:ColorMapEntry color="#f5b599" label="-400.00 m" quantity="-400"/>
-              <sld:ColorMapEntry color="#f6d6c8" label="-200.00 m" quantity="-200"/>
-              <sld:ColorMapEntry color="#f7f7f7" label="0.00 m" quantity="0"/>
-              <sld:ColorMapEntry color="#cfe3ed" label="200.00 m" quantity="200"/>
-              <sld:ColorMapEntry color="#a6cfe3" label="400.00 m" quantity="400"/>
-              <sld:ColorMapEntry color="#76b4d5" label="600.00 m" quantity="600"/>
-              <sld:ColorMapEntry color="#3d93c2" label="800.00 m" quantity="800"/>
-              <sld:ColorMapEntry color="#0571b0" label="1000.00 m" quantity="1000"/>
+            <sld:ColorMap type="intervals">
+              <sld:ColorMapEntry color="#8a0b25" label="Less than -800.00 m" quantity="-800"/>
+              <sld:ColorMapEntry color="#c43b3c" label="-800.00 to -600.00 m" quantity="-600"/>
+              <sld:ColorMapEntry color="#e58368" label="-600.00 to -400.00 m" quantity="-400"/>
+              <sld:ColorMapEntry color="#f8bfa4" label="-400.00 to -200.00 m" quantity="-200"/>
+              <sld:ColorMapEntry color="#fae9df" label="-200.00 to 0.00 m" quantity="0"/>
+              <sld:ColorMapEntry color="#e4eef4" label="0.00 to 200.00 m" quantity="200"/>
+              <sld:ColorMapEntry color="#b1d5e7" label="200.00 to 400.00 m" quantity="400"/>
+              <sld:ColorMapEntry color="#68abd0" label="400.00 to 600.00 m" quantity="600"/>
+              <sld:ColorMapEntry color="#327cb7" label="600.00 to 800.00 m" quantity="800"/>
+              <sld:ColorMapEntry color="#124984" label="Greater than 800.00 m" quantity="1000000"/>
             </sld:ColorMap>
           </sld:RasterSymbolizer>
         </sld:Rule>
