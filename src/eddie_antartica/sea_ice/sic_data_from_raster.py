@@ -102,7 +102,6 @@ def sic_forecast_series(longitude: float,
     rasterio.errors.RasterioIOError
         If the raster cannot be opened.
     """
-
     with rio.open(raster_path) as raster:
         bounds = raster.bounds
         longitude = bounds.left + (longitude - bounds.left) % 360
