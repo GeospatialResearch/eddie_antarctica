@@ -24,6 +24,7 @@ from dotenv import load_dotenv
 from flask import Flask, Response, jsonify, make_response, request
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
+from rasterio import RasterioIOError
 
 from eddie.check_celery_alive import check_celery_alive
 from eddie.digitaltwin.utils import setup_logging
@@ -146,7 +147,7 @@ def sea_ice_timeseries() -> Response:
         return make_response(f"Invalid GetFeatureInfo request: {request_error}", BAD_REQUEST)
     try:
         series = sic_forecast_series(longitude, latitude, FORECAST_RASTER)
-    except Exception:
+    except RasterioIOError:
         app.logger.exception("Failed to read sea ice forecast raster")
         return make_response("Forecast raster unavailable", 503)
     return Response(series.to_csv(index=False), OK, mimetype="text/csv")
