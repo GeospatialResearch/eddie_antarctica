@@ -144,7 +144,11 @@ def sea_ice_timeseries() -> Response:
         longitude, latitude = point_from_get_feature_info(request.args)
     except (KeyError, ValueError) as request_error:
         return make_response(f"Invalid GetFeatureInfo request: {request_error}", BAD_REQUEST)
-    series = sic_forecast_series(longitude, latitude, FORECAST_RASTER)
+    try:
+        series = sic_forecast_series(longitude, latitude, FORECAST_RASTER)
+    except Exception:
+        app.logger.exception("Failed to read sea ice forecast raster")
+        return make_response("Forecast raster unavailable", 503)
     return Response(series.to_csv(index=False), OK, mimetype="text/csv")
 
 
