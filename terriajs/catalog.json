@@ -41,7 +41,9 @@
           "description": "Ice sheet model output at 9.5 ka.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
           "layers": "lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka",
-          "styles": "lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka"
+          "styles": "lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka",
+          "supportsGetTimeseries": true,
+          "getFeatureInfoUrl": "$BACKEND_URL/ice-timeseries/thk"
         },
         {
           "type": "wms",
