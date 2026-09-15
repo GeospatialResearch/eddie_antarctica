@@ -35,16 +35,13 @@ from typing import Mapping, Tuple
 from rasterio.crs import CRS
 from rasterio.warp import transform
 
-
 LAT_LON_ORDERED_CRS = {
     "EPSG:4326",
     "URN:OGC:DEF:CRS:EPSG::4326",
 }
 
 
-def point_from_get_feature_info(
-    params: Mapping[str, str],
-) -> Tuple[float, float]:
+def point_from_get_feature_info(params: Mapping[str, str]) -> Tuple[float, float]:
     """
     Find the longitude and latitude of the pixel a GetFeatureInfo request
     queries.
@@ -62,20 +59,22 @@ def point_from_get_feature_info(
     -------
     Tuple[float, float]
         Longitude and latitude in degrees, in EPSG:4326.
+
+    Raises
+    ------
+    KeyError
+        If a required parameter is absent.
+    ValueError
+        If a parameter is present but not a number, the bounding box does not have four
+        values, ``WIDTH``/``HEIGHT`` are not positive, the queried pixel lies outside
+        the image, or the reprojected point falls outside the valid degree ranges.
     """
     query = {key.lower(): value for key, value in params.items()}
 
     version = query.get("version", "1.3.0")
-    crs = (
-        query.get("crs")
-        or query.get("srs")
-        or "EPSG:4326"
-    ).upper()
+    crs = (query.get("crs") or query.get("srs") or "EPSG:4326").upper()
 
-    bounds = [
-        float(value)
-        for value in query["bbox"].split(",")
-    ]
+    bounds = [float(value) for value in query["bbox"].split(",")]
 
     if len(bounds) != 4:
         raise ValueError(
@@ -119,16 +118,10 @@ def point_from_get_feature_info(
         )
 
     # Calculate the selected pixel's centre in the request CRS.
-    x_coordinate = (
-        min_x
-        + (column + 0.5) * (max_x - min_x) / width
-    )
+    x_coordinate = min_x + (column + 0.5) * (max_x - min_x) / width
 
     # Rows count downwards from the top of the image.
-    y_coordinate = (
-        max_y
-        - (row + 0.5) * (max_y - min_y) / height
-    )
+    y_coordinate = max_y - (row + 0.5) * (max_y - min_y) / height
 
     request_crs = CRS.from_user_input(crs)
     output_crs = CRS.from_epsg(4326)
