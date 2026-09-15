@@ -36,6 +36,7 @@ dependencies:
   - gevent==25.9.1
   - libgdal==3.7.0
   - lxml==4.9.3
+  - netCDF4
   - pandas==2.3.3
   - pip==26.0.1
   - psycopg2==2.9.7
@@ -50,6 +51,7 @@ dependencies:
   - scrapy==2.11.1
   - twisted==22.10.0
   - sqlalchemy==2.0.48
+  - xarray
   - pip:
       - geovoronoi==0.4.0
       - gunicorn==25.1.0

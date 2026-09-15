@@ -26,7 +26,6 @@
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
           "layers": "gia_anomaly",
           "styles": "gia_anomaly",
-          "supportsGetTimeseries": true
         },
         {
           "type": "wms",

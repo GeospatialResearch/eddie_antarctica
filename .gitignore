@@ -137,3 +137,4 @@ dmypy.json
 # Geospatial raster files
 *.tif
 *.tiff
+*.nc
