@@ -25,3 +25,11 @@ class EnvVariable(EnvVarBase):  # pylint: disable=too-few-public-methods
     """Encapsulates all environment variable fetching, ensuring proper defaults and types."""
 
     DATA_DIR = pathlib.Path(EnvVarBase._get_env_variable("DATA_DIR"))
+
+    # Terrain tileset built offline by ctb-tile; served by the /terrain routes in app.py.
+    TERRAIN_DIR = pathlib.Path(EnvVarBase._get_env_variable("TERRAIN_DATA_DIR"))
+
+    # The forecast raster holds unpublished data, so it lives in DATA_DIR rather than the repo.
+    FORECAST_RASTER = pathlib.Path(EnvVarBase._get_env_variable("FORECAST_RASTER_FILE"))
+
+    ICE_DATASET = pathlib.Path(EnvVarBase._get_env_variable("ICE_DATASET_FILE"))
