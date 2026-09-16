@@ -47,11 +47,19 @@
         },
         {
           "type": "wms",
-          "name": "PSKRIPS Atmosphere Daily Mean 2017-02-01",
-          "description": "Daily mean wind on 1 February 2017.",
+          "name": "PSKRIPS Wind Speed 2017-02-01",
+          "description": "Daily mean 10 m wind speed on 1 February 2017, from 0 m/s (dark purple) to 24 m/s (yellow). Derived from the U and V wind components as sqrt(u^2 + v^2).",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
           "layers": "pskrips_atmosphere_daily_mean_U10V10_2017-02-01",
           "styles": "pskrips_atmosphere_daily_mean_U10V10_2017-02-01"
+        },
+        {
+          "type": "wms",
+          "name": "PSKRIPS Wind Arrows 2017-02-01",
+          "description": "Daily mean 10 m wind on 1 February 2017 as a vector field. Each arrow points the way the wind blows and is coloured by speed. Overlay it on the wind speed layer, or use it on its own.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "pskrips_atmosphere_daily_mean_U10V10_2017-02-01",
+          "styles": "pskrips_wind_arrows_2017-02-01"
         },
         {
           "type": "wms",
