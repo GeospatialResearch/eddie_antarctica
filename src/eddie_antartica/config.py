@@ -33,3 +33,4 @@ class EnvVariable(EnvVarBase):  # pylint: disable=too-few-public-methods
     FORECAST_RASTER = pathlib.Path(EnvVarBase._get_env_variable("FORECAST_RASTER_FILE"))
 
     ICE_DATASET = pathlib.Path(EnvVarBase._get_env_variable("ICE_DATASET_FILE"))
+    FORECAST_NETCDF = pathlib.Path(EnvVarBase._get_env_variable("FORECAST_NETCDF_FILE"))
