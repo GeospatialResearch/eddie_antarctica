@@ -34,9 +34,9 @@ import pathlib
 from typing import Dict, Union
 
 import pandas as pd
+import xarray as xr
 from rasterio.crs import CRS
 from rasterio.warp import transform
-import xarray as xr
 
 ICE_DATASET = pathlib.Path("src/static/geo/ice_ds.nc")
 

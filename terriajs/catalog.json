@@ -58,7 +58,7 @@
           "name": "PSKRIPS Wind Arrows 2017-02-01",
           "description": "Daily mean 10 m wind on 1 February 2017 as a vector field. Each arrow points the way the wind blows and is coloured by speed. Overlay it on the wind speed layer, or use it on its own.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
-          "layers": "pskrips_atmosphere_daily_mean_U10V10_2017-02-01",
+          "layers": "pskrips_wind_arrows_2017-02-01",
           "styles": "pskrips_wind_arrows_2017-02-01"
         },
         {
@@ -93,7 +93,29 @@
           "layers": "sic_forecast_8w",
           "styles": "sic_forecast_8w",
           "supportsGetTimeseries": true,
-          "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-timeseries"
+          "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-timeseries-netcdf"
+        },
+        {
+          "type": "wms",
+          "name": "Ice thickness: band 9",
+          "description": "Modelled ice thickness in metres for condition X at T years BCE.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "thk_runA",
+          "styles": "lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka"
+        },
+        {
+          "type": "wms",
+          "name": "Ice thickness: thk band 18",
+          "description": "Modelled ice thickness in metres for condition Y at T years BCE.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "thk_runB",
+          "styles": "lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka"
+        },
+        {
+          "type": "3d-tiles",
+          "name": "Ice thickness blocks: band 9, Ross Sea POC",
+          "description": "Experimental 3D columns derived from ice_ds.nc thk band 9. Thickness is rounded upwards into 250 metre classes and positioned on the ETOPO surface. Column height is illustrative and does not represent a reconstructed physical ice surface.",
+          "url": "$BACKEND_URL/terrain/blocks-runA-ross/tileset.json"
         }
       ]
     }
