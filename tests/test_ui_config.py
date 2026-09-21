@@ -49,6 +49,6 @@ def test_sea_ice_layer_opts_into_the_timeseries_chart() -> None:
 
     assert len(sea_ice) == 1
     assert sea_ice[0]["supportsGetTimeseries"] is True
-    assert sea_ice[0]["getFeatureInfoUrl"] == "$BACKEND_URL/sea-ice-timeseries"
+    assert sea_ice[0]["getFeatureInfoUrl"] == "$BACKEND_URL/sea-ice-timeseries-netcdf"
 
 
