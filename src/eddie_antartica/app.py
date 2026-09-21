@@ -32,6 +32,7 @@ from eddie.discover_plugins import discover_plugins
 from eddie.geoserver import get_terria_catalog
 from src.eddie_antartica import blueprint as eddie_antartica_blueprint
 from src.eddie_antartica.config import EnvVariable
+from src.eddie_antartica.sea_ice.sic_data_from_nc import point_series as sic_forecast_point_series
 from src.eddie_antartica.sea_ice.sic_data_from_raster import sic_forecast_series
 from src.eddie_antartica.wms_point import point_from_get_feature_info
 from src.eddie_antartica.ice_sheet.ice_data_from_nc import SERIES_COLUMN, VARIABLES, point_series
@@ -151,6 +152,40 @@ def sea_ice_timeseries() -> Response:
     except RasterioIOError:
         app.logger.exception("Failed to read sea ice forecast raster")
         return make_response("Forecast raster unavailable", SERVICE_UNAVAILABLE)
+    return Response(series.to_csv(index=False), OK, mimetype="text/csv")
+
+
+@app.route('/sea-ice-timeseries-netcdf')
+def sea_ice_timeseries_netcdf() -> Response:
+    """
+    Return the sea ice concentration forecast for the clicked point, as CSV, from the NetCDF.
+
+    Same data and same two columns as ``/sea-ice-timeseries``, read from the model's own
+    NetCDF output rather than from the GeoTIFF exported for GeoServer (issue #35). Both
+    routes exist because ``serve_static_files`` publishes ``.tif`` and skips ``.nc``, so
+    the WMS layer stays a GeoTIFF while the chart can read the source file.
+    Supported methods: GET
+
+    Deliberately not decorated with ``@check_celery_alive``: this route reads a file
+    directly and never touches Celery, so a down worker should not turn every chart
+    click into a 503.
+
+    Returns
+    -------
+    Response
+        The HTTP Response. Expect OK carrying ``text/csv``; BAD_REQUEST if the
+        GetFeatureInfo parameters are missing or malformed; or SERVICE_UNAVAILABLE if the
+        file is missing or unreadable.
+    """
+    try:
+        longitude, latitude = point_from_get_feature_info(request.args)
+    except (KeyError, ValueError) as request_error:
+        return make_response(f"Invalid GetFeatureInfo request: {request_error}", BAD_REQUEST)
+    try:
+        series = sic_forecast_point_series(longitude, latitude, EnvVariable.FORECAST_NETCDF)
+    except (OSError, KeyError):
+        app.logger.exception("Failed to read the sea ice forecast NetCDF")
+        return make_response("Forecast NetCDF unavailable", SERVICE_UNAVAILABLE)
     return Response(series.to_csv(index=False), OK, mimetype="text/csv")
 
 
