@@ -34,17 +34,12 @@ import pathlib
 from typing import Dict, Union
 
 import pandas as pd
-import xarray as xr
-from rasterio.crs import CRS
-from rasterio.warp import transform
+from src.eddie_antartica.sampling.xarray_cell import sample_cell
 
 ICE_DATASET = pathlib.Path("src/static/geo/ice_ds.nc")
 
-#: TerriaJS asks in degrees, WGS 84.
-CLICK_CRS = CRS.from_epsg(4326)
-
-#: What ice_ds.nc holds, and what a chart of each should be called. Units live here
-#: because the column headers are taken up by the model run names.
+# What ice_ds.nc holds, and what a chart of each should be called. Units live here
+# because the column headers are taken up by the model run names.
 VARIABLES: Dict[str, str] = {"thk": "Ice thickness (m)", "topg": "Bed elevation (m)"}
 
 SERIES_DIM = "time_bce"
@@ -57,8 +52,6 @@ def point_series(longitude: float,
                  source: Union[str, pathlib.Path] = ICE_DATASET) -> pd.DataFrame:
     """
     Read every model run's series for the grid cell containing a point.
-
-    Only the one cell is read off disk, so file size costs little.
 
     Parameters
     ----------
@@ -84,21 +77,12 @@ def point_series(longitude: float,
     KeyError
         If the file does not hold that variable, or states no CRS.
     """
-    with xr.open_dataset(source, decode_coords="all") as dataset:
-        data = dataset[variable]
-        grid_crs = CRS.from_user_input(dataset[data.encoding["grid_mapping"]].attrs["crs_wkt"])
-        eastings, northings = transform(CLICK_CRS, grid_crs, [longitude], [latitude])
-        # Half a cell, so a click lands in the cell it is inside and a click off the
-        # grid raises rather than snapping to the nearest edge.
-        tolerance = max(abs(float(dataset[axis].diff(axis).max())) for axis in ("x", "y")) / 2
-        try:
-            cell = data.sel(x=eastings[0], y=northings[0], method="nearest", tolerance=tolerance)
-        except KeyError:
-            return pd.DataFrame(index=pd.Index([], name=SERIES_COLUMN))
-        frame = cell.transpose(SERIES_DIM, ...).to_pandas()
+    cell = sample_cell(source, variable, longitude, latitude)
+    if cell is None:
+        return pd.DataFrame(index=pd.Index([], name=SERIES_COLUMN))
 
+    frame = cell.transpose(SERIES_DIM, ...).to_pandas()
     frame.columns = [_format_model_condition(column) for column in frame.columns]
-
     frame.index.name = SERIES_COLUMN
     return frame
 

@@ -138,3 +138,7 @@ dmypy.json
 *.tif
 *.tiff
 *.nc
+
+# Allow synthetic test fixtures
+!tests/test_sampling/data/
+!tests/test_sampling/data/*.nc
