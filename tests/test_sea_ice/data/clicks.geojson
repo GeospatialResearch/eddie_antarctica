@@ -1,0 +1,109 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -179.5,
+          -40.5
+        ]
+      },
+      "properties": {
+        "name": "first_cell",
+        "expected": [
+          100.0,
+          200.0,
+          300.0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -172.5,
+          -43.5
+        ]
+      },
+      "properties": {
+        "name": "last_cell",
+        "expected": [
+          137.0,
+          237.0,
+          337.0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -177.9,
+          -41.9
+        ]
+      },
+      "properties": {
+        "name": "interior",
+        "expected": [
+          112.0,
+          212.0,
+          312.0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -180.0,
+          -40.5
+        ]
+      },
+      "properties": {
+        "name": "western_edge",
+        "expected": [
+          100.0,
+          200.0,
+          300.0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          182.5,
+          -40.5
+        ]
+      },
+      "properties": {
+        "name": "wrapped",
+        "expected": [
+          102.0,
+          202.0,
+          302.0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "name": "outside",
+        "expected": []
+      }
+    }
+  ]
+}

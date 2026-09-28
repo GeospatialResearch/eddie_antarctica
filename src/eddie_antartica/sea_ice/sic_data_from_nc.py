@@ -34,18 +34,14 @@ does not silently sample the wrong place.
 """
 import pathlib
 from typing import Union
-
 import pandas as pd
-from rasterio.crs import CRS
-from rasterio.warp import transform
-import xarray as xr
+from src.eddie_antartica.sampling.xarray_cell import sample_cell
 
-from src.eddie_antartica.sea_ice.sic_data_from_raster import TIME_COLUMN, VALUE_COLUMN, _empty_series
-
-#: TerriaJS asks in degrees, WGS 84.
-CLICK_CRS = CRS.from_epsg(4326)
 VARIABLE = "sic"
 #: Matches the GeoTIFF's per-band TIME tags, so the two routes' CSVs agree byte for byte.
+TIME_COLUMN = "Time (UTC)"
+VALUE_COLUMN = "Sea ice concentration (fraction)"
+TIME_DIM = "time"
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
@@ -81,22 +77,12 @@ def point_series(longitude: float,
     KeyError
         If the file does not hold the forecast variable, or states no CRS.
     """
-    with xr.open_dataset(source, decode_coords="all") as dataset:
-        data = dataset[VARIABLE]
-        grid_crs = CRS.from_user_input(dataset[data.encoding["grid_mapping"]].attrs["crs_wkt"])
-        eastings, northings = transform(CLICK_CRS, grid_crs, [longitude], [latitude])
-        # Wrap into whichever convention the file uses, so a 0..360 click lands on a
-        # -180..180 grid and vice versa.
-        west = float(dataset["lon"].min())
-        easting = west + (eastings[0] - west) % 360
-        # Half a cell, so a click lands in the cell it is inside and a click off the grid
-        # raises rather than snapping to the nearest edge.
-        tolerance = max(abs(float(dataset[axis].diff(axis).max())) for axis in ("lat", "lon")) / 2
-        try:
-            cell = data.sel(lon=easting, lat=northings[0], method="nearest", tolerance=tolerance)
-        except KeyError:
-            return _empty_series()
-        timestamps = pd.DatetimeIndex(cell["time"].values).strftime(TIME_FORMAT)
-        values = cell.values.astype("float32")
+    cell = sample_cell(source, VARIABLE, longitude, latitude)
+    if cell is None:
+        return pd.DataFrame(columns=[TIME_COLUMN, VALUE_COLUMN])
 
-    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})
+    frame = cell.transpose(TIME_DIM).to_pandas().to_frame(name=VALUE_COLUMN)
+    frame.index = pd.to_datetime(frame.index).strftime(TIME_FORMAT)
+    frame.index.name = TIME_COLUMN
+
+    return frame
