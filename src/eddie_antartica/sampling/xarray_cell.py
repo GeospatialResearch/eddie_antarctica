@@ -30,7 +30,7 @@ from rasterio.warp import transform
 CLICK_CRS = CRS.from_epsg(4326)
 
 
-def sample_cell(source: Union[str, pathlib.Path],  # pylint: disable=too-many-positional-arguments
+def sample_cell(source: Union[str, pathlib.Path],  # pylint: disable=too-many-arguments
                 variable: str,
                 longitude: float,
                 latitude: float,
