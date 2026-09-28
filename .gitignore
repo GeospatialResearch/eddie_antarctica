@@ -140,5 +140,5 @@ dmypy.json
 *.nc
 
 # Allow synthetic test fixtures
-!tests/test_sampling/data/
-!tests/test_sampling/data/*.nc
+!tests/*/data/*.tif
+!tests/*/data/*.nc
