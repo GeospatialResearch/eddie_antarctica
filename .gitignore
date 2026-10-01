@@ -137,3 +137,8 @@ dmypy.json
 # Geospatial raster files
 *.tif
 *.tiff
+*.nc
+
+# Allow synthetic test fixtures
+!tests/*/data/*.tif
+!tests/*/data/*.nc
