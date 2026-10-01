@@ -93,7 +93,8 @@
           "layers": "sic_forecast_8w",
           "styles": "sic_forecast_8w",
           "supportsGetTimeseries": true,
-          "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-timeseries-netcdf"
+          "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-timeseries-netcdf",
+          "parameters": { "interpolations": "bilinear" }
         },
         {
           "type": "wms",

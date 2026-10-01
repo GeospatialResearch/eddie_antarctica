@@ -77,12 +77,11 @@ def point_series(longitude: float,
     KeyError
         If the file does not hold the forecast variable, or states no CRS.
     """
-    cell = sample_cell(source, VARIABLE, longitude, latitude)
+    cell = sample_cell(source, VARIABLE, longitude, latitude, x_dim="lon", y_dim="lat")
     if cell is None:
         return pd.DataFrame(columns=[TIME_COLUMN, VALUE_COLUMN])
 
-    frame = cell.transpose(TIME_DIM).to_pandas().to_frame(name=VALUE_COLUMN)
-    frame.index = pd.to_datetime(frame.index).strftime(TIME_FORMAT)
-    frame.index.name = TIME_COLUMN
-
+    timestamps = pd.to_datetime(cell[TIME_DIM].values).strftime(TIME_FORMAT)
+    values = cell.values.astype("float32")
+    frame = pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})
     return frame
