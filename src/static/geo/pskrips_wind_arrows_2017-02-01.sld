@@ -89,8 +89,8 @@ http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" version="1.0.0">
                             <Rotation>
                                 <ogc:Function name="toDegrees">
                                     <ogc:Function name="atan2">
-                                        <ogc:PropertyName>GRAY_INDEX</ogc:PropertyName>
                                         <ogc:PropertyName>Band2</ogc:PropertyName>
+                                        <ogc:PropertyName>GRAY_INDEX</ogc:PropertyName>
                                     </ogc:Function>
                                 </ogc:Function>
                             </Rotation>
