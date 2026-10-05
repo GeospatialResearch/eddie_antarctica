@@ -5,7 +5,7 @@ FROM ghcr.io/terriajs/terriamap:0.4.1
 USER root
 RUN <<EOF
     apt-get update
-    apt-get install -y --no-install-recommends gettext-base
+    apt-get install -y --no-install-recommends gettext-base curl
     # Cleanup image and remove junk
     rm -fr /var/lib/apt/lists/*
 EOF
