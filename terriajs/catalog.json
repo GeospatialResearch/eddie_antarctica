@@ -94,7 +94,22 @@
           "styles": "sic_forecast_8w",
           "supportsGetTimeseries": true,
           "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-timeseries-netcdf",
-          "parameters": { "interpolations": "bilinear" }
+          "parameters": {
+            "interpolations": "bilinear"
+          }
+        },
+        {
+          "type": "wms",
+          "name": "Sea Ice Concentration Latest Forecast (8 weeks)",
+          "description": "Weekly sea ice concentration forecast, as a fraction from 0 (open water) and >15% ice sheet to 1 (fully covered). Click a point on the layer to chart how it changes over the forecast.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "sic_forecast_2026-09-24_8w",
+          "styles": "sic_forecast_2026-09-24_8w",
+          "supportsGetTimeseries": true,
+          "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-timeseries-netcdf-latest",
+          "parameters": {
+            "interpolations": "bilinear"
+          }
         },
         {
           "type": "wms",
@@ -117,6 +132,20 @@
           "name": "Ice thickness blocks: band 9, Ross Sea POC",
           "description": "Experimental 3D columns derived from ice_ds.nc thk band 9. Thickness is rounded upwards into 250 metre classes and positioned on the ETOPO surface. Column height is illustrative and does not represent a reconstructed physical ice surface.",
           "url": "$BACKEND_URL/terrain/blocks-runA-ross/tileset.json"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "Sea ice forecast",
+      "isOpen": true,
+      "members": [
+        {
+          "type": "wps",
+          "name": "Sea ice concentration forecast",
+          "description": "Map one week of the 8-week sea ice concentration forecast from 2026-09-24. Click the map layer it adds to chart all 8 weeks at that point.",
+          "url": "$BACKEND_URL/wps",
+          "identifier": "sea_ice_forecast"
         }
       ]
     }
