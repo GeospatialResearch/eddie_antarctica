@@ -16,7 +16,9 @@ keywords = ["EDDIE", "Digital Twin", "Geospatial"]
 dependencies = [
     "aiohttp",
     "botocore",
+    "cdsapi",
     "celery",
+    "dask",
     "flask",
     "flask-cors",
     "flask_swagger_ui",
@@ -37,9 +39,12 @@ dependencies = [
     "python-pdal",
     "pywps",
     "rasterio",
+    "scipy",
     "scrapy",
     "selenium",
     "sqlalchemy",
+    "torch",
+    "torch_geometric",
     "validators",
 ]
 requires-python = ">=3.11"

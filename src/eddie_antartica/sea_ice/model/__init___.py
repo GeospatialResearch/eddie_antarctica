@@ -16,7 +16,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""
-Sea ice concentration: the model's live inputs (``inputs/``), the model and its forecast files (``model/``), and
-the WPS process that maps a forecast week.
-"""
+"""Sea ice concentration model: run it, write and publish its forecast, serve the chart (FReDT flood_model/)."""

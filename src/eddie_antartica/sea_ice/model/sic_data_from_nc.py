@@ -28,20 +28,31 @@ Both return the same two columns, so whichever a catalog entry points at, Terria
 an identical CSV. That is what makes the two routes comparable rather than merely similar.
 
 The CRS is read from the file's ``grid_mapping``, never assumed -- indexing the wrong cell
-returns a plausible number instead of an error. In practice ``sic_forecast_to_nc`` always
-writes EPSG:4326, so the transform below is an identity; it is there so a regridded file
-does not silently sample the wrong place.
+returns a plausible number instead of an error. In practice the file is always EPSG:4326,
+so the transform below is an identity; it is there so a regridded file does not silently
+sample the wrong place.
 """
 import pathlib
-from typing import Union
-import pandas as pd
-from src.eddie_antartica.sampling.xarray_cell import sample_cell
+from typing import Optional, Union
 
+import pandas as pd
+from rasterio.crs import CRS
+from rasterio.warp import transform
+import xarray as xr
+
+from src.eddie_antartica.sea_ice.model.sic_data_from_raster import TIME_COLUMN, VALUE_COLUMN, _empty_series
+
+#: TerriaJS asks in degrees, WGS 84.
+CLICK_CRS = CRS.from_epsg(4326)
+
+#: The variable the forecast is written as. The file is produced once, by hand, so the
+#: conversion lives in notebooks/sic_forecast_export.ipynb rather than in this package.
 VARIABLE = "sic"
+
+#: Dated forecasts, ``sic_forecast_<weeks>w_<YYYY-MM-DD of week 1>.nc``, as ``sic_to_nc.forecast_to_nc`` names them.
+FORECAST_GLOB = "sic_forecast_*w_????-??-??.nc"
+
 #: Matches the GeoTIFF's per-band TIME tags, so the two routes' CSVs agree byte for byte.
-TIME_COLUMN = "Time (UTC)"
-VALUE_COLUMN = "Sea ice concentration (fraction)"
-TIME_DIM = "time"
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
@@ -77,11 +88,43 @@ def point_series(longitude: float,
     KeyError
         If the file does not hold the forecast variable, or states no CRS.
     """
-    cell = sample_cell(source, VARIABLE, longitude, latitude, x_dim="lon", y_dim="lat")
-    if cell is None:
-        return pd.DataFrame(columns=[TIME_COLUMN, VALUE_COLUMN])
+    with xr.open_dataset(source, decode_coords="all") as dataset:
+        data = dataset[VARIABLE]
+        grid_crs = CRS.from_user_input(dataset[data.encoding["grid_mapping"]].attrs["crs_wkt"])
+        eastings, northings = transform(CLICK_CRS, grid_crs, [longitude], [latitude])
+        steps = {axis: abs(float(dataset[axis].diff(axis).max())) for axis in ("lat", "lon")}
+        # Wrap into whichever convention the file uses, so a 0..360 click lands on a
+        # -180..180 grid and vice versa. Measured from the grid's western *edge*, not from
+        # the westernmost cell centre: a click in the western half of the first cell is
+        # legitimately west of that centre, and wrapping about it would throw the click a
+        # full 360 degrees off the grid and silently return an empty chart.
+        west = float(dataset["lon"].min()) - steps["lon"] / 2
+        easting = west + (eastings[0] - west) % 360
+        # Half a cell, so a click lands in the cell it is inside and a click off the grid
+        # raises rather than snapping to the nearest edge.
+        tolerance = max(steps.values()) / 2
+        try:
+            cell = data.sel(lon=easting, lat=northings[0], method="nearest", tolerance=tolerance)
+        except KeyError:
+            return _empty_series()
+        timestamps = pd.DatetimeIndex(cell["time"].values).strftime(TIME_FORMAT)
+        values = cell.values.astype("float32")
 
-    timestamps = pd.to_datetime(cell[TIME_DIM].values).strftime(TIME_FORMAT)
-    values = cell.values.astype("float32")
-    frame = pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})
-    return frame
+    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})
+
+
+def latest_forecast(directory: pathlib.Path) -> Optional[pathlib.Path]:
+    """
+    Find the newest dated forecast in a directory.
+
+    Parameters
+    ----------
+    directory : pathlib.Path
+        Where the weekly forecast task writes its NetCDF files.
+
+    Returns
+    -------
+    Optional[pathlib.Path]
+        The forecast with the latest week 1 (ISO dates sort as text), or None if there is none yet.
+    """
+    return max(directory.glob(FORECAST_GLOB), default=None)
