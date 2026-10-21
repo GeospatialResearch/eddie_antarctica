@@ -156,6 +156,259 @@
   },
   "stories": [
     {
+      "title": "Antarctic Digital Twin",
+      "text": "",
+      "id": "c08b643c-9e24-4713-a465-a6d9064e72ef",
+      "shareData": {
+        "version": "8.0.0",
+        "initSources": [
+          {
+            "stratum": "user",
+            "models": {
+              "/": {
+                "type": "group"
+              },
+              "__User-Added_Data__": {
+                "members": [
+                  "//Sea ice forecast/Sea ice concentration forecast-2026-10-09T02:11:42.429Z",
+                  "//Sea ice forecast/Sea ice concentration forecast-2026-10-09T02:14:09.660Z"
+                ],
+                "knownContainerUniqueIds": [
+                  "/"
+                ],
+                "type": "group"
+              },
+              "//Sea ice forecast": {
+                "knownContainerUniqueIds": [
+                  "/"
+                ],
+                "type": "group"
+              },
+              "//Sea ice forecast/Sea ice concentration forecast": {
+                "parameters": {
+                  "week": "8"
+                },
+                "knownContainerUniqueIds": [
+                  "//Sea ice forecast"
+                ],
+                "type": "wps"
+              },
+              "6f0556b4-1df7-44ff-8cc5-090f56aa7655": {
+                "show": true,
+                "name": "Sea ice concentration -- week 1 (2026-09-24)",
+                "splitDirection": 1,
+                "opacity": 1,
+                "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+                "layers": "sic_forecast_week1",
+                "styles": "sic_forecast_8w",
+                "parameters": {
+                  "interpolations": "bilinear"
+                },
+                "supportsGetTimeseries": true,
+                "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-forecast-timeseries",
+                "knownContainerUniqueIds": [
+                  "//Sea ice forecast/Sea ice concentration forecast-2026-10-09T02:11:42.429Z"
+                ],
+                "type": "wms"
+              },
+              "d5e982a6-2923-4fc6-8358-1565e1b4583c": {
+                "show": true,
+                "name": "Sea ice concentration -- week 8 (2026-11-12)",
+                "splitDirection": -1,
+                "opacity": 1,
+                "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+                "layers": "sic_forecast_week8",
+                "styles": "sic_forecast_8w",
+                "parameters": {
+                  "interpolations": "bilinear"
+                },
+                "supportsGetTimeseries": true,
+                "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-forecast-timeseries",
+                "knownContainerUniqueIds": [
+                  "//Sea ice forecast/Sea ice concentration forecast-2026-10-09T02:14:09.660Z"
+                ],
+                "type": "wms"
+              },
+              "//Sea ice forecast/Sea ice concentration forecast-2026-10-09T02:11:42.429Z": {
+                "name": "WPS: Sea ice concentration forecast result 2026-10-09T02:11:42.437Z",
+                "shortReportSections": [
+                  {
+                    "name": "Sea ice concentration forecast",
+                    "content": "Chart Sea ice concentration forecast generated."
+                  }
+                ],
+                "parameters": {
+                  "week": "1"
+                },
+                "members": [
+                  "6f0556b4-1df7-44ff-8cc5-090f56aa7655"
+                ],
+                "jobStatus": "finished",
+                "downloadedResults": true,
+                "url": "$BACKEND_URL/wps",
+                "executeWithHttpGet": false,
+                "storeSupported": true,
+                "statusSupported": false,
+                "identifier": "sea_ice_forecast",
+                "forceConvertResultsToV8": false,
+                "wpsParameters": [
+                  {
+                    "inputIdentifier": "week",
+                    "inputValue": "1",
+                    "inputType": "LiteralData"
+                  }
+                ],
+                "wpsResponse": {
+                  "Process": {
+                    "Identifier": "sea_ice_forecast",
+                    "Title": "Sea ice concentration forecast",
+                    "Abstract": "Map one week of the 8-week sea ice concentration forecast. Click the map to chart all 8 weeks.",
+                    "wps:processVersion": "None"
+                  },
+                  "Status": {
+                    "ProcessSucceeded": "PyWPS Process Sea ice concentration forecast finished",
+                    "creationTime": "2026-10-09T02:11:44Z"
+                  },
+                  "ProcessOutputs": {
+                    "Output": {
+                      "Identifier": "seaIceForecast",
+                      "Title": "Sea ice concentration forecast",
+                      "Abstract": "",
+                      "Data": {
+                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 1 (2026-09-24)\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week1\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"bilinear\"}}"
+                      }
+                    }
+                  },
+                  "xmlns:wps": "http://www.opengis.net/wps/1.0.0",
+                  "xmlns:ows": "http://www.opengis.net/ows/1.1",
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                  "xsi:schemaLocation": "http://www.opengis.net/wps/1.0.0 ../wpsExecute_response.xsd",
+                  "service": "WPS",
+                  "version": "1.0.0",
+                  "xml:lang": "en-US",
+                  "serviceInstance": "$BACKEND_URL/wps?request=GetCapabilities&amp;service=WPS",
+                  "statusLocation": ""
+                },
+                "geojsonFeatures": [],
+                "knownContainerUniqueIds": [
+                  "__User-Added_Data__"
+                ],
+                "type": "wps-result"
+              },
+              "//Sea ice forecast/Sea ice concentration forecast-2026-10-09T02:14:09.660Z": {
+                "name": "WPS: Sea ice concentration forecast result 2026-10-09T02:14:09.667Z",
+                "shortReportSections": [
+                  {
+                    "name": "Sea ice concentration forecast",
+                    "content": "Chart Sea ice concentration forecast generated."
+                  }
+                ],
+                "parameters": {
+                  "week": "8"
+                },
+                "members": [
+                  "d5e982a6-2923-4fc6-8358-1565e1b4583c"
+                ],
+                "jobStatus": "finished",
+                "downloadedResults": true,
+                "url": "$BACKEND_URL/wps",
+                "executeWithHttpGet": false,
+                "storeSupported": true,
+                "statusSupported": false,
+                "identifier": "sea_ice_forecast",
+                "forceConvertResultsToV8": false,
+                "wpsParameters": [
+                  {
+                    "inputIdentifier": "week",
+                    "inputValue": "8",
+                    "inputType": "LiteralData"
+                  }
+                ],
+                "wpsResponse": {
+                  "Process": {
+                    "Identifier": "sea_ice_forecast",
+                    "Title": "Sea ice concentration forecast",
+                    "Abstract": "Map one week of the 8-week sea ice concentration forecast. Click the map to chart all 8 weeks.",
+                    "wps:processVersion": "None"
+                  },
+                  "Status": {
+                    "ProcessSucceeded": "PyWPS Process Sea ice concentration forecast finished",
+                    "creationTime": "2026-10-09T02:14:11Z"
+                  },
+                  "ProcessOutputs": {
+                    "Output": {
+                      "Identifier": "seaIceForecast",
+                      "Title": "Sea ice concentration forecast",
+                      "Abstract": "",
+                      "Data": {
+                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 8 (2026-11-12)\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week8\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"bilinear\"}}"
+                      }
+                    }
+                  },
+                  "xmlns:wps": "http://www.opengis.net/wps/1.0.0",
+                  "xmlns:ows": "http://www.opengis.net/ows/1.1",
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                  "xsi:schemaLocation": "http://www.opengis.net/wps/1.0.0 ../wpsExecute_response.xsd",
+                  "service": "WPS",
+                  "version": "1.0.0",
+                  "xml:lang": "en-US",
+                  "serviceInstance": "$BACKEND_URL/wps?request=GetCapabilities&amp;service=WPS",
+                  "statusLocation": ""
+                },
+                "geojsonFeatures": [],
+                "knownContainerUniqueIds": [
+                  "__User-Added_Data__"
+                ],
+                "type": "wps-result"
+              }
+            },
+            "workbench": [],
+            "timeline": [],
+            "initialCamera": {
+              "west": 162.14158443384252,
+              "south": -77.47191458450762,
+              "east": 162.29056372197869,
+              "north": -77.45345670472209,
+              "position": {
+                "x": -1320429.8747093228,
+                "y": 425894.61832752806,
+                "z": -6206751.981720444
+              },
+              "direction": {
+                "x": -0.7952571964151323,
+                "y": -0.4996847008256393,
+                "z": 0.34333830446184604
+              },
+              "up": {
+                "x": -0.3767572301886557,
+                "y": -0.036371430739751257,
+                "z": -0.9255977033930647
+              }
+            },
+            "homeCamera": {
+              "west": 151.04,
+              "south": -78.6,
+              "east": 172.98,
+              "north": -76.45
+            },
+            "viewerMode": "3d",
+            "showSplitter": false,
+            "splitPosition": 0.4999,
+            "settings": {
+              "baseMaximumScreenSpaceError": 2,
+              "useNativeResolution": false,
+              "alwaysShowTimeline": false,
+              "baseMapId": "basemap-bing-aerial-with-labels",
+              "terrainSplitDirection": 0,
+              "depthTestAgainstTerrainEnabled": false
+            }
+          }
+        ]
+      }
+    },
+    {
       "title": "ADT Demo",
       "text": "",
       "id": "6ccd3a4d-165c-4c2f-ab63-775e4a720414",
@@ -395,60 +648,6 @@
             "viewerMode": "3d",
             "showSplitter": true,
             "splitPosition": 0.6173107142857143,
-            "settings": {
-              "baseMaximumScreenSpaceError": 2,
-              "useNativeResolution": false,
-              "alwaysShowTimeline": false,
-              "baseMapId": "basemap-bing-aerial-with-labels",
-              "terrainSplitDirection": 0,
-              "depthTestAgainstTerrainEnabled": false
-            }
-          }
-        ]
-      }
-    },
-    {
-      "title": "Antarctic Digital Twin",
-      "text": "",
-      "id": "c08b643c-9e24-4713-a465-a6d9064e72ef",
-      "shareData": {
-        "version": "8.0.0",
-        "initSources": [
-          {
-            "stratum": "user",
-            "models": {},
-            "workbench": [],
-            "timeline": [],
-            "initialCamera": {
-              "west": 162.49666406570427,
-              "south": -77.65781532624695,
-              "east": 162.72619754625404,
-              "north": -77.62979281373234,
-              "position": {
-                "x": -1302367.0777112176,
-                "y": 409806.5204353637,
-                "z": -6211081.45568842
-              },
-              "direction": {
-                "x": -0.9633642345746586,
-                "y": -0.11017156119184196,
-                "z": 0.24452316586968725
-              },
-              "up": {
-                "x": -0.251857853424506,
-                "y": 0.058267056277207505,
-                "z": -0.9660085775091175
-              }
-            },
-            "homeCamera": {
-              "west": 151.04,
-              "south": -78.6,
-              "east": 172.98,
-              "north": -76.45
-            },
-            "viewerMode": "3d",
-            "showSplitter": false,
-            "splitPosition": 0.4999,
             "settings": {
               "baseMaximumScreenSpaceError": 2,
               "useNativeResolution": false,
