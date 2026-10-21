@@ -30,8 +30,8 @@ util/inference.py::predict_latest for the operational single-window wrapper.
 import torch
 import torch.nn as nn
 
-from util.config import N_LAT, N_LON
-from models.multi_mesh_grid import MultiMeshGridGNN
+from src.eddie_antartica.sea_ice.model.gnn.util.config import N_LAT, N_LON
+from src.eddie_antartica.sea_ice.model.gnn.models.multi_mesh_grid import MultiMeshGridGNN
 
 
 class MultiMeshGridARGNN(MultiMeshGridGNN):

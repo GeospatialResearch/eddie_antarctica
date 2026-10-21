@@ -103,7 +103,7 @@ import xarray as xr
 from torch_geometric.data import Data, Dataset as PyGDataset
 from torch_geometric.loader import DataLoader as PyGDataLoader
 
-from util.config import TIME_RESOLUTION
+from src.eddie_antartica.sea_ice.model.gnn.util.config import TIME_RESOLUTION
 
 
 # The project's own `data/` folder — computed RELATIVE to this file (no hardcoded
