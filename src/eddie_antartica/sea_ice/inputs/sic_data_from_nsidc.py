@@ -69,7 +69,7 @@ def _http_listing(url: str) -> List[str]:
 
 def download_nsidc_cdr(start: datetime.date, end: datetime.date, out_dir: Path) -> List[Path]:
     """
-    Download the daily files dated within ``[start, end]``.
+    Download the daily files dated within ``[start, end]``, skipping any already in ``out_dir``.
 
     Parameters
     ----------
@@ -78,12 +78,12 @@ def download_nsidc_cdr(start: datetime.date, end: datetime.date, out_dir: Path) 
     end : datetime.date
         Last day, inclusive.
     out_dir : pathlib.Path
-        Where to write them. Created if missing.
+        Where to keep them. Created if missing.
 
     Returns
     -------
     List[pathlib.Path]
-        The downloaded files, sorted by name (so by date).
+        The files for those days, kept or downloaded, sorted by name (so by date).
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     start, end = pd.Timestamp(start), pd.Timestamp(end)
@@ -93,7 +93,10 @@ def download_nsidc_cdr(start: datetime.date, end: datetime.date, out_dir: Path) 
         for name in _http_listing(year_url):
             match = re.search(r"_(\d{8})_", name)
             if name.endswith(".nc") and match and start <= pd.to_datetime(match.group(1), format="%Y%m%d") <= end:
-                urllib.request.urlretrieve(year_url + name, out_dir / name)
+                if not (out_dir / name).exists():
+                    # Fetch to .part, then rename: an interrupted download never passes for a kept file.
+                    urllib.request.urlretrieve(year_url + name, out_dir / f"{name}.part")
+                    (out_dir / f"{name}.part").replace(out_dir / name)
                 got.append(out_dir / name)
     log.info("%d NSIDC CDR file(s) for %s..%s", len(got), start.date(), end.date())
     return sorted(got)
@@ -120,6 +123,7 @@ def nsidc_file_to_points(path: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray
     with xr.open_dataset(path) as ds:
         sic = ds[NSIDC_CDR_VAR].isel(time=0).values.astype("float64")
         sic = np.where(np.isnan(sic), 0.0, sic)
+        sic = np.where(sic > 1.0, 0.0, sic)  # coast / land flags (2.53, 2.54) are no ice, as in prep_utils
         transformer = pyproj.Transformer.from_crs(ds["crs"].attrs.get("proj4text", "EPSG:3412"), "EPSG:4326",
                                                   always_xy=True)
         lon, lat = transformer.transform(*np.meshgrid(ds["x"].values, ds["y"].values))
@@ -195,7 +199,7 @@ def daily_sic(start: datetime.date, end: datetime.date, raw_dir: Path) -> xr.Dat
     end : datetime.date
         Last day, inclusive.
     raw_dir : pathlib.Path
-        Scratch directory for the raw files.
+        Where the raw files are kept, reused across runs.
 
     Returns
     -------

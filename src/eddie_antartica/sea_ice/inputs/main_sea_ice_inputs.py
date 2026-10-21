@@ -16,41 +16,33 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Build the sea ice model's weekly inputs from live NSIDC + ERA5: one CF NetCDF via ``sic_to_nc.to_cf_netcdf``.
+Build the sea ice model's live inputs from NSIDC + ERA5, laid out as the scientists' ``final_1_degree/``.
 
-Ported from the sea ice model's ``dataprocessor`` notebook 3, with one change: the model only
-ever sees weekly means (it ran ``coarsen(time=7)`` on the daily feed), so the weekly mean is
-taken here and nothing daily is stored. **Whatever feeds the model must therefore skip its own
-``coarsen(time=7)``**: coarsening weekly data again silently produces 7-week means.
+Ported from the sea ice model's ``dataprocessor`` notebook 3. The model's own
+``util.data_loader.prepare_live_window`` reads that folder unchanged -- one daily ``<variable>.nc``
+per variable, latitude ascending, longitude 0..359 -- and does the weekly mean itself, exactly as in
+training. So nothing here averages to weeks; it only trims to whole weeks.
 
-A week is labelled by its **last day**, so ``sic_to_nc.forecast_to_nc`` (last input ``time`` +
-7 days) labels forecast weeks by their last day too.
-
-``to_cf_netcdf`` stores latitude north first and longitude -180..179. The model's nodes are
-latitude ascending, longitude 0..359. Re-sort before reshaping to nodes, and pass that same
-dataset to ``forecast_to_nc``; a wrong order mirrors the map with no error::
-
-    model_input = inputs.assign_coords(lon=inputs.lon % 360).sortby("lon").sortby("lat")
+The folder is named for its last day, and ``sic_to_nc.forecast_to_nc`` dates week 1 from that day
+plus 7, so forecast weeks are labelled by their last day too.
 """
 import datetime
 import logging
 from pathlib import Path
-import tempfile
 from typing import Optional
 
 import numpy as np
 import xarray as xr
 
 from src.eddie_antartica.sea_ice.inputs import sic_data_from_era5, sic_data_from_nsidc
-from src.eddie_antartica.sea_ice.model.sic_to_nc import to_cf_netcdf
 
 log = logging.getLogger(__name__)
 
-#: ERA5T trails real time by about five days; the NRT CDR by one to two.
-ERA5_LATENCY_DAYS = 5
+#: ERA5T trails real time by about five days, padded a day; the NRT CDR by one to two. As dataprocessor config.py.
+ERA5_LATENCY_DAYS = 6
 NSIDC_LATENCY_DAYS = 2
-# ponytail: dataprocessor config.py not shared; 35 days leaves a week of slack over the 4 weeks the model needs.
-LIVE_WINDOW_DAYS = 35
+#: About six weeks, so four clean weeks survive latency, NRT gaps and the week trim. As dataprocessor config.py.
+LIVE_WINDOW_DAYS = 42
 #: The model forecasts from the last four weeks.
 MIN_WEEKS = 4
 OUTPUT_VARS = ["sea_ice_concentration", *sic_data_from_era5.ERA5_VARS, "sic_climatology", "sic_anomaly"]
@@ -90,12 +82,12 @@ def add_climatology_and_anomaly(ds: xr.Dataset, climatology_file: Path) -> xr.Da
     return ds
 
 
-def to_weekly(ds: xr.Dataset) -> xr.Dataset:
+def whole_weeks(ds: xr.Dataset) -> xr.Dataset:
     """
-    Trim to the most recent whole weeks and take each week's mean, labelled by its last day.
+    Trim daily data to the most recent whole weeks.
 
-    Trimming from the old end matches the model's ``coarsen(time=7)`` on the trimmed daily feed,
-    whatever gaps (Feb 29, a missing NRT or ERA5 day) left the window short.
+    Trimming from the old end lines the weeks up with the last day, whatever gaps (Feb 29, a missing
+    NRT or ERA5 day) left the window short; the model's loader then means each 7 days.
 
     Parameters
     ----------
@@ -105,7 +97,7 @@ def to_weekly(ds: xr.Dataset) -> xr.Dataset:
     Returns
     -------
     xarray.Dataset
-        Weekly means, at least ``MIN_WEEKS`` of them.
+        The last ``7 * n`` days, ``n >= MIN_WEEKS``.
 
     Raises
     ------
@@ -117,20 +109,19 @@ def to_weekly(ds: xr.Dataset) -> xr.Dataset:
     if keep < MIN_WEEKS * 7:
         raise ValueError(f"Only {keep // 7} whole week(s) of overlapping NSIDC/ERA5 days; the model needs "
                          f"{MIN_WEEKS}. Widen LIVE_WINDOW_DAYS or check for gaps in the downloads.")
-    ds = ds.isel(time=slice(n_days - keep, None))
-    return ds.coarsen(time=7).mean().assign_coords(time=ds["time"].values[6::7])
+    return ds.isel(time=slice(n_days - keep, None))
 
 
 def main(out_dir: Path, climatology_file: Path, end: Optional[datetime.date] = None) -> Path:
     """
-    Fetch the live window of NSIDC + ERA5 and write the weekly model inputs.
+    Fetch the live window of NSIDC + ERA5 and write the model's inputs folder.
 
-    Raw downloads go to a temporary directory, deleted on return.
+    Raw downloads are kept in ``out_dir / "raw"``, so reruns and next week's overlapping window reuse them.
 
     Parameters
     ----------
     out_dir : pathlib.Path
-        Where to write the inputs file.
+        Where to write the inputs folder.
     climatology_file : pathlib.Path
         The frozen historical ``sic_climatology.nc``.
     end : Optional[datetime.date]
@@ -139,19 +130,23 @@ def main(out_dir: Path, climatology_file: Path, end: Optional[datetime.date] = N
     Returns
     -------
     pathlib.Path
-        ``out_dir / "sic_inputs_<YYYY-MM-DD of the last week's last day>.nc"``.
+        ``out_dir / "sic_inputs_<YYYY-MM-DD of the last day>"``, one ``<variable>.nc`` per ``OUTPUT_VARS``.
     """
     end = end or datetime.date.today() - datetime.timedelta(days=ERA5_LATENCY_DAYS)
     start = end - datetime.timedelta(days=LIVE_WINDOW_DAYS)
     nsidc_end = max(end, datetime.date.today() - datetime.timedelta(days=NSIDC_LATENCY_DAYS))
-    with tempfile.TemporaryDirectory() as raw:
-        sic = sic_data_from_nsidc.daily_sic(start, nsidc_end, Path(raw))
-        era5 = sic_data_from_era5.daily_era5(start, end, Path(raw))
+    # ponytail: the raw cache is never pruned (a few GB of ERA5 per month); delete old months by hand if space runs low.
+    sic = sic_data_from_nsidc.daily_sic(start, nsidc_end, out_dir / "raw")
+    era5 = sic_data_from_era5.daily_era5(start, end, out_dir / "raw")
     common = np.intersect1d(sic["time"].values, era5["time"].values)
     ds = sic.sel(time=common).to_dataset(name="sea_ice_concentration")
     for name in sic_data_from_era5.ERA5_VARS:
         ds[name] = era5[name].sel(time=common)
     ds = add_climatology_and_anomaly(ds.transpose("time", "lat", "lon"), climatology_file)
-    weekly = to_weekly(ds)[OUTPUT_VARS].astype("float32")
-    log.info("Sea ice inputs: %d weeks ending %s", weekly.sizes["time"], str(weekly["time"].values[-1])[:10])
-    return to_cf_netcdf(weekly, out_dir / f"sic_inputs_{str(weekly['time'].values[-1])[:10]}.nc")
+    days = whole_weeks(ds)[OUTPUT_VARS].astype("float32").sortby("lat").sortby("lon")
+    inputs_dir = out_dir / f"sic_inputs_{str(days['time'].values[-1])[:10]}"
+    inputs_dir.mkdir(parents=True, exist_ok=True)
+    for name in OUTPUT_VARS:
+        days[[name]].to_netcdf(inputs_dir / f"{name}.nc")
+    log.info("Sea ice inputs: %d days ending %s", days.sizes["time"], inputs_dir.name[-10:])
+    return inputs_dir

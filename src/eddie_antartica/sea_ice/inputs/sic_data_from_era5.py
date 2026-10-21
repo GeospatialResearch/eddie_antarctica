@@ -25,6 +25,7 @@ import calendar
 import datetime
 import logging
 from pathlib import Path
+import shutil
 from typing import Iterator, List, Sequence, Tuple
 import zipfile
 
@@ -81,10 +82,10 @@ def _months_between(start: datetime.date, end: datetime.date) -> Iterator[Tuple[
 
 def download_era5(start: datetime.date, end: datetime.date, out_dir: Path) -> List[Path]:
     """
-    Download hourly ERA5 for ``[start, end]``, one CDS request per calendar month.
+    Download hourly ERA5 for ``[start, end]``, one CDS request per calendar month, keeping what it can reuse.
 
-    Unlike the notebook, an existing month file is never reused: last week's file for this
-    month holds only the days available then.
+    A month that ended by ``end`` is fetched whole and kept, so later windows reuse it. The month still
+    running is fetched only up to ``end``; a later, longer fetch of it replaces the shorter one.
 
     Parameters
     ----------
@@ -93,20 +94,25 @@ def download_era5(start: datetime.date, end: datetime.date, out_dir: Path) -> Li
     end : datetime.date
         Last day, inclusive.
     out_dir : pathlib.Path
-        Where to write them. Created if missing.
+        Where to keep them. Created if missing.
 
     Returns
     -------
     List[pathlib.Path]
-        One ``era5_YYYYMM.nc`` per month. The new CDS delivers each as a ZIP despite the name.
+        One ``era5_YYYYMMDD-DD.nc`` (first-last day) per month. The new CDS delivers each as a ZIP despite the name.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     client = cdsapi.Client()
     paths = []
     for year, month in _months_between(start, end):
-        days = [d for d in range(1, calendar.monthrange(year, month)[1] + 1)
-                if start <= datetime.date(year, month, d) <= end]
-        target = out_dir / f"era5_{year}{month:02d}.nc"
+        month_end = datetime.date(year, month, calendar.monthrange(year, month)[1])
+        first = datetime.date(year, month, 1) if month_end <= end else max(start, datetime.date(year, month, 1))
+        last = min(month_end, end)
+        days = list(range(first.day, last.day + 1))
+        target = out_dir / f"era5_{year}{month:02d}{first.day:02d}-{last.day:02d}.nc"
+        paths.append(target)
+        if target.exists():
+            continue
         log.info("Requesting ERA5 %d-%02d days %d..%d", year, month, days[0], days[-1])
         client.retrieve(CDS_DATASET, {
             "product_type": "reanalysis",
@@ -117,8 +123,15 @@ def download_era5(start: datetime.date, end: datetime.date, out_dir: Path) -> Li
             "area": CDS_AREA,
             "grid": CDS_GRID,
             "format": "netcdf",
-        }, str(target))
-        paths.append(target)
+        }, str(target.with_suffix(".part")))
+        # Rename once complete: an interrupted download never passes for a kept file.
+        target.with_suffix(".part").replace(target)
+        # This month's shorter, superseded downloads, and the folders their ZIPs were extracted to.
+        for old in out_dir.glob(f"era5_{year}{month:02d}*"):
+            if old.is_dir() and old != out_dir / target.stem:
+                shutil.rmtree(old)
+            elif old.is_file() and old != target:
+                old.unlink()
     return paths
 
 
@@ -226,7 +239,8 @@ def build_era5_series(files: Sequence[Path]) -> xr.Dataset:
     for path in _inner_files(files):
         with load_era5_raw(path) as ds:
             daily += [era5_to_1deg(ds[[name]]).load() for name in ds.data_vars]
-    return xr.combine_by_coords(daily)
+    # Each CDS month carries its own conversion 'history'; keep the attrs they agree on, drop the rest.
+    return xr.combine_by_coords(daily, combine_attrs="drop_conflicts")
 
 
 def daily_era5(start: datetime.date, end: datetime.date, raw_dir: Path) -> xr.Dataset:
@@ -240,7 +254,7 @@ def daily_era5(start: datetime.date, end: datetime.date, raw_dir: Path) -> xr.Da
     end : datetime.date
         Last day, inclusive.
     raw_dir : pathlib.Path
-        Scratch directory for the raw files.
+        Where the raw files are kept, reused across runs.
 
     Returns
     -------
