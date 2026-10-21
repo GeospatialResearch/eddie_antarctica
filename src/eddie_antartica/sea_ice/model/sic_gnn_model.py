@@ -38,6 +38,10 @@ BUNDLE = "multi_mesh_bundle_K5.npz"
 TRAIN_STATS = "train_stats.npz"
 #: The inputs file whose lat/lon order is the forecast's node order.
 LABEL_FILE = "sea_ice_concentration.nc"
+#: ERA5 land-sea mask in the same inputs folder; a cell is land when at least LAND_FRACTION of it is
+#: (ECMWF's own reading of ``lsm``). The model does not mask land, so the forecast is blanked there.
+LAND_FILE = "land_sea_mask.nc"
+LAND_FRACTION = 0.5
 
 
 def run_sic_model(inputs_dir: pathlib.Path, model_dir: pathlib.Path) -> np.ndarray:
@@ -103,6 +107,7 @@ def main(inputs_dir: pathlib.Path, model_dir: pathlib.Path, out_dir: pathlib.Pat
         ``SIC_MODEL_DIR``.
     out_dir : pathlib.Path
         Where dated forecasts are kept (``FORECAST_NETCDF_DIR``); the chart reads the newest.
+        Land cells (``LAND_FILE``) are left without a value.
 
     Returns
     -------
@@ -115,8 +120,9 @@ def main(inputs_dir: pathlib.Path, model_dir: pathlib.Path, out_dir: pathlib.Pat
         If the forecast does not have one row per cell of the inputs grid.
     """
     forecast = run_sic_model(inputs_dir, model_dir)
-    with xr.open_dataset(inputs_dir / LABEL_FILE) as inputs:
+    with xr.open_dataset(inputs_dir / LABEL_FILE) as inputs, xr.open_dataset(inputs_dir / LAND_FILE) as lsm:
         nodes = inputs.lat.size * inputs.lon.size
         if forecast.ndim != 2 or forecast.shape[0] != nodes:
             raise ValueError(f"Forecast has shape {forecast.shape}, expected ({nodes}, week)")
-        return sic_to_nc.forecast_to_nc(forecast, inputs, out_dir)
+        land = lsm["land_sea_mask"].isel(time=-1, drop=True) >= LAND_FRACTION
+        return sic_to_nc.forecast_to_nc(forecast, inputs, out_dir, land)
