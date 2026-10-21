@@ -24,6 +24,7 @@ import pathlib
 import tempfile
 
 from celery import chain, signals
+from celery.schedules import crontab
 from celery.worker.consumer import Consumer
 import geopandas as gpd
 import pandas as pd
@@ -37,11 +38,21 @@ from src.eddie_antartica.config import EnvVariable
 from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
 from src.eddie_antartica.sea_ice.inputs import main_sea_ice_inputs
 from src.eddie_antartica.sea_ice.model import serve_model, sic_gnn_model, sic_to_nc
-from src.eddie_antartica.sea_ice.model.sic_data_from_nc import point_series
+from src.eddie_antartica.sea_ice.model.sic_data_from_nc import latest_forecast, point_series
 from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import layer_name
 
 setup_logging()
 log = logging.getLogger(__name__)
+
+# Run by the beat embedded in the worker (-B in celery_worker_entrypoint.sh), Monday 03:00 New Zealand time.
+# ERA5T trails real time by about five days, so main_sea_ice_inputs' whole-week trim drops any partial week.
+app.conf.timezone = "Pacific/Auckland"
+app.conf.beat_schedule = {
+    "weekly-sea-ice-forecast": {
+        "task": "src.eddie_antartica.tasks.refresh_sea_ice_forecast",
+        "schedule": crontab(day_of_week="mon", hour=3, minute=0),
+    },
+}
 
 
 @signals.worker_ready.connect
@@ -104,7 +115,9 @@ def refresh_sea_ice_forecast() -> None:
 @app.task(base=OnFailureStateTask)
 def publish_sea_ice_forecast_week(week: int) -> str:
     """
-    Render one week of ``FORECAST_NETCDF_LATEST`` to a GeoTIFF and publish it as that week's GeoServer layer.
+    Render one week of the newest forecast to a GeoTIFF and publish it as that week's GeoServer layer.
+
+    The newest forecast is the latest in ``FORECAST_NETCDF_DIR``, else ``FORECAST_NETCDF_LATEST``.
 
     Parameters
     ----------
@@ -116,7 +129,9 @@ def publish_sea_ice_forecast_week(week: int) -> str:
     str
         The week's date from the forecast's ``time``, ``YYYY-MM-DD``.
     """
-    forecast = EnvVariable.FORECAST_NETCDF_LATEST
+    # ponytail: no guard against a partially written newest .nc; upgrade by having forecast_sea_ice write to a
+    # temporary name and rename it into place.
+    forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
     with xr.open_dataset(forecast) as dataset:
         date = pd.Timestamp(dataset["time"].values[week - 1]).strftime("%Y-%m-%d")
     # add_gtiff_to_geoserver copies the file into GeoServer's data dir, so the GeoTIFF itself is throwaway.
@@ -129,7 +144,7 @@ def publish_sea_ice_forecast_week(week: int) -> str:
 @app.task(base=OnFailureStateTask)
 def sea_ice_forecast_point_series(longitude: float, latitude: float) -> str:
     """
-    Chart ``FORECAST_NETCDF_LATEST`` at a point.
+    Chart the newest forecast at a point: the latest in ``FORECAST_NETCDF_DIR``, else ``FORECAST_NETCDF_LATEST``.
 
     Parameters
     ----------
@@ -143,4 +158,5 @@ def sea_ice_forecast_point_series(longitude: float, latitude: float) -> str:
     str
         The two-column CSV Terria plots: time, then concentration; just the header off the grid.
     """
-    return point_series(longitude, latitude, EnvVariable.FORECAST_NETCDF_LATEST).to_csv(index=False)
+    forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
+    return point_series(longitude, latitude, forecast).to_csv(index=False)
