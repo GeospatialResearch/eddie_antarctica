@@ -162,7 +162,8 @@ def sea_ice_timeseries_netcdf() -> Response:
     Return the sea ice concentration forecast for the clicked point, as CSV, from the NetCDF.
 
     Same data and same two columns as ``/sea-ice-timeseries``, read from the newest weekly
-    NetCDF forecast in ``FORECAST_NETCDF_DIR`` rather than from the GeoTIFF exported for GeoServer (issue #35). Both
+    NetCDF forecast in ``FORECAST_NETCDF_DIR`` (``FORECAST_NETCDF_LATEST`` until there is one)
+    rather than from the GeoTIFF exported for GeoServer (issue #35). Both
     routes exist because ``serve_static_files`` publishes ``.tif`` and skips ``.nc``, so
     the WMS layer stays a GeoTIFF while the chart can read the source file.
     Supported methods: GET
@@ -175,47 +176,17 @@ def sea_ice_timeseries_netcdf() -> Response:
     -------
     Response
         The HTTP Response. Expect OK carrying ``text/csv``; BAD_REQUEST if the
-        GetFeatureInfo parameters are missing or malformed; or SERVICE_UNAVAILABLE if there
-        is no forecast yet or it is unreadable.
+        GetFeatureInfo parameters are missing or malformed; or SERVICE_UNAVAILABLE if the
+        forecast is missing or unreadable.
     """
     try:
         longitude, latitude = point_from_get_feature_info(request.args)
     except (KeyError, ValueError) as request_error:
         return make_response(f"Invalid GetFeatureInfo request: {request_error}", BAD_REQUEST)
-    forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR)
-    if forecast is None:
-        return make_response("No sea ice forecast yet", SERVICE_UNAVAILABLE)
+    # Until the weekly run has written one, chart the hand-copied forecast, as the WPS tasks do.
+    forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
     try:
         series = sic_forecast_point_series(longitude, latitude, forecast)
-    except (OSError, KeyError):
-        app.logger.exception("Failed to read the sea ice forecast NetCDF")
-        return make_response("Forecast NetCDF unavailable", SERVICE_UNAVAILABLE)
-    return Response(series.to_csv(index=False), OK, mimetype="text/csv")
-
-
-@app.route('/sea-ice-timeseries-netcdf-latest')
-def sea_ice_timeseries_netcdf_latest() -> Response:
-    """
-    Return the sea ice concentration forecast for the clicked point, as CSV, from one fixed NetCDF.
-
-    Same as ``/sea-ice-timeseries-netcdf``, but reads the single file at ``FORECAST_NETCDF_LATEST``
-    instead of the newest weekly forecast, so a forecast copied over by hand can be charted before
-    the weekly pipeline has produced one.
-    Supported methods: GET
-
-    Returns
-    -------
-    Response
-        The HTTP Response. Expect OK carrying ``text/csv``; BAD_REQUEST if the
-        GetFeatureInfo parameters are missing or malformed; or SERVICE_UNAVAILABLE if the
-        file is missing or unreadable.
-    """
-    try:
-        longitude, latitude = point_from_get_feature_info(request.args)
-    except (KeyError, ValueError) as request_error:
-        return make_response(f"Invalid GetFeatureInfo request: {request_error}", BAD_REQUEST)
-    try:
-        series = sic_forecast_point_series(longitude, latitude, EnvVariable.FORECAST_NETCDF_LATEST)
     except (OSError, KeyError):
         app.logger.exception("Failed to read the sea ice forecast NetCDF")
         return make_response("Forecast NetCDF unavailable", SERVICE_UNAVAILABLE)
