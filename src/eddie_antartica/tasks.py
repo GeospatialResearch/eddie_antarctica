@@ -129,8 +129,6 @@ def publish_sea_ice_forecast_week(week: int) -> str:
     str
         The week's date from the forecast's ``time``, ``YYYY-MM-DD``.
     """
-    # ponytail: no guard against a partially written newest .nc; upgrade by having forecast_sea_ice write to a
-    # temporary name and rename it into place.
     forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
     with xr.open_dataset(forecast) as dataset:
         date = pd.Timestamp(dataset["time"].values[week - 1]).strftime("%Y-%m-%d")

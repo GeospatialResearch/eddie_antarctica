@@ -243,6 +243,25 @@ def test_land_cells_have_no_forecast(model_dir: Path, tmp_path: Path) -> None:
         assert series.isna().all() == is_land, lon
         assert series.notna().all() != is_land, lon
 
+
+def test_a_forecast_being_written_is_never_the_newest(model_dir: Path, tmp_path: Path,
+                                                      monkeypatch: pytest.MonkeyPatch) -> None:
+    """The chart and WPS pick the newest file by name, so the forecast is written under a temp name and renamed."""
+    out_dir, inputs = tmp_path / "forecasts", inputs_dir(tmp_path)
+    seen_while_writing = []
+    to_netcdf = xr.Dataset.to_netcdf
+
+    def watched_to_netcdf(dataset: xr.Dataset, path: Path, *args: Any, **kwargs: Any) -> None:
+        seen_while_writing.append(sic_data_from_nc.latest_forecast(out_dir))
+        to_netcdf(dataset, path, *args, **kwargs)
+        seen_while_writing.append(sic_data_from_nc.latest_forecast(out_dir))
+
+    monkeypatch.setattr(xr.Dataset, "to_netcdf", watched_to_netcdf)
+    nc_path = sic_gnn_model.main(inputs, model_dir, out_dir)
+
+    assert seen_while_writing == [None, None]
+    assert [p.name for p in out_dir.iterdir()] == [nc_path.name]
+
 def test_missing_checkpoint_says_where(tmp_path: Path) -> None:
     """A wrong SIC_MODEL_DIR fails before torch is touched, naming the path."""
     with pytest.raises(FileNotFoundError, match="nowhere"):

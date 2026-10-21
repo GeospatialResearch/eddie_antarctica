@@ -78,7 +78,11 @@ def to_cf_netcdf(data: Union[xr.DataArray, xr.Dataset], path: pathlib.Path) -> p
     if isinstance(data, xr.DataArray):
         data = data.to_dataset()
     path.parent.mkdir(parents=True, exist_ok=True)
-    data.assign_attrs(Conventions="CF-1.8").to_netcdf(path, engine="netcdf4")
+    # Readers pick the newest forecast by name, so write beside it and rename into place once complete,
+    # as FReDT's bg_flood_model.add_crs_to_model_output does. "_temp" breaks the dated-name glob.
+    temp_file = path.with_name(f"{path.stem}_temp{path.suffix}")
+    data.assign_attrs(Conventions="CF-1.8").to_netcdf(temp_file, engine="netcdf4")
+    temp_file.replace(path)
     return path
 
 
