@@ -35,12 +35,13 @@ sample the wrong place.
 import pathlib
 from typing import Optional, Union
 
+import numpy as np
 import pandas as pd
 from rasterio.crs import CRS
 from rasterio.warp import transform
 import xarray as xr
 
-from src.eddie_antartica.sea_ice.model.sic_data_from_raster import TIME_COLUMN, VALUE_COLUMN, _empty_series
+from src.eddie_antartica.sea_ice.model.sic_data_from_raster import OPEN_WATER, TIME_COLUMN, VALUE_COLUMN, _empty_series
 
 #: TerriaJS asks in degrees, WGS 84.
 CLICK_CRS = CRS.from_epsg(4326)
@@ -110,7 +111,7 @@ def point_series(longitude: float,
         timestamps = pd.DatetimeIndex(cell["time"].values).strftime(TIME_FORMAT)
         values = cell.values.astype("float32")
 
-    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})
+    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: np.where(values < OPEN_WATER, 0, values)})
 
 
 def latest_forecast(directory: pathlib.Path) -> Optional[pathlib.Path]:

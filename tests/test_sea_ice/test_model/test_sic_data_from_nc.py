@@ -188,3 +188,20 @@ def test_newest_forecast_is_the_latest_week_1(tmp_path: Path) -> None:
         (tmp_path / name).touch()
 
     assert sic_data_from_nc.latest_forecast(tmp_path) == tmp_path / "sic_forecast_8w_2024-01-08.nc"
+
+
+def test_ice_the_map_does_not_draw_charts_as_open_water(tmp_path: Path) -> None:
+    """
+    Below 0.01 the map's style draws nothing (``sic_forecast_8w.sld``: "Open water"), so the chart says 0 there too.
+
+    The model's sigmoid never reaches 0, so without this a click on a blank continent charted a faint 0.007 curve.
+    0.01 itself is drawn, so it is charted; a missing value stays a gap.
+    """
+    values = encoded_values()
+    values[:, 0, 0] = [0.009, 0.01, np.nan]
+    netcdf = forecast_nc(tmp_path, values)
+    geotiff = _write_fixture(tmp_path / "forecast.tif", values, TIMES)
+
+    for series in (sic_data_from_nc.point_series(LON0, LAT0, netcdf),
+                   sic_data_from_raster.sic_forecast_series(LON0, LAT0, geotiff)):
+        np.testing.assert_allclose(series[VALUES], [0.0, 0.01, np.nan], rtol=1e-6)

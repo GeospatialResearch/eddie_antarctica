@@ -32,6 +32,6 @@ def test_catalog_item_is_a_charted_wms_layer_for_the_week() -> None:
         "styles": "sic_forecast_8w",
         "supportsGetTimeseries": True,
         "getFeatureInfoUrl": "http://be:5000/sea-ice-forecast-timeseries",
-        "parameters": {"interpolations": "nearest neighbor"},
+        "parameters": {"interpolations": "bilinear"},
     }
 

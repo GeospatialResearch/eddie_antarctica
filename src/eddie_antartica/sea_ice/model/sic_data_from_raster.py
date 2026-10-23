@@ -33,6 +33,8 @@ import rasterio as rio
 
 TIME_COLUMN = "Time (UTC)"
 VALUE_COLUMN = "Sea ice concentration (fraction)"
+#: Below this the map's style draws nothing ("Open water" in ``sic_forecast_8w.sld``), so the chart reads 0 too.
+OPEN_WATER = 0.01
 
 TIME_TAG = "TIME"
 
@@ -115,4 +117,4 @@ def sic_forecast_series(longitude: float,
     if nodata is not None and not np.isnan(nodata):
         values = np.where(values == nodata, np.nan, values)
 
-    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})
+    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: np.where(values < OPEN_WATER, 0, values)})
