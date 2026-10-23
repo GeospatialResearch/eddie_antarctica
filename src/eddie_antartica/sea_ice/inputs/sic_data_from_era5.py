@@ -38,7 +38,6 @@ from src.eddie_antartica.sea_ice.model.sic_to_nc import MODEL_LAT, MODEL_LON
 log = logging.getLogger(__name__)
 
 CDS_DATASET = "reanalysis-era5-single-levels"
-# ponytail: area inferred (dataprocessor config.py not shared); confirm. [North, West, South, East].
 CDS_AREA = [-40, -180, -90, 180]
 CDS_GRID = [0.25, 0.25]
 #: CDS short name -> the long name the model's variables use.

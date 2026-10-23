@@ -39,7 +39,6 @@ from src.eddie_antartica.sea_ice.model.sic_to_nc import MODEL_LAT, MODEL_LON
 
 log = logging.getLogger(__name__)
 
-# ponytail: base URL inferred from the product (dataprocessor config.py not shared); confirm on first run.
 #: Daily south-polar files live under ``<base><YYYY>/sic_pss25_YYYYMMDD_<platform>_icdr_v04r00.nc``.
 NSIDC_CDR_BASE_URL = "https://noaadata.apps.nsidc.org/NOAA/G10016_V4/south/daily/"
 NSIDC_CDR_VAR = "cdr_seaice_conc"

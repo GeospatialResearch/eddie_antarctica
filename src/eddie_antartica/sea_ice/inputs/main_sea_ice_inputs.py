@@ -135,7 +135,6 @@ def main(out_dir: Path, climatology_file: Path, end: Optional[datetime.date] = N
     end = end or datetime.date.today() - datetime.timedelta(days=ERA5_LATENCY_DAYS)
     start = end - datetime.timedelta(days=LIVE_WINDOW_DAYS)
     nsidc_end = max(end, datetime.date.today() - datetime.timedelta(days=NSIDC_LATENCY_DAYS))
-    # ponytail: the raw cache is never pruned (a few GB of ERA5 per month); delete old months by hand if space runs low.
     sic = sic_data_from_nsidc.daily_sic(start, nsidc_end, out_dir / "raw")
     era5 = sic_data_from_era5.daily_era5(start, end, out_dir / "raw")
     common = np.intersect1d(sic["time"].values, era5["time"].values)

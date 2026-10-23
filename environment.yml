@@ -61,7 +61,6 @@ dependencies:
       - git+https://github.com/GeospatialResearch/OWSLib.git
       - pywps==4.7.0 # pywps is available in conda but our fork of OWSLib is required for bounding boxes
       - # The sea ice model (model.sic_gnn_model), pinned to SIC_GNN_DT working versions.
-      - # ponytail: from PyPI, not conda-forge -- versions verified there; the CPU index keeps the image ~2 GB lighter.
       - --extra-index-url https://download.pytorch.org/whl/cpu
       - torch==2.14.1+cpu
       - torch_geometric==2.8.0.post1

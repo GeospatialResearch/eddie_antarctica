@@ -114,7 +114,6 @@ def forecast_to_nc(forecast: np.ndarray, inputs: xr.Dataset, out_dir: pathlib.Pa
     """
     n_weeks = forecast.shape[1]
     times = pd.date_range(pd.Timestamp(inputs.time.values[-1]) + FORECAST_STEP, periods=n_weeks, freq=FORECAST_STEP)
-    # ponytail: labels are SW corners, published as-is (~0.375 deg SW of true centre); upgrade = demo e97706e offset.
     sic = xr.DataArray(
         forecast.T.reshape(n_weeks, inputs.lat.size, inputs.lon.size).astype("float32"),
         dims=("time", "lat", "lon"),
