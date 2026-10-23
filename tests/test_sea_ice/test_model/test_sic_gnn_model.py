@@ -233,15 +233,15 @@ def test_forecast_is_dated_and_charts_the_node_the_model_returned(model_dir: Pat
 
 
 
-def test_land_cells_have_no_forecast(model_dir: Path, tmp_path: Path) -> None:
-    """Cells the ERA5 land-sea mask calls land (half or more) are blank on the map and in the chart; sea keeps values."""
-    land = {(-42, 170): 1.0, (-42, 171): 0.5, (-42, 172): 0.4}
+def test_land_cells_keep_the_models_forecast(model_dir: Path, tmp_path: Path) -> None:
+    """The scientists' model does not mask land and neither does the forecast file: land cells chart the model's value."""
+    land = {(-42, 170): 1.0, (-42, 171): 0.9, (-42, 172): 0.5}
     nc_path = sic_gnn_model.main(inputs_dir(tmp_path, land), model_dir, tmp_path / "forecasts")
 
-    for lon, is_land in ((170, True), (171, True), (172, False), (173, False)):
-        series = sic_data_from_nc.point_series(float(lon), -42.0, nc_path).iloc[:, 1]
-        assert series.isna().all() == is_land, lon
-        assert series.notna().all() != is_land, lon
+    for lon in (170, 171, 172, 173):
+        expected = (2 * 360 + lon) * 1e-4 + np.arange(8) * 0.1
+        np.testing.assert_allclose(sic_data_from_nc.point_series(float(lon), -42.0, nc_path).iloc[:, 1], expected,
+                                   rtol=1e-6, err_msg=str(lon))
 
 
 def test_a_forecast_being_written_is_never_the_newest(model_dir: Path, tmp_path: Path,

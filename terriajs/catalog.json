@@ -95,7 +95,7 @@
           "supportsGetTimeseries": true,
           "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-timeseries-netcdf",
           "parameters": {
-            "interpolations": "bilinear"
+            "interpolations": "nearest neighbor"
           }
         },
         {
@@ -189,7 +189,7 @@
                 "layers": "sic_forecast_week1",
                 "styles": "sic_forecast_8w",
                 "parameters": {
-                  "interpolations": "bilinear"
+                  "interpolations": "nearest neighbor"
                 },
                 "supportsGetTimeseries": true,
                 "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-forecast-timeseries",
@@ -207,7 +207,7 @@
                 "layers": "sic_forecast_week8",
                 "styles": "sic_forecast_8w",
                 "parameters": {
-                  "interpolations": "bilinear"
+                  "interpolations": "nearest neighbor"
                 },
                 "supportsGetTimeseries": true,
                 "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-forecast-timeseries",
@@ -262,7 +262,7 @@
                       "Title": "Sea ice concentration forecast",
                       "Abstract": "",
                       "Data": {
-                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 1\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week1\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"bilinear\"}}"
+                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 1\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week1\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"nearest neighbor\"}}"
                       }
                     }
                   },
@@ -329,7 +329,7 @@
                       "Title": "Sea ice concentration forecast",
                       "Abstract": "",
                       "Data": {
-                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 8\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week8\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"bilinear\"}}"
+                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 8\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week8\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"nearest neighbor\"}}"
                       }
                     }
                   },
@@ -470,7 +470,7 @@
                       "Title": "Sea ice concentration forecast",
                       "Abstract": "",
                       "Data": {
-                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 1\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week1\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"bilinear\"}}"
+                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 1\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week1\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"nearest neighbor\"}}"
                       }
                     }
                   },
@@ -500,7 +500,7 @@
                 "layers": "sic_forecast_week1",
                 "styles": "sic_forecast_8w",
                 "parameters": {
-                  "interpolations": "bilinear"
+                  "interpolations": "nearest neighbor"
                 },
                 "supportsGetTimeseries": true,
                 "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-forecast-timeseries",
@@ -552,7 +552,7 @@
                       "Title": "Sea ice concentration forecast",
                       "Abstract": "",
                       "Data": {
-                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 8\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week8\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"bilinear\"}}"
+                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 8\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week8\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"nearest neighbor\"}}"
                       }
                     }
                   },
@@ -582,7 +582,7 @@
                 "layers": "sic_forecast_week8",
                 "styles": "sic_forecast_8w",
                 "parameters": {
-                  "interpolations": "bilinear"
+                  "interpolations": "nearest neighbor"
                 },
                 "supportsGetTimeseries": true,
                 "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-forecast-timeseries",
@@ -685,7 +685,7 @@
                 "layers": "sic_forecast_week1",
                 "styles": "sic_forecast_8w",
                 "parameters": {
-                  "interpolations": "bilinear"
+                  "interpolations": "nearest neighbor"
                 },
                 "supportsGetTimeseries": true,
                 "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-forecast-timeseries",
@@ -703,7 +703,7 @@
                 "layers": "sic_forecast_week8",
                 "styles": "sic_forecast_8w",
                 "parameters": {
-                  "interpolations": "bilinear"
+                  "interpolations": "nearest neighbor"
                 },
                 "supportsGetTimeseries": true,
                 "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-forecast-timeseries",
@@ -773,7 +773,7 @@
                       "Title": "Sea ice concentration forecast",
                       "Abstract": "",
                       "Data": {
-                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 1\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week1\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"bilinear\"}}"
+                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 1\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week1\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"nearest neighbor\"}}"
                       }
                     }
                   },
@@ -840,7 +840,7 @@
                       "Title": "Sea ice concentration forecast",
                       "Abstract": "",
                       "Data": {
-                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 8\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week8\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"bilinear\"}}"
+                        "ComplexData": "{\"type\": \"wms\", \"name\": \"Sea ice concentration -- week 8\", \"url\": \"$GEOSERVER_URL/geoserver/static_files/wms\", \"layers\": \"sic_forecast_week8\", \"styles\": \"sic_forecast_8w\", \"supportsGetTimeseries\": true, \"getFeatureInfoUrl\": \"$BACKEND_URL/sea-ice-forecast-timeseries\", \"parameters\": {\"interpolations\": \"nearest neighbor\"}}"
                       }
                     }
                   },

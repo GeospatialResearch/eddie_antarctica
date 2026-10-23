@@ -58,5 +58,5 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str) -> 
         "styles": STYLE,
         "supportsGetTimeseries": True,
         "getFeatureInfoUrl": f"{backend_url}{TIMESERIES_ROUTE}",
-        "parameters": {"interpolations": "bilinear"},
+        "parameters": {"interpolations": "nearest neighbor"},
     })

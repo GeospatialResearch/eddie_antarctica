@@ -27,7 +27,7 @@ Follows FReDT-Smart-Ideas: ``rio.set_spatial_dims`` + ``rio.write_crs`` + ``to_n
 the preprocessed NSIDC/ERA5 inputs alike. ``rioxarray`` comes in with ``geocube``.
 """
 import pathlib
-from typing import Optional, Union
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -86,8 +86,7 @@ def to_cf_netcdf(data: Union[xr.DataArray, xr.Dataset], path: pathlib.Path) -> p
     return path
 
 
-def forecast_to_nc(forecast: np.ndarray, inputs: xr.Dataset, out_dir: pathlib.Path,
-                   land: Optional[xr.DataArray] = None) -> pathlib.Path:
+def forecast_to_nc(forecast: np.ndarray, inputs: xr.Dataset, out_dir: pathlib.Path) -> pathlib.Path:
     """
     Write the model's forecast as ``sic(time, lat, lon)``, dated from the data it was run on.
 
@@ -102,8 +101,6 @@ def forecast_to_nc(forecast: np.ndarray, inputs: xr.Dataset, out_dir: pathlib.Pa
         follows on from.
     out_dir : pathlib.Path
         Directory to write into.
-    land : Optional[xarray.DataArray]
-        ``True`` on ``(lat, lon)`` cells that are land; those get no value. None keeps every cell.
 
     Returns
     -------
@@ -126,8 +123,6 @@ def forecast_to_nc(forecast: np.ndarray, inputs: xr.Dataset, out_dir: pathlib.Pa
         attrs={"long_name": "Sea ice concentration", "standard_name": "sea_ice_area_fraction", "units": "1"},
     )
     sic = sic.where(sic <= FLAG_THRESHOLD)
-    if land is not None:
-        sic = sic.where(~land)
     return to_cf_netcdf(sic, out_dir / f"sic_forecast_{n_weeks}w_{times[0]:%Y-%m-%d}.nc")
 
 
