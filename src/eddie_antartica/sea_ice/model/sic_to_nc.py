@@ -47,6 +47,12 @@ FORECAST_STEP = pd.Timedelta(weeks=1)
 MODEL_LAT = np.arange(-90, -40, dtype="float64")
 MODEL_LON = np.arange(0, 360, dtype="float64")
 
+#: Degrees from a model label to its cell's centre, north and east. The scientists' prep (``COARSEN_FACTOR = 4``,
+#: ``LAT = np.arange(-90, -40, 1)``, ``LON = np.arange(0, 360, 1)``) block-averages the 0.25-degree points at
+#: label +0, +0.25, +0.5, +0.75 and snaps the mean onto the label, so the 1-degree cell spans label -0.125 .. +0.875.
+#: Only the forecast file's coordinates move; the inputs and the model keep the scientists' labels.
+CELL_CENTRE_OFFSET = 0.375
+
 
 def to_cf_netcdf(data: Union[xr.DataArray, xr.Dataset], path: pathlib.Path) -> pathlib.Path:
     """
@@ -97,7 +103,7 @@ def forecast_to_nc(forecast: np.ndarray, inputs: xr.Dataset, out_dir: pathlib.Pa
     inputs : xarray.Dataset
         The dataset the model was run on, as it was fed to the model. Its ``lat``/``lon``
         order defines the node order, and its last ``time`` is the week the forecast
-        follows on from.
+        follows on from. Its labels are cell SW corners; the file gets the cell centres.
     out_dir : pathlib.Path
         Directory to write into.
 
@@ -116,7 +122,8 @@ def forecast_to_nc(forecast: np.ndarray, inputs: xr.Dataset, out_dir: pathlib.Pa
     sic = xr.DataArray(
         forecast.T.reshape(n_weeks, inputs.lat.size, inputs.lon.size).astype("float32"),
         dims=("time", "lat", "lon"),
-        coords={"time": times, "lat": inputs.lat.values, "lon": inputs.lon.values},
+        coords={"time": times, "lat": inputs.lat.values + CELL_CENTRE_OFFSET,
+                "lon": inputs.lon.values + CELL_CENTRE_OFFSET},
         name=VARIABLE,
         attrs={"long_name": "Sea ice concentration", "standard_name": "sea_ice_area_fraction", "units": "1"},
     )

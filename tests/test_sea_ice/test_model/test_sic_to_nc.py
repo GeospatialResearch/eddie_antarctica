@@ -101,10 +101,22 @@ def test_chart_returns_the_model_values_for_the_clicked_cell(tmp_path: Path) -> 
                               ((-10.0, -43.0), (350, -43.0)),
                               ((350.0, -43.0), (350, -43.0)),
                               ((-180.0, -42.0), (180, -42.0)),
-                              ((179.8, -42.0), (180, -42.0))):
+                              ((179.8, -42.0), (179, -42.0)),
+                              ((179.9, -42.0), (180, -42.0)),
+                              # Inside label (10, -41)'s cell only because labels are SW corners.
+                              ((10.8, -40.3), (10, -41.0))):
         series = sic_data_from_nc.point_series(*click, path)
         expected = encoded_forecast()[node(*model_cell)].astype("float32")
         np.testing.assert_array_equal(series.iloc[:, 1].to_numpy(), expected, err_msg=str(click))
+
+
+def test_cells_are_centred_north_east_of_their_model_labels(tmp_path: Path) -> None:
+    """A label is the SW corner of its 4 x 4 block of 0.25-degree points, so the cell centre is 0.375 NE of it."""
+    path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
+
+    with xr.open_dataset(path) as dataset:
+        np.testing.assert_array_equal(np.sort(dataset.lat), LATITUDES + 0.375)
+        np.testing.assert_array_equal(np.sort(dataset.lon % 360), LONGITUDES + 0.375)
 
 
 def test_land_and_pole_hole_flags_become_missing(tmp_path: Path) -> None:
@@ -126,8 +138,10 @@ def test_geotiff_is_the_last_week_with_the_antimeridian_column_repeated(tmp_path
         assert raster.crs.to_epsg() == 4326
         assert (raster.width, raster.height) == (361, 3)
         assert np.isnan(raster.nodata)                   # flags and land render transparent
-        pixels = [value[0] for value in raster.sample([(10.0, -41.0), (-180.0, -42.0), (179.8, -42.0)])]
-    assert pixels == [week8[node(10, -41.0)], week8[node(180, -42.0)], week8[node(180, -42.0)]]
+        pixels = [value[0] for value in raster.sample([(10.0, -41.0), (-180.0, -42.0), (179.8, -42.0),
+                                                       (179.95, -42.0)])]
+    assert pixels == [week8[node(10, -41.0)], week8[node(180, -42.0)], week8[node(179, -42.0)],
+                      week8[node(180, -42.0)]]
 
 
 def test_inputs_in_either_longitude_convention_write_the_same_grid(tmp_path: Path) -> None:
@@ -166,6 +180,6 @@ def test_geotiff_from_a_native_order_file_is_north_up_on_minus_180_to_180(tmp_pa
     week8 = encoded_forecast()[:, -1].astype("float32")
     with rio.open(tif_path) as raster:
         assert raster.transform.e < 0                                      # north up
-        assert raster.bounds.left == -180.5                                 # the -180 column, centred on its label
+        assert raster.bounds.left == -180.125                               # the label-180 cell, centred 0.375 NE of it
         pixels = [value[0] for value in raster.sample([(10.0, -41.0), (-10.0, -43.0)])]
     assert pixels == [week8[node(10, -41.0)], week8[node(350, -43.0)]]
