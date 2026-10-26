@@ -16,6 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Tests for the sea ice forecast WPS process's catalog member."""
 import json
+from pathlib import Path
+
+import pandas as pd
+import xarray as xr
 
 from src.eddie_antartica.sea_ice import sea_ice_forecast_layer
 
@@ -35,3 +39,11 @@ def test_catalog_item_is_a_charted_wms_layer_for_the_week() -> None:
         "parameters": {"interpolations": "bilinear"},
     }
 
+
+def test_week_date_is_read_from_the_forecast(tmp_path: Path) -> None:
+    """Run Analysis titles the week's layer with that week's date from the newest forecast, without drawing it."""
+    path = tmp_path / "sic_forecast_8w_2026-10-26.nc"
+    xr.Dataset(coords={"time": pd.date_range("2026-10-26", periods=8, freq="7D")}).to_netcdf(path)
+
+    assert sea_ice_forecast_layer.week_date(path, 1) == "2026-10-26"
+    assert sea_ice_forecast_layer.week_date(path, 8) == "2026-12-14"
