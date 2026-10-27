@@ -79,6 +79,8 @@ services:
       # Bind host data directories to container, allowing different instances to share data sources.
       - antarctic_stored_data:/stored_data
       - antarctic_geoserver_data:/stored_data/geoserver
+      # The sea ice model's files, dropped into ./sic_model by hand (see README). Read-only.
+      - ./sic_model:/stored_data/sic_model:ro
     ports:
       - "5001:5001"
     healthcheck:

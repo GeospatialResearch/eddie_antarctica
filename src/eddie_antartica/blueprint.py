@@ -1,20 +1,18 @@
 """Endpoints and flask configuration for this template example app"""
-from http.client import BAD_REQUEST, OK
 import os
 import pathlib
-
+from http.client import BAD_REQUEST, OK
+from eddie.check_celery_alive import check_celery_alive
 from flask import Blueprint, Response, make_response, request
 
-from eddie.check_celery_alive import check_celery_alive
+from src.eddie_antartica import tasks
+from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import TIMESERIES_ROUTE
+from src.eddie_antartica.sea_ice.sea_ice_forecast_process_service import SeaIceForecastProcessService
+from src.eddie_antartica.wms_point import point_from_get_feature_info
 
 os.environ.pop("Path", None)
 # See issue https://github.com/GeospatialResearch/eddie_floodresilience/issues/1 for reason behind disabled QA
-from src.eddie_antartica import tasks  # pylint: disable=wrong-import-position # noqa: E402
-from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import (  # pylint: disable=wrong-import-position # noqa: E402,E501
-    TIMESERIES_ROUTE)
-from src.eddie_antartica.sea_ice.sea_ice_forecast_process_service import (  # pylint: disable=wrong-import-position # noqa: E402,E501
-    SeaIceForecastProcessService)
-from src.eddie_antartica.wms_point import point_from_get_feature_info  # pylint: disable=wrong-import-position # noqa: E402,E501
+
 from pywps import Service  # pylint: disable=wrong-import-position,wrong-import-order # noqa: E402
 
 blueprint = Blueprint('eddie_antartica', __name__)
