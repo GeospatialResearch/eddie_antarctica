@@ -226,7 +226,8 @@ def test_forecast_is_dated_and_charts_the_node_the_model_returned(model_dir: Pat
 
     assert nc_path.name == "sic_forecast_8w_2024-01-07.nc"
     for click, (lon, lat) in (((170.0, -41.0), (170, -41)), ((-150.0, -43.0), (210, -43)),
-                              ((0.0, -42.0), (0, -42)), ((179.8, -42.0), (180, -42))):
+                              ((0.0, -42.0), (0, -42)), ((179.8, -42.0), (179, -42)),
+                              ((179.9, -42.0), (180, -42))):
         expected = ((lat + 44) * 360 + lon) * 1e-4 + np.arange(8) * 0.1
         np.testing.assert_allclose(sic_data_from_nc.point_series(*click, nc_path).iloc[:, 1], expected,
                                    rtol=1e-6, err_msg=str(click))
