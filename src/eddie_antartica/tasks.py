@@ -107,7 +107,6 @@ def refresh_sea_ice_forecast() -> None:
     chain(preprocess_sea_ice_inputs.s(), forecast_sea_ice.s()).delay()
 
 
-
 @app.task(base=OnFailureStateTask)
 def sea_ice_forecast_point_series(longitude: float, latitude: float) -> str:
     """
