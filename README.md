@@ -60,6 +60,38 @@ Create API keys for each of these services. You may need to create an account an
 
 1. You may inspect the logs of the backend using `docker compose logs -f backend celery_worker`
 
+### Setting up the sea ice forecast
+
+The sea ice forecast runs in the Celery worker. It needs a Copernicus key and the model's files, neither of
+which is in this repository.
+
+1. Create a [Copernicus Climate Data Store](https://cds.climate.copernicus.eu/) account, accept the licence on the
+   [ERA5 hourly data on single levels](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels)
+   dataset page, then uncomment `CDSAPI_URL` and `CDSAPI_KEY` in `api_keys.env` and fill in your API key. Sea ice
+   concentration comes from NSIDC and needs no key.
+
+1. Get these four files from the reference code (the sea ice model's source) and put them in a folder named
+   `sic_model` next to `docker-compose.yml`. They are the only files you add by hand; the weekly inputs and forecasts
+   are downloaded and written by the worker.
+   * `SIC_production_checkpoint.pt`, `multi_mesh_bundle_K5.npz` and `train_stats.npz`
+   * `sic_climatology.nc`, from the reference code's `data/historical/`
+
+   The worker reads this folder directly (read-only), so files added or replaced there are used on the next run.
+
+1. The worker runs the forecast every Monday at 03:00 New Zealand time. To run it now instead of waiting:
+   ```bash
+   docker compose exec celery_worker /venv/bin/celery -A src.eddie_antartica.tasks call src.eddie_antartica.tasks.refresh_sea_ice_forecast
+   docker compose logs -f celery_worker
+   ```
+   This downloads the last six weeks of inputs to `/stored_data/sea_ice_inputs`, writes the forecast to
+   `/stored_data/sea_ice_forecasts/sic_forecast_8w_<first week>.nc` and publishes it to GeoServer as `sic_forecast_8w`.
+
+   The "Sea ice concentration forecast" process in Terria and its point chart read the newest file in
+   `sea_ice_forecasts`, falling back to `FORECAST_NETCDF_LATEST` until the first forecast is written.
+
+The in-container paths are already set in `.env.docker-override`. The matching values in `.env` are only used when
+running the code outside Docker.
+
 ## Using the Digital Twin application
 
 1. With the docker compose application running, the default web address is <http://localhost:3001> to view the web

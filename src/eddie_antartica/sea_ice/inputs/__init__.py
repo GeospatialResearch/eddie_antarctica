@@ -16,4 +16,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""Sea ice model inputs: fetch NSIDC + ERA5 and build the weekly inputs (FReDT dynamic_boundary_conditions/)."""
+"""Sea ice model inputs: fetch NSIDC + ERA5 and build the weekly inputs."""

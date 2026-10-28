@@ -142,3 +142,6 @@ dmypy.json
 # Allow synthetic test fixtures
 !tests/*/data/*.tif
 !tests/*/data/*.nc
+
+# Sea ice model files, mounted into the worker (see README)
+sic_model/

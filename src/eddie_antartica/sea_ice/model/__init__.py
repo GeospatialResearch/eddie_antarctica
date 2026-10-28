@@ -16,4 +16,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""Sea ice concentration model: run it, write and publish its forecast, serve the chart (FReDT flood_model/)."""
+"""Sea ice concentration model: run it, write and publish its forecast, serve the chart."""

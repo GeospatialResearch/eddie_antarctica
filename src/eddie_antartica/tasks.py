@@ -21,20 +21,25 @@ Allows the frontend to send tasks and retrieve status later.
 """
 import logging
 import pathlib
+import tempfile
 
 from celery import chain, signals
 from celery.schedules import crontab
 from celery.worker.consumer import Consumer
 import geopandas as gpd
+import pandas as pd
+import xarray as xr
 
+from eddie import geoserver
 from eddie.digitaltwin import retrieve_from_instructions
 from eddie.digitaltwin.utils import setup_logging
 from eddie.tasks import OnFailureStateTask, app
 from src.eddie_antartica.config import EnvVariable
 from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
 from src.eddie_antartica.sea_ice.inputs import main_sea_ice_inputs
-from src.eddie_antartica.sea_ice.model import serve_model, sic_gnn_model
+from src.eddie_antartica.sea_ice.model import serve_model, sic_gnn_model, sic_to_nc
 from src.eddie_antartica.sea_ice.model.sic_data_from_nc import latest_forecast, point_series
+from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import layer_name
 
 setup_logging()
 log = logging.getLogger(__name__)
@@ -105,6 +110,33 @@ def forecast_sea_ice(inputs_path: str) -> str:
 def refresh_sea_ice_forecast() -> None:
     """Fetch this week's inputs, then forecast from them. Beat schedules one task, so this one builds the chain."""
     chain(preprocess_sea_ice_inputs.s(), forecast_sea_ice.s()).delay()
+
+
+@app.task(base=OnFailureStateTask)
+def publish_sea_ice_forecast_week(week: int) -> str:
+    """
+    Render one week of the newest forecast to a GeoTIFF and publish it as that week's GeoServer layer.
+
+    The newest forecast is the latest in ``FORECAST_NETCDF_DIR``, else ``FORECAST_NETCDF_LATEST``.
+
+    Parameters
+    ----------
+    week : int
+        Forecast week, 1-based.
+
+    Returns
+    -------
+    str
+        The week's date from the forecast's ``time``, ``YYYY-MM-DD``.
+    """
+    forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
+    with xr.open_dataset(forecast) as dataset:
+        date = pd.Timestamp(dataset["time"].values[week - 1]).strftime("%Y-%m-%d")
+    # add_gtiff_to_geoserver copies the file into GeoServer's data dir, so the GeoTIFF itself is throwaway.
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        gtiff = sic_to_nc.nc_to_gtiff(forecast, pathlib.Path(tmp_dir) / f"{layer_name(week)}.tif", week - 1)
+        geoserver.add_gtiff_to_geoserver(gtiff, geoserver.Workspaces.STATIC_FILES_WORKSPACE, layer_name(week))
+    return date
 
 
 @app.task(base=OnFailureStateTask)

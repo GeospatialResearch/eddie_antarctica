@@ -19,8 +19,7 @@
 """
 Run the sea ice model on the live inputs and write its forecast: steps 2-3 of the weekly pipeline.
 
-The FReDT ``flood_model/bg_flood_model.py`` of this app. The model's code is the scientists'
-``SIC_GNN_DT/Code`` (``util/``, ``models/``) copied into ``model/gnn/``; its checkpoint, mesh
+The model's code is the reference code (``util/``, ``models/``) copied into ``model/gnn/``; its checkpoint, mesh
 bundle and training stats are data, in ``SIC_MODEL_DIR``. It runs in this process exactly as
 ``live_forecast.ipynb`` runs it. Publishing the result is ``serve_model``'s job.
 """

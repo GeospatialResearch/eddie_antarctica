@@ -19,9 +19,7 @@
 """
 Publish the sea ice forecast to GeoServer as map layers: step 4 of the weekly pipeline.
 
-The FReDT ``flood_model/serve_model.py`` of this app: the model run publishes its own output, and the WPS process
-only hands Terria a layer that already exists. Unlike FReDT's per-run ``output_<id>`` layers, the layer names never
-change, so ``terriajs/catalog.json``, its stories and ``sic_forecast_8w.sld`` never do either.
+The layer name never changes, so ``terriajs/catalog.json`` and ``sic_forecast_8w.sld`` never do either.
 """
 import pathlib
 import tempfile

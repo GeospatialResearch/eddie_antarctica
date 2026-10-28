@@ -19,9 +19,8 @@
 """
 Write the sea ice forecast, and the data it is run on, as CF NetCDF on one EPSG:4326 grid.
 
-Follows FReDT-Smart-Ideas: ``rio.set_spatial_dims`` + ``rio.write_crs`` + ``to_netcdf``
-(``flood_model_precipitation.py``), and a GeoTIFF derived from the written NetCDF with
-``rio.to_raster`` (``serve_model.convert_nc_to_gtiff``), so the map and the chart read one grid.
+Uses ``rio.set_spatial_dims`` + ``rio.write_crs`` + ``to_netcdf``, and a GeoTIFF derived from the
+written NetCDF with ``rio.to_raster``, so the map and the chart read one grid.
 
 ``to_cf_netcdf`` is the contract for every gridded sea ice file: the forecast written here and
 the preprocessed NSIDC/ERA5 inputs alike. ``rioxarray`` comes in with ``geocube``.
@@ -78,8 +77,8 @@ def to_cf_netcdf(data: Union[xr.DataArray, xr.Dataset], path: pathlib.Path) -> p
     if isinstance(data, xr.DataArray):
         data = data.to_dataset()
     path.parent.mkdir(parents=True, exist_ok=True)
-    # Readers pick the newest forecast by name, so write beside it and rename into place once complete,
-    # as FReDT's bg_flood_model.add_crs_to_model_output does. "_temp" breaks the dated-name glob.
+    # Readers pick the newest forecast by name, so write beside it and rename into place once complete.
+    # "_temp" breaks the dated-name glob.
     temp_file = path.with_name(f"{path.stem}_temp{path.suffix}")
     data.assign_attrs(Conventions="CF-1.8").to_netcdf(temp_file, engine="netcdf4")
     temp_file.replace(path)
