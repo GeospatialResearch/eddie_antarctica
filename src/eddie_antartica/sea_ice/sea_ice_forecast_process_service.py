@@ -2,9 +2,9 @@
 from pywps import ComplexOutput, Format, LiteralInput, Process, WPSRequest
 from pywps.response.execute import ExecuteResponse
 
-from src.eddie_antartica import tasks
 from src.eddie_antartica.config import EnvVariable
-from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import catalog_item
+from src.eddie_antartica.sea_ice.model.sic_data_from_nc import latest_forecast
+from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import catalog_item, week_date
 
 
 class SeaIceForecastProcessService(Process):
@@ -33,7 +33,7 @@ class SeaIceForecastProcessService(Process):
     @staticmethod
     def _handler(request: WPSRequest, response: ExecuteResponse) -> None:
         """
-        Process handler: publish the requested week with a Celery task, then hand Terria the layer.
+        Process handler: hand Terria the requested week's layer, which the weekly forecast run already published.
 
         Parameters
         ----------
@@ -43,7 +43,8 @@ class SeaIceForecastProcessService(Process):
             The WPS response, containing output data.
         """
         week = request.inputs["week"][0].data
-        date = tasks.publish_sea_ice_forecast_week.delay(week).get()
+        forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
+        date = week_date(forecast, week)
         response.outputs["seaIceForecast"].data = catalog_item(
             week, date,
             geoserver_url=f"{EnvVariable.GEOSERVER_HOST}:{EnvVariable.GEOSERVER_PORT}",

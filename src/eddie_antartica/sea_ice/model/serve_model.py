@@ -17,14 +17,18 @@
 
 
 """
-Publish the sea ice forecast to GeoServer as the map layer: step 4 of the weekly pipeline.
+Publish the sea ice forecast to GeoServer as map layers: step 4 of the weekly pipeline.
 
 The layer name never changes, so ``terriajs/catalog.json`` and ``sic_forecast_8w.sld`` never do either.
 """
 import pathlib
+import tempfile
+
+import xarray as xr
 
 from eddie import geoserver
 from src.eddie_antartica.sea_ice.model import sic_to_nc
+from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import layer_name
 
 #: The map layer, and its file's name: ``add_gtiff_to_geoserver`` replaces the layer each week.
 LAYER_NAME = "sic_forecast_8w"
@@ -32,7 +36,9 @@ LAYER_NAME = "sic_forecast_8w"
 
 def add_forecast_to_geoserver(nc_path: pathlib.Path) -> pathlib.Path:
     """
-    Write the forecast's week-8 GeoTIFF beside it and publish it as layer ``LAYER_NAME``.
+    Publish the forecast: week 8 as layer ``LAYER_NAME`` (GeoTIFF kept beside it), and each week as its own layer.
+
+    The week layers (``sea_ice_forecast_layer.layer_name``) are what Run Analysis and the story scenes show.
 
     Parameters
     ----------
@@ -46,4 +52,11 @@ def add_forecast_to_geoserver(nc_path: pathlib.Path) -> pathlib.Path:
     """
     gtiff_path = sic_to_nc.nc_to_gtiff(nc_path, nc_path.with_name(f"{LAYER_NAME}.tif"))
     geoserver.add_gtiff_to_geoserver(gtiff_path, geoserver.Workspaces.STATIC_FILES_WORKSPACE, LAYER_NAME)
+    with xr.open_dataset(nc_path) as dataset:
+        n_weeks = dataset.sizes["time"]
+    # add_gtiff_to_geoserver copies the file into GeoServer's data dir, so the week GeoTIFFs are throwaway.
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        for week in range(1, n_weeks + 1):
+            week_gtiff = sic_to_nc.nc_to_gtiff(nc_path, pathlib.Path(tmp_dir) / f"{layer_name(week)}.tif", week - 1)
+            geoserver.add_gtiff_to_geoserver(week_gtiff, geoserver.Workspaces.STATIC_FILES_WORKSPACE, layer_name(week))
     return gtiff_path
