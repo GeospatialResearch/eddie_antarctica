@@ -107,32 +107,6 @@ def refresh_sea_ice_forecast() -> None:
     chain(preprocess_sea_ice_inputs.s(), forecast_sea_ice.s()).delay()
 
 
-@app.task(base=OnFailureStateTask)
-def publish_sea_ice_forecast_week(week: int) -> str:
-    """
-    Render one week of the newest forecast to a GeoTIFF and publish it as that week's GeoServer layer.
-
-    The newest forecast is the latest in ``FORECAST_NETCDF_DIR``, else ``FORECAST_NETCDF_LATEST``.
-
-    Parameters
-    ----------
-    week : int
-        Forecast week, 1-based.
-
-    Returns
-    -------
-    str
-        The week's date from the forecast's ``time``, ``YYYY-MM-DD``.
-    """
-    forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
-    with xr.open_dataset(forecast) as dataset:
-        date = pd.Timestamp(dataset["time"].values[week - 1]).strftime("%Y-%m-%d")
-    # add_gtiff_to_geoserver copies the file into GeoServer's data dir, so the GeoTIFF itself is throwaway.
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        gtiff = sic_to_nc.nc_to_gtiff(forecast, pathlib.Path(tmp_dir) / f"{layer_name(week)}.tif", week - 1)
-        geoserver.add_gtiff_to_geoserver(gtiff, geoserver.Workspaces.STATIC_FILES_WORKSPACE, layer_name(week))
-    return date
-
 
 @app.task(base=OnFailureStateTask)
 def sea_ice_forecast_point_series(longitude: float, latitude: float) -> str:
