@@ -32,8 +32,9 @@ from eddie.discover_plugins import discover_plugins
 from eddie.geoserver import get_terria_catalog
 from src.eddie_antartica import blueprint as eddie_antartica_blueprint
 from src.eddie_antartica.config import EnvVariable
-from src.eddie_antartica.sea_ice.sic_data_from_nc import point_series as sic_forecast_point_series
-from src.eddie_antartica.sea_ice.sic_data_from_raster import sic_forecast_series
+from src.eddie_antartica.sea_ice.model.sic_data_from_nc import latest_forecast
+from src.eddie_antartica.sea_ice.model.sic_data_from_nc import point_series as sic_forecast_point_series
+from src.eddie_antartica.sea_ice.model.sic_data_from_raster import sic_forecast_series
 from src.eddie_antartica.wms_point import point_from_get_feature_info
 from src.eddie_antartica.ice_sheet.ice_data_from_nc import SERIES_COLUMN, VARIABLES, point_series
 
@@ -160,8 +161,9 @@ def sea_ice_timeseries_netcdf() -> Response:
     """
     Return the sea ice concentration forecast for the clicked point, as CSV, from the NetCDF.
 
-    Same data and same two columns as ``/sea-ice-timeseries``, read from the model's own
-    NetCDF output rather than from the GeoTIFF exported for GeoServer (issue #35). Both
+    Same data and same two columns as ``/sea-ice-timeseries``, read from the newest weekly
+    NetCDF forecast in ``FORECAST_NETCDF_DIR`` (``FORECAST_NETCDF_LATEST`` until there is one)
+    rather than from the GeoTIFF exported for GeoServer (issue #35). Both
     routes exist because ``serve_static_files`` publishes ``.tif`` and skips ``.nc``, so
     the WMS layer stays a GeoTIFF while the chart can read the source file.
     Supported methods: GET
@@ -175,14 +177,16 @@ def sea_ice_timeseries_netcdf() -> Response:
     Response
         The HTTP Response. Expect OK carrying ``text/csv``; BAD_REQUEST if the
         GetFeatureInfo parameters are missing or malformed; or SERVICE_UNAVAILABLE if the
-        file is missing or unreadable.
+        forecast is missing or unreadable.
     """
     try:
         longitude, latitude = point_from_get_feature_info(request.args)
     except (KeyError, ValueError) as request_error:
         return make_response(f"Invalid GetFeatureInfo request: {request_error}", BAD_REQUEST)
+    # Until the weekly run has written one, chart the hand-copied forecast, as the WPS tasks do.
+    forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
     try:
-        series = sic_forecast_point_series(longitude, latitude, EnvVariable.FORECAST_NETCDF)
+        series = sic_forecast_point_series(longitude, latitude, forecast)
     except (OSError, KeyError):
         app.logger.exception("Failed to read the sea ice forecast NetCDF")
         return make_response("Forecast NetCDF unavailable", SERVICE_UNAVAILABLE)
@@ -235,16 +239,19 @@ def serve_terrain(path: str) -> Response:
     """
     Serve a self-hosted quantized-mesh terrain tile, replacing Cesium Ion terrain.
     Supported methods: GET
+
     Parameters
     ----------
     path : str
         Path to the requested tile or layer.json, relative to TERRAIN_DIR.
+
     Returns
     -------
     Response
         The requested file, with quantized-mesh headers set for `.terrain` tiles.
     """
     response = send_from_directory(EnvVariable.TERRAIN_DIR, path)
+    # ctb-tile writes .terrain tiles pre-gzip-compressed on disk (no .gz extension) -
     # a generic static response needs an explicit Content-Encoding or Cesium can't decode them.
     if path.endswith(".terrain"):
         response.headers["Content-Encoding"] = "gzip"

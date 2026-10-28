@@ -87,6 +87,12 @@ RUN <<EOF
         setfacl -R -d -m u:nonroot:rwx "$NEW_DIRECTORY"
         setfacl -R -m u:nonroot:rwx "$NEW_DIRECTORY"
     done
+
+    # tmp holds the beat schedule (-s in celery_worker_entrypoint.sh) and the tmp/pywps dirs blueprint.py makes.
+    # chown all the nonroot-written dirs, as setfacl alone is not enough: some storage drivers
+    # (Docker Desktop on WSL2) drop ACLs on image export.
+    mkdir -p tmp/pywps/outputs tmp/pywps/workdir tmp/pywps/logs
+    chown -R nonroot tmp outputs workdir logs
 EOF
 
 # Copy python virtual environment from build layer

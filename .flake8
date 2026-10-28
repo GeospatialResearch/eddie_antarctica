@@ -6,6 +6,8 @@ statistics = True
 max-line-length = 120
 ignore = ANN101, D205
 extend-ignore = W504, D400
+# Skip sea_ice/model/gnn: it's the reference model code, left untouched so their updates can be copied straight in.
+extend-exclude = src/eddie_antartica/sea_ice/model/gnn
 
 # ANN101: Missing type annotation for self in method
 # D205: 1 blank line required between summary line and description

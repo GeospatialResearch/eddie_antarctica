@@ -21,5 +21,7 @@ default-docstring-type = numpy
 max-line-length = 120
 
 [MASTER]
+# Skip sea_ice/model/gnn: it's from reference model code, left untouched so their updates can be copied straight in.
+ignore-paths=.*sea_ice.model.gnn.*
 init-hook="from pylint.config import find_default_config_files; import os, sys; sys.path.append(os.path.dirname(next(find_default_config_files())))"
 extension-pkg-allow-list = rasterio
