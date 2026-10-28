@@ -1,5 +1,4 @@
 """Endpoints and flask configuration for this template example app"""
-from http.client import BAD_REQUEST, OK
 import os
 import pathlib
 from http.client import BAD_REQUEST, OK

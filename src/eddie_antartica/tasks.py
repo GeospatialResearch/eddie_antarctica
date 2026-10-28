@@ -21,25 +21,20 @@ Allows the frontend to send tasks and retrieve status later.
 """
 import logging
 import pathlib
-import tempfile
 
 from celery import chain, signals
 from celery.schedules import crontab
 from celery.worker.consumer import Consumer
 import geopandas as gpd
-import pandas as pd
-import xarray as xr
 
-from eddie import geoserver
 from eddie.digitaltwin import retrieve_from_instructions
 from eddie.digitaltwin.utils import setup_logging
 from eddie.tasks import OnFailureStateTask, app
 from src.eddie_antartica.config import EnvVariable
 from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
 from src.eddie_antartica.sea_ice.inputs import main_sea_ice_inputs
-from src.eddie_antartica.sea_ice.model import serve_model, sic_gnn_model, sic_to_nc
+from src.eddie_antartica.sea_ice.model import serve_model, sic_gnn_model
 from src.eddie_antartica.sea_ice.model.sic_data_from_nc import latest_forecast, point_series
-from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import layer_name
 
 setup_logging()
 log = logging.getLogger(__name__)
