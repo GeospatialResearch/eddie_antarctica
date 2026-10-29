@@ -41,7 +41,8 @@ from rasterio.crs import CRS
 from rasterio.warp import transform
 import xarray as xr
 
-from src.eddie_antartica.sea_ice.model.sic_data_from_raster import OPEN_WATER, TIME_COLUMN, VALUE_COLUMN, _empty_series
+from src.eddie_antartica.sea_ice.model.sic_data_from_raster import (
+    OPEN_WATER, TIME_COLUMN, VALUE_COLUMN, _empty_series, bilinear_series)
 
 #: TerriaJS asks in degrees, WGS 84.
 CLICK_CRS = CRS.from_epsg(4326)
@@ -61,9 +62,7 @@ def point_series(longitude: float,
                  latitude: float,
                  source: Union[str, pathlib.Path]) -> pd.DataFrame:
     """
-    Extract the forecast time series for the grid cell containing a point.
-
-    Only the one cell is read off disk, so file size costs little.
+    Extract the forecast time series at a point, blended from the cells around it as the map draws it.
 
     Parameters
     ----------
@@ -93,23 +92,10 @@ def point_series(longitude: float,
         data = dataset[VARIABLE]
         grid_crs = CRS.from_user_input(dataset[data.encoding["grid_mapping"]].attrs["crs_wkt"])
         eastings, northings = transform(CLICK_CRS, grid_crs, [longitude], [latitude])
-        steps = {axis: abs(float(dataset[axis].diff(axis).max())) for axis in ("lat", "lon")}
-        # Wrap into whichever convention the file uses, so a 0..360 click lands on a
-        # -180..180 grid and vice versa. Measured from the grid's western *edge*, not from
-        # the westernmost cell centre: a click in the western half of the first cell is
-        # legitimately west of that centre, and wrapping about it would throw the click a
-        # full 360 degrees off the grid and silently return an empty chart.
-        west = float(dataset["lon"].min()) - steps["lon"] / 2
-        easting = west + (eastings[0] - west) % 360
-        # Half a cell, so a click lands in the cell it is inside and a click off the grid
-        # raises rather than snapping to the nearest edge.
-        tolerance = max(steps.values()) / 2
-        try:
-            cell = data.sel(lon=easting, lat=northings[0], method="nearest", tolerance=tolerance)
-        except KeyError:
+        values = bilinear_series(data, eastings[0], northings[0])
+        if values is None:
             return _empty_series()
-        timestamps = pd.DatetimeIndex(cell["time"].values).strftime(TIME_FORMAT)
-        values = cell.values.astype("float32")
+        timestamps = pd.DatetimeIndex(data["time"].values).strftime(TIME_FORMAT)
 
     return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: np.where(values < OPEN_WATER, 0, values)})
 

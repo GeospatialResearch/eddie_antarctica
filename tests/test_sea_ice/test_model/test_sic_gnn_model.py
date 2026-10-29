@@ -221,12 +221,16 @@ def inputs_dir(tmp_path: Path, land: dict = None) -> Path:
 
 
 def test_forecast_is_dated_and_charts_the_node_the_model_returned(model_dir: Path, tmp_path: Path) -> None:
-    """Week 1 follows the inputs' last day, and every click reads back the node the model wrote there."""
+    """
+    Week 1 follows the inputs' last day, and every click reads back the node the model wrote there.
+
+    179.8 lies between the 179 and 180 nodes, so it charts their blend; the encoding is linear in longitude.
+    """
     nc_path = sic_gnn_model.main(inputs_dir(tmp_path), model_dir, tmp_path / "forecasts")
 
     assert nc_path.name == "sic_forecast_8w_2024-01-07.nc"
     for click, (lon, lat) in (((170.0, -41.0), (170, -41)), ((-150.0, -43.0), (210, -43)),
-                              ((0.0, -42.0), (0, -42)), ((179.8, -42.0), (180, -42))):
+                              ((0.0, -42.0), (0, -42)), ((179.8, -42.0), (179.8, -42))):
         expected = ((lat + 44) * 360 + lon) * 1e-4 + np.arange(8) * 0.1
         np.testing.assert_allclose(sic_data_from_nc.point_series(*click, nc_path).iloc[:, 1], expected,
                                    rtol=1e-6, err_msg=str(click))

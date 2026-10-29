@@ -32,10 +32,11 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+import pytest
 from rasterio.crs import CRS
 import xarray as xr
 
-from src.eddie_antartica.sea_ice.model import sic_data_from_nc, sic_data_from_raster
+from src.eddie_antartica.sea_ice.model import sic_data_from_nc, sic_data_from_raster, sic_to_nc
 from tests.test_sea_ice.test_model.test_sic_data_from_raster import (
     N_BANDS, N_LAT, N_LON, NORTH, TIMES, VALUES, WEST, _write_fixture)
 
@@ -65,7 +66,8 @@ def encoded_values() -> np.ndarray:
             + np.arange(N_LON)[None, None, :]).astype("float32")
 
 
-def forecast_nc(tmp_path: Path, values: np.ndarray = None, times: List[str] = None) -> Path:
+def forecast_nc(tmp_path: Path, values: np.ndarray = None, times: List[str] = None,
+                longitudes: np.ndarray = LONGITUDES) -> Path:
     """
     Write a ``(step, lat, lon)`` grid out as the CF NetCDF the reader expects.
 
@@ -77,6 +79,8 @@ def forecast_nc(tmp_path: Path, values: np.ndarray = None, times: List[str] = No
         A ``(step, lat, lon)`` grid, or None for the standard encoded fixture.
     times : List[str]
         ISO-8601 timestamp per step, or None for the shared fixture times.
+    longitudes : numpy.ndarray
+        Cell-centre longitudes, one per column of ``values``.
 
     Returns
     -------
@@ -90,7 +94,7 @@ def forecast_nc(tmp_path: Path, values: np.ndarray = None, times: List[str] = No
         coords={
             "time": ("time", pd.to_datetime([stamp.removesuffix("Z") for stamp in times])),
             "lat": ("lat", LATITUDES, {"units": "degrees_north", "axis": "Y"}),
-            "lon": ("lon", LONGITUDES, {"units": "degrees_east", "axis": "X"}),
+            "lon": ("lon", longitudes, {"units": "degrees_east", "axis": "X"}),
             "crs": ((), np.int32(0), {"grid_mapping_name": "latitude_longitude",
                                       "crs_wkt": CRS.from_epsg(4326).to_wkt()}),
         },
@@ -114,8 +118,8 @@ def test_samples_the_clicked_cell_across_every_step(tmp_path: Path) -> None:
     corner = sic_data_from_nc.point_series(float(LONGITUDES[-1]), float(LATITUDES[-1]), netcdf)
     last = (N_LAT - 1) * 10 + (N_LON - 1)
     assert list(corner[VALUES]) == [100.0 + last, 200.0 + last, 300.0 + last]
-    # An interior point picks the cell containing it, not a neighbour.
-    assert sic_data_from_nc.point_series(-177.9, -41.9, netcdf)[VALUES].iloc[0] == 112.0
+    # An interior point blends the four centres around it, as the map draws it: 1.4 rows and 1.6 columns in.
+    assert sic_data_from_nc.point_series(-177.9, -41.9, netcdf)[VALUES].iloc[0] == pytest.approx(115.6)
 
 
 def test_longitude_beyond_180_is_wrapped(tmp_path: Path) -> None:
@@ -205,3 +209,68 @@ def test_ice_the_map_does_not_draw_charts_as_open_water(tmp_path: Path) -> None:
     for series in (sic_data_from_nc.point_series(LON0, LAT0, netcdf),
                    sic_data_from_raster.sic_forecast_series(LON0, LAT0, geotiff)):
         np.testing.assert_allclose(series[VALUES], [0.0, 0.01, np.nan], rtol=1e-6)
+
+
+def test_chart_blends_neighbouring_cells_as_the_map_does(tmp_path: Path) -> None:
+    """
+    A click charts the bilinear blend the map draws there, not just the clicked cell.
+
+    The map draws the forecast with bilinear interpolation, so a near-zero cell next to an icy one
+    is drawn as trace ice. Reading only the clicked cell charted 0 under that colour.
+    """
+    values = np.zeros((N_BANDS, N_LAT, N_LON), dtype="float32")
+    values[:, 0, 1] = 0.08
+    netcdf = forecast_nc(tmp_path, values)
+    geotiff = _write_fixture(tmp_path / "forecast.tif", values, TIMES)
+    # A quarter of the way from the clicked cell's centre to its icy eastern neighbour's.
+    longitude = LON0 + 0.25
+
+    for series in (sic_data_from_nc.point_series(longitude, LAT0, netcdf),
+                   sic_data_from_raster.sic_forecast_series(longitude, LAT0, geotiff)):
+        np.testing.assert_allclose(series[VALUES], [0.02] * N_BANDS, rtol=1e-5)
+
+
+def test_a_land_neighbour_does_not_blank_the_chart(tmp_path: Path) -> None:
+    """
+    Land is NaN in the forecast; the blend uses only the neighbours that have data.
+
+    A plain linear interpolation returns NaN if any of the four neighbours is NaN, which blanked the chart of
+    every ocean cell next to the coast -- even a click on its own centre.
+    """
+    values = np.full((N_BANDS, N_LAT, N_LON), 0.5, dtype="float32")
+    values[:, 1, 0] = 0.3
+    values[:, 0, 1] = np.nan
+    netcdf = forecast_nc(tmp_path, values)
+    geotiff = _write_fixture(tmp_path / "forecast.tif", values, TIMES)
+
+    for reader, source in ((sic_data_from_nc.point_series, netcdf),
+                           (sic_data_from_raster.sic_forecast_series, geotiff)):
+        # The clicked cell's own centre, beside land to the east.
+        np.testing.assert_allclose(reader(LON0, LAT0, source)[VALUES], [0.5] * N_BANDS, rtol=1e-5)
+        # A quarter of the way towards the land cell: only the ocean cell has data.
+        np.testing.assert_allclose(reader(LON0 + 0.25, LAT0, source)[VALUES], [0.5] * N_BANDS, rtol=1e-5)
+        # Halfway to the southern ocean neighbour, still blended.
+        np.testing.assert_allclose(reader(LON0, LAT0 - 0.5, source)[VALUES], [0.4] * N_BANDS, rtol=1e-5)
+
+
+def test_chart_blends_across_180_degrees_as_the_map_does(tmp_path: Path) -> None:
+    """
+    A click near 180 degrees blends the cells on both sides of it, as the map draws it.
+
+    The forecast NetCDF runs -180..179, so its westernmost and easternmost columns meet at 180 degrees. The map's
+    GeoTIFF repeats the westernmost column one turn east and draws the blend there; the chart read one cell.
+    The GeoTIFF route is checked against that same map file.
+    """
+    longitudes = np.arange(-180, 180, dtype="float64")
+    values = np.zeros((N_BANDS, N_LAT, longitudes.size), dtype="float32")
+    values[:, :, 0] = 0.08
+    netcdf = forecast_nc(tmp_path, values, longitudes=longitudes)
+    geotiff = sic_to_nc.nc_to_gtiff(netcdf, tmp_path / "forecast.tif", week=0)
+
+    # A quarter of the way from the easternmost cell's centre (179) to the westernmost (-180), across 180 degrees,
+    # in both longitude conventions.
+    for longitude in (179.75, -180.25):
+        series = sic_data_from_nc.point_series(longitude, LAT0, netcdf)
+        np.testing.assert_allclose(series[VALUES], [0.06] * N_BANDS, rtol=1e-5)
+        map_week_1 = sic_data_from_raster.sic_forecast_series(longitude, LAT0, geotiff)
+        np.testing.assert_allclose(map_week_1[VALUES], [0.06], rtol=1e-5)
