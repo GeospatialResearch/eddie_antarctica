@@ -25,11 +25,12 @@ This module samples a single point across every band so the backend can serve th
 result as the CSV that TerriaJS charts when a user clicks the layer.
 """
 import os
-from typing import List, Union
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
 import rasterio as rio
+import xarray as xr
 
 TIME_COLUMN = "Time (UTC)"
 VALUE_COLUMN = "Sea ice concentration (fraction)"
@@ -77,11 +78,62 @@ def _empty_series() -> pd.DataFrame:
                          VALUE_COLUMN: pd.Series(dtype="float32")})
 
 
+def bilinear_series(grid: xr.DataArray, longitude: float, latitude: float) -> Optional[np.ndarray]:
+    """
+    Blend the four cell centres around a point, as the map's bilinear interpolation draws it.
+
+    The catalog draws the forecast with ``"interpolations": "bilinear"``, so a near-zero cell beside an icy one
+    is drawn as trace ice. Charting only the clicked cell put a 0 under that colour.
+
+    Parameters
+    ----------
+    grid : xarray.DataArray
+        The forecast, with ``lon`` and ``lat`` cell-centre coordinates in degrees and one leading step dimension.
+    longitude : float
+        Longitude of the point in degrees, in either the -180..180 or 0..360 convention.
+    latitude : float
+        Latitude of the point in degrees.
+
+    Returns
+    -------
+    Optional[numpy.ndarray]
+        One float32 value per step, or None if the point falls outside the grid.
+    """
+    lons, lats = grid["lon"], grid["lat"]
+    half_lon = abs(float(lons.diff("lon").max())) / 2
+    half_lat = abs(float(lats.diff("lat").max())) / 2
+    # Wrapped from the grid's western *edge*, not the westernmost cell centre: a click in the western half of the
+    # first cell is legitimately west of that centre, and wrapping about it would throw the click 360 degrees off.
+    west = float(lons.min()) - half_lon
+    if float(lons.max()) + half_lon - west > 360 - half_lon:
+        # A global grid has no western edge. Wrap about its westernmost column instead, repeated one turn east as
+        # sic_to_nc.nc_to_gtiff repeats it for the map, so a click near 180 degrees blends across it.
+        west += half_lon
+        if float(lons.max()) < west + 360 - half_lon:
+            grid = xr.concat([grid, grid.sel(lon=west).assign_coords(lon=west + 360)], dim="lon")
+            lons = grid["lon"]
+    longitude = west + (longitude - west) % 360
+    inside_lon = west <= longitude <= float(lons.max()) + half_lon
+    inside_lat = float(lats.min()) - half_lat <= latitude <= float(lats.max()) + half_lat
+    if not (inside_lon and inside_lat):
+        return None
+    # The map repeats the edge cell across the grid's outermost half cell, so clamp onto the outermost centres.
+    point = {"lon": np.clip(longitude, float(lons.min()), float(lons.max())),
+             "lat": np.clip(latitude, float(lats.min()), float(lats.max()))}
+    # Land is NaN, and a plain linear interp is NaN if any neighbour is, so blend only the neighbours with data:
+    # interpolate the values with NaN as 0 and a 0/1 data mask alike, then divide.
+    grid = grid.sortby("lat")
+    weight = grid.notnull().astype("float64").interp(point).values
+    blend = grid.fillna(0).interp(point).values
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(weight > 0, blend / weight, np.nan).astype("float32")
+
+
 def sic_forecast_series(longitude: float,
                         latitude: float,
                         raster_path: Union[str, os.PathLike]) -> pd.DataFrame:
     """
-    Extract the forecast time series for the raster cell containing a point.
+    Extract the forecast time series at a point, blended from the cells around it as the map draws it.
 
     Parameters
     ----------
@@ -105,16 +157,14 @@ def sic_forecast_series(longitude: float,
         If the raster cannot be opened.
     """
     with rio.open(raster_path) as raster:
-        bounds = raster.bounds
-        longitude = bounds.left + (longitude - bounds.left) % 360
-        if not (bounds.left <= longitude <= bounds.right and bounds.bottom <= latitude <= bounds.top):
-            return _empty_series()
-
-        values = next(raster.sample([(longitude, latitude)])).astype("float32")
+        transform = raster.transform
+        grid = xr.DataArray(
+            raster.read(masked=True).filled(np.nan).astype("float32"),
+            dims=("band", "lat", "lon"),
+            coords={"lon": transform.c + transform.a * (np.arange(raster.width) + 0.5),
+                    "lat": transform.f + transform.e * (np.arange(raster.height) + 0.5)})
         timestamps = _band_timestamps(raster)
-        nodata = raster.nodata
-
-    if nodata is not None and not np.isnan(nodata):
-        values = np.where(values == nodata, np.nan, values)
-
+    values = bilinear_series(grid, longitude, latitude)
+    if values is None:
+        return _empty_series()
     return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: np.where(values < OPEN_WATER, 0, values)})
