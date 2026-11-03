@@ -126,10 +126,22 @@ def test_geotiff_is_the_last_week_with_the_antimeridian_column_repeated(tmp_path
     week8 = encoded_forecast()[:, -1].astype("float32")
     with rio.open(tif_path) as raster:
         assert raster.crs.to_epsg() == 4326
-        assert (raster.width, raster.height) == (361, 3)
+        assert (raster.width, raster.height) == (362, 3)
         assert np.isnan(raster.nodata)                   # flags and land render transparent
         pixels = [value[0] for value in raster.sample([(10.0, -41.0), (-180.0, -42.0), (179.8, -42.0)])]
     assert pixels == [week8[node(10, -41.0)], week8[node(180, -42.0)], week8[node(180, -42.0)]]
+
+
+def test_geotiff_has_a_cell_on_both_sides_of_the_antimeridian(tmp_path: Path) -> None:
+    """Bilinear blends each pixel with its neighbours, so a missing neighbour west of -180 draws a seam at 180."""
+    nc_path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
+    tif_path = sic_to_nc.nc_to_gtiff(nc_path, tmp_path / "sic_forecast_8w.tif")
+
+    week8 = encoded_forecast()[:, -1].astype("float32")
+    with rio.open(tif_path) as raster:
+        assert (raster.bounds.left, raster.bounds.right) == (-181.5, 180.5)
+        pixels = [value[0] for value in raster.sample([(-180.8, -42.0), (180.2, -42.0)])]
+    assert pixels == [week8[node(179, -42.0)], week8[node(180, -42.0)]]
 
 
 def test_inputs_in_either_longitude_convention_write_the_same_grid(tmp_path: Path) -> None:
@@ -168,6 +180,6 @@ def test_geotiff_from_a_native_order_file_is_north_up_on_minus_180_to_180(tmp_pa
     week8 = encoded_forecast()[:, -1].astype("float32")
     with rio.open(tif_path) as raster:
         assert raster.transform.e < 0                                      # north up
-        assert raster.bounds.left == -180.5                                 # the -180 column, centred on its label
+        assert raster.bounds.left == -181.5                                 # the -180 column, centred on its label
         pixels = [value[0] for value in raster.sample([(10.0, -41.0), (-10.0, -43.0)])]
     assert pixels == [week8[node(10, -41.0)], week8[node(350, -43.0)]]
