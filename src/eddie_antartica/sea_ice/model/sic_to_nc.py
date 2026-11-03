@@ -148,10 +148,11 @@ def nc_to_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int = -1)
         sic = dataset[VARIABLE].isel(time=week)
         # Normalise to -180..180, north up, whatever order the file is in, so GeoServer gets a standard grid.
         sic = sic.assign_coords(lon=((sic.lon + 180) % 360) - 180).sortby("lon").sortby("lat", ascending=False)
-        # The westernmost cell straddles the antimeridian, so repeat it one turn east;
-        # otherwise the map shows a gap in front of 180 degrees.
-        west = sic.isel(lon=0)
-        sic = xr.concat([sic, west.assign_coords(lon=float(west.lon) + 360)], dim="lon")
+        # Copy the edge columns across the 180 line (last one to the far west, first one to the far east),
+        # so the smoothing has a neighbour on both sides and draws no line at 180.
+        west, east = sic.isel(lon=0), sic.isel(lon=-1)
+        sic = xr.concat([east.assign_coords(lon=float(east.lon) - 360), sic,
+                         west.assign_coords(lon=float(west.lon) + 360)], dim="lon")
         sic.rio.set_spatial_dims(x_dim="lon", y_dim="lat").rio.write_crs("EPSG:4326").rio.to_raster(
             gtiff_path, compress="LZW")
     return gtiff_path
