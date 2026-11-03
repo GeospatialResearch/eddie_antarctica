@@ -116,8 +116,8 @@ class TestSicForecastSeries(unittest.TestCase):
         corner = sic_data_from_raster.sic_forecast_series(WEST + N_LON - 0.5, NORTH - N_LAT + 0.5, tif)
         last = (N_LAT - 1) * 10 + (N_LON - 1)
         self.assertEqual(list(corner[VALUES]), [100.0 + last, 200.0 + last, 300.0 + last])
-        # An interior point picks the cell containing it, not a neighbour.
-        self.assertEqual(sic_data_from_raster.sic_forecast_series(-177.9, -41.9, tif)[VALUES].iloc[0], 112.0)
+        # An interior point blends the four centres around it, as the map draws it: 1.4 rows and 1.6 columns in.
+        self.assertAlmostEqual(sic_data_from_raster.sic_forecast_series(-177.9, -41.9, tif)[VALUES].iloc[0], 115.6, 4)
         # The -180 edge is inside the raster, not outside it.
         self.assertEqual(sic_data_from_raster.sic_forecast_series(WEST, LAT0, tif)[VALUES].iloc[0], 100.0)
 
