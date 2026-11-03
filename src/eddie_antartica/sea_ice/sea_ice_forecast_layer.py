@@ -81,6 +81,7 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str) -> 
         "url": f"{geoserver_url}/geoserver/static_files/wms",
         "layers": layer_name(week),
         "styles": STYLE,
+        "crs": "EPSG:4326",
         "supportsGetTimeseries": True,
         "getFeatureInfoUrl": f"{backend_url}{TIMESERIES_ROUTE}",
         "parameters": {"interpolations": "bilinear"},

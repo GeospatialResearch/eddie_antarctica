@@ -34,6 +34,7 @@ def test_catalog_item_is_a_charted_wms_layer_for_the_week() -> None:
         "url": "http://gs:8088/geoserver/static_files/wms",
         "layers": "sic_forecast_week3",
         "styles": "sic_forecast_8w",
+        "crs": "EPSG:4326",
         "supportsGetTimeseries": True,
         "getFeatureInfoUrl": "http://be:5000/sea-ice-forecast-timeseries",
         "parameters": {"interpolations": "bilinear"},

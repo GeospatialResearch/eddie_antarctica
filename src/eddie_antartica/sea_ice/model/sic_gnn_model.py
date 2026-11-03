@@ -31,7 +31,7 @@ import xarray as xr
 
 from src.eddie_antartica.sea_ice.model import sic_to_nc
 
-#: Files in ``SIC_MODEL_DIR``, named as in the scientists' ``data/``.
+#: Files in ``SIC_MODEL_DIR``, named as in the reference code ``data/``.
 CHECKPOINT = "SIC_production_checkpoint.pt"
 BUNDLE = "multi_mesh_bundle_K5.npz"
 TRAIN_STATS = "train_stats.npz"
@@ -63,7 +63,6 @@ def run_sic_model(inputs_dir: pathlib.Path, model_dir: pathlib.Path) -> np.ndarr
     if not (model_dir / CHECKPOINT).is_file():
         raise FileNotFoundError(f"No sea ice model checkpoint at {model_dir / CHECKPOINT} (check SIC_MODEL_DIR)")
     # Imported here, not at the top: torch is only needed by the worker's weekly run, and gnn/ is the
-    # scientists' code, copied in by hand (see docs/plans/sea-ice-model-transfer.md).
     # pylint: disable=import-outside-toplevel,import-error,no-name-in-module
     import torch
     from src.eddie_antartica.sea_ice.model.gnn.util.config import LOOKBACK_WEEKS
