@@ -6,7 +6,8 @@ week's date and points Terria at that layer: nothing is drawn per request, and t
 """
 import json
 import pathlib
-from typing import Union
+import re
+from typing import Optional, Union
 
 import pandas as pd
 import xarray as xr
@@ -16,6 +17,19 @@ STYLE = "sic_forecast_8w"
 
 #: Chart route in ``src/eddie_antartica/blueprint.py``; Terria appends the GetFeatureInfo query to it.
 TIMESERIES_ROUTE = "/sea-ice-forecast-timeseries"
+
+#: Name of the display dropdown on the sea_ice_forecast process form.
+DISPLAY_NAME = "Display"
+
+#: GeoServer ``interpolations`` value -> (form label, chart method). The first entry is the default.
+#: Keys must stay exact GeoServer values: any other string throws in GeoServer instead of drawing.
+DISPLAY_MODES = {
+    "nearest neighbor": ("Raw 1° cells", "nearest"),
+    "bilinear": ("Smoothed", "linear"),
+}
+
+#: Form label -> GeoServer ``interpolations`` value, in the same order.
+DISPLAY_LABELS = {label: interpolation for interpolation, (label, _) in DISPLAY_MODES.items()}
 
 
 def layer_name(week: int) -> str:
@@ -33,6 +47,24 @@ def layer_name(week: int) -> str:
         ``sic_forecast_week<week>``.
     """
     return f"sic_forecast_week{week}"
+
+
+def layer_week(layers: Optional[str]) -> Optional[int]:
+    """
+    Read the forecast week back from a ``layer_name``, as a click's GetFeatureInfo ``layers`` sends it.
+
+    Parameters
+    ----------
+    layers : Optional[str]
+        The ``layers`` value of the click.
+
+    Returns
+    -------
+    Optional[int]
+        The 1-based week, or None if ``layers`` is not one week's layer.
+    """
+    week = re.fullmatch(r"sic_forecast_week([1-9][0-9]*)", layers or "")
+    return int(week[1]) if week else None
 
 
 def week_date(forecast: Union[str, pathlib.Path], week: int) -> str:
@@ -55,7 +87,31 @@ def week_date(forecast: Union[str, pathlib.Path], week: int) -> str:
         return pd.Timestamp(dataset["time"].values[week - 1]).strftime("%Y-%m-%d")
 
 
-def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str) -> str:
+def chart_method(interpolation: Optional[str]) -> str:
+    """
+    Find the chart method for the map's display mode, so a click charts what the map draws.
+
+    Parameters
+    ----------
+    interpolation : Optional[str]
+        The ``interpolations`` value Terria sends with the click. Absent or empty charts bilinear, as layers
+        added before the display dropdown do.
+
+    Returns
+    -------
+    str
+        The ``xarray`` interpolation method: ``"nearest"`` or ``"linear"``.
+
+    Raises
+    ------
+    KeyError
+        If the value has no chart mode, such as GeoServer's ``bicubic``.
+    """
+    return DISPLAY_MODES[interpolation or "bilinear"][1]
+
+
+def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
+                 interpolation: str = next(iter(DISPLAY_MODES))) -> str:
     """
     Build the Terria catalog member JSON for one published forecast week.
 
@@ -69,6 +125,9 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str) -> 
         Public GeoServer root, e.g. ``http://localhost:8088``.
     backend_url : str
         Public backend root, e.g. ``http://localhost:5000``.
+    interpolation : str
+        A ``DISPLAY_MODES`` key: how GeoServer draws the layer. Terria sends it with every click too, so the chart
+        follows the map. Defaults to the first mode.
 
     Returns
     -------
@@ -84,5 +143,5 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str) -> 
         "crs": "EPSG:4326",
         "supportsGetTimeseries": True,
         "getFeatureInfoUrl": f"{backend_url}{TIMESERIES_ROUTE}",
-        "parameters": {"interpolations": "bilinear"},
+        "parameters": {"interpolations": interpolation},
     })
