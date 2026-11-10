@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: Checkout github repo
         uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'  # Include the lib/eddie submodule for installation
 
       - name: Install package dependencies
         uses: mamba-org/setup-micromamba@4b9113af4fba0e9e1124b252dd6497a419e7396d
@@ -49,7 +51,7 @@ jobs:
       - name: Install Eddie library (So imports can find `eddie` package)
         run: |
           # Deps pinned in environment.yml; --only-binary blocks downloaded sdists (pip still builds this project)
-          python -m pip install --no-deps --only-binary=:all: .
+          python -m pip install --no-deps --only-binary=:all: lib/eddie
 
       - name: Run lint with pylint
         run: |
@@ -67,6 +69,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           lfs: true
+          submodules: 'recursive'  # Include the lib/eddie submodule for installation
 
       - name: Install package dependencies
         uses: mamba-org/setup-micromamba@4b9113af4fba0e9e1124b252dd6497a419e7396d
@@ -83,7 +86,7 @@ jobs:
       - name: Install Eddie library
         run: |
           # Deps pinned in environment.yml; --only-binary blocks downloaded sdists (pip still builds this project)
-          python -m pip install --no-deps --only-binary=:all: .
+          python -m pip install --no-deps --only-binary=:all: lib/eddie
 
       - name: Create .env file with API keys
         env:
@@ -96,7 +99,7 @@ jobs:
         env:
           TEST_DATABASE_INTEGRATION: "false"
         run: |
-          pytest
+          pytest tests
 
   sonarcloud:
     name: Run static-code analysis on SonarCloud
