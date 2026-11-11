@@ -23,6 +23,7 @@ import re
 import pytest
 import pathlib
 
+from src.eddie_antartica.sea_ice import sea_ice_forecast_layer
 
 
 CATALOG_PATH = pathlib.Path(__file__).resolve().parent.parent /  "terriajs" / "catalog.json"
@@ -93,3 +94,10 @@ def test_every_backend_link_in_the_catalog_is_a_served_route() -> None:
     links = set(re.findall(r"\$BACKEND_URL(/[^\"\\?]*)", CATALOG_PATH.read_text()))
 
     assert {link for link in links if not any(p.match(link) for p in patterns)} == set()
+
+
+def test_every_catalog_interpolation_is_a_display_mode() -> None:
+    """Every interpolations the catalog sends is a display mode, so a story's WPS layer still charts."""
+    interpolations = set(re.findall(r'\\?"interpolations\\?": *\\?"([^"\\]+)', CATALOG_PATH.read_text()))
+
+    assert interpolations and interpolations - set(sea_ice_forecast_layer.DISPLAY_MODES) == set()
