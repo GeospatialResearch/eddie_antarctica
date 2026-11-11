@@ -107,6 +107,9 @@ def test_chart_returns_the_model_values_for_the_clicked_cell(tmp_path: Path) -> 
     # Between centres the chart blends as the map draws it, across 180 degrees too: 179.8 is 0.8 of the way to 180.
     blend = 0.2 * encoded_forecast()[node(179, -42.0)] + 0.8 * encoded_forecast()[node(180, -42.0)]
     np.testing.assert_allclose(sic_data_from_nc.point_series(179.8, -42.0, path).iloc[:, 1], blend, rtol=1e-6)
+    # Raw, 179.8 is inside the 180 cell, which straddles 180 degrees.
+    np.testing.assert_array_equal(sic_data_from_nc.point_series(179.8, -42.0, path, "nearest").iloc[:, 1].to_numpy(),
+                                  encoded_forecast()[node(180, -42.0)].astype("float32"))
 
 
 def test_land_and_pole_hole_flags_become_missing(tmp_path: Path) -> None:

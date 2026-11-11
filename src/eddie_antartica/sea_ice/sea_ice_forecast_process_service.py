@@ -4,7 +4,7 @@ from pywps.response.execute import ExecuteResponse
 
 from src.eddie_antartica.config import EnvVariable
 from src.eddie_antartica.sea_ice.model.sic_data_from_nc import latest_forecast
-from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import catalog_item, week_date
+from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import DISPLAY_LABELS, DISPLAY_NAME, catalog_item, week_date
 
 
 class SeaIceForecastProcessService(Process):
@@ -15,6 +15,8 @@ class SeaIceForecastProcessService(Process):
         inputs = [
             LiteralInput("week", "Forecast week (1-8)", data_type="integer", default=8,
                          allowed_values=list(range(1, 9))),
+            LiteralInput("display", DISPLAY_NAME, data_type="string", default=next(iter(DISPLAY_LABELS)),
+                         allowed_values=list(DISPLAY_LABELS)),
         ]
         outputs = [
             ComplexOutput("seaIceForecast", "Sea ice concentration forecast",
@@ -49,4 +51,5 @@ class SeaIceForecastProcessService(Process):
             week, date,
             geoserver_url=f"{EnvVariable.GEOSERVER_HOST}:{EnvVariable.GEOSERVER_PORT}",
             backend_url=f"{EnvVariable.BACKEND_HOST}:{EnvVariable.BACKEND_PORT}",
+            interpolation=DISPLAY_LABELS[request.inputs["display"][0].data],
         )
