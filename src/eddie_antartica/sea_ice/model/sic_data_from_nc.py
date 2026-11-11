@@ -60,9 +60,11 @@ TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 def point_series(longitude: float,
                  latitude: float,
-                 source: Union[str, pathlib.Path]) -> pd.DataFrame:
+                 source: Union[str, pathlib.Path],
+                 method: str = "linear",
+                 week: Optional[int] = None) -> pd.DataFrame:
     """
-    Extract the forecast time series at a point, blended from the cells around it as the map draws it.
+    Extract the forecast time series at a point, as the map draws it: blended, or the clicked cell.
 
     Parameters
     ----------
@@ -74,12 +76,17 @@ def point_series(longitude: float,
     source : Union[str, pathlib.Path]
         Path to the forecast NetCDF. The caller owns its location: the forecast holds
         unpublished data and is not committed to this repository.
+    method : str
+        ``"linear"`` charts the blend, with values under ``OPEN_WATER`` as 0; ``"nearest"`` the cell, unrounded.
+    week : Optional[int]
+        The 1-based week the clicked layer shows. If the map draws nothing there that week, the chart is empty.
+        None charts every week.
 
     Returns
     -------
     pandas.DataFrame
         Columns ``Time (UTC)`` and ``Sea ice concentration (fraction)``, one row per
-        forecast step. Zero rows if the point falls outside the grid.
+        forecast step. Zero rows if the point falls outside the grid, or the map draws nothing there in ``week``.
 
     Raises
     ------
@@ -92,12 +99,16 @@ def point_series(longitude: float,
         data = dataset[VARIABLE]
         grid_crs = CRS.from_user_input(dataset[data.encoding["grid_mapping"]].attrs["crs_wkt"])
         eastings, northings = transform(CLICK_CRS, grid_crs, [longitude], [latitude])
-        values = bilinear_series(data, eastings[0], northings[0])
-        if values is None:
+        values = bilinear_series(data, eastings[0], northings[0], method)
+        # The style draws under OPEN_WATER transparent, and land (NaN) not at all: chart nothing where the map shows
+        # nothing in the layer's week. A week past the forecast is ignored.
+        if values is None or (week is not None and week <= len(values) and not values[week - 1] >= OPEN_WATER):
             return _empty_series()
         timestamps = pd.DatetimeIndex(data["time"].values).strftime(TIME_FORMAT)
 
-    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: np.where(values < OPEN_WATER, 0, values)})
+    if method == "linear":
+        values = np.where(values < OPEN_WATER, 0, values)
+    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})
 
 
 def latest_forecast(directory: pathlib.Path) -> Optional[pathlib.Path]:
