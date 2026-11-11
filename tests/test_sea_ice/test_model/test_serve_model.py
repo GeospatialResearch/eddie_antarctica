@@ -62,16 +62,15 @@ def fixture_published(monkeypatch: pytest.MonkeyPatch) -> Iterator[Dict[str, flo
 
 def test_the_forecast_run_publishes_every_week_layer(published: Dict[str, float], tmp_path: Path) -> None:
     """
-    The weekly run publishes the 8-week layer and every week's own layer, as FReDT's model run publishes its output.
+    The weekly run publishes every week's own layer, as FReDT's model run publishes its output.
 
-    Run Analysis and the story scenes only point at these layers, so they show the newest forecast with no redraw.
+    Run Analysis only points at these layers, so it shows the newest forecast with no redraw.
     """
     nc_path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
 
     importlib.import_module(SERVE_MODEL).add_forecast_to_geoserver(nc_path)
 
     weeks = encoded_forecast()[node(10, -41.0)]
-    assert list(published) == ["sic_forecast_8w"] + [f"sic_forecast_week{week}" for week in range(1, N_WEEKS + 1)]
+    assert list(published) == [f"sic_forecast_week{week}" for week in range(1, N_WEEKS + 1)]
     np.testing.assert_allclose([published[f"sic_forecast_week{week}"] for week in range(1, N_WEEKS + 1)], weeks,
                                rtol=1e-6)
-    assert published["sic_forecast_8w"] == pytest.approx(weeks[-1])
