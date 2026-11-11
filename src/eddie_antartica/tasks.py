@@ -21,6 +21,7 @@ Allows the frontend to send tasks and retrieve status later.
 """
 import logging
 import pathlib
+from typing import Optional
 
 from celery import chain, signals
 from celery.schedules import crontab
@@ -108,7 +109,8 @@ def refresh_sea_ice_forecast() -> None:
 
 
 @app.task(base=OnFailureStateTask)
-def sea_ice_forecast_point_series(longitude: float, latitude: float) -> str:
+def sea_ice_forecast_point_series(longitude: float, latitude: float, method: str = "linear",
+                                  week: Optional[int] = None) -> str:
     """
     Chart the newest forecast at a point: the latest in ``FORECAST_NETCDF_DIR``, else ``FORECAST_NETCDF_LATEST``.
 
@@ -118,6 +120,10 @@ def sea_ice_forecast_point_series(longitude: float, latitude: float) -> str:
         Clicked longitude in degrees.
     latitude : float
         Clicked latitude in degrees.
+    method : str
+        ``"linear"`` charts the blend the smoothed map draws, ``"nearest"`` the clicked model cell.
+    week : Optional[int]
+        The week the clicked layer shows; the chart is empty where the map draws nothing that week.
 
     Returns
     -------
@@ -125,4 +131,4 @@ def sea_ice_forecast_point_series(longitude: float, latitude: float) -> str:
         The two-column CSV Terria plots: time, then concentration; just the header off the grid.
     """
     forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
-    return point_series(longitude, latitude, forecast).to_csv(index=False)
+    return point_series(longitude, latitude, forecast, method, week).to_csv(index=False)
