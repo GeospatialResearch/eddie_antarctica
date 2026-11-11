@@ -38,7 +38,6 @@ def test_catalog_item_is_a_charted_wms_layer_for_the_week() -> None:
         "crs": "EPSG:4326",
         "supportsGetTimeseries": True,
         "getFeatureInfoUrl": "http://be:5000/sea-ice-forecast-timeseries",
-        "parameters": {"interpolations": "nearest neighbor"},
     }
 
 
@@ -47,7 +46,7 @@ def test_the_layer_draws_and_charts_the_display_chosen_in_the_form() -> None:
     for label, interpolation in sea_ice_forecast_layer.DISPLAY_LABELS.items():
         item = json.loads(sea_ice_forecast_layer.catalog_item(3, "2026-10-08", "http://gs:8088", "http://be:5000",
                                                               interpolation))
-        assert item["parameters"] == {"interpolations": interpolation}, label
+        assert item.get("parameters") == {"Raw 1° cells": None, "Smoothed": {"interpolations": "bilinear"}}[label]
     assert list(sea_ice_forecast_layer.DISPLAY_LABELS) == ["Raw 1° cells", "Smoothed"]
 
 
@@ -59,14 +58,13 @@ def test_layer_week_reads_the_week_back_from_its_layer_name(layers: str, week: i
     assert sea_ice_forecast_layer.layer_week(layers) == week
 
 
-@pytest.mark.parametrize("interpolation, method", [("nearest neighbor", "nearest"), ("bilinear", "linear"),
-                                                   (None, "linear"), ("", "linear")])
+@pytest.mark.parametrize("interpolation, method", [(None, "nearest"), ("", "nearest"), ("bilinear", "linear")])
 def test_chart_method_follows_the_display_mode(interpolation: str, method: str) -> None:
-    """The chart follows the map; a click with no mode, from a layer added before the dropdown, charts bilinear."""
+    """The chart follows the map; a click with no mode comes from the raw display, so it charts the clicked cell."""
     assert sea_ice_forecast_layer.chart_method(interpolation) == method
 
 
-@pytest.mark.parametrize("interpolation", ["bicubic", "nearest", "junk"])
+@pytest.mark.parametrize("interpolation", ["bicubic", "nearest", "nearest neighbor", "junk"])
 def test_chart_method_rejects_values_with_no_chart_mode(interpolation: str) -> None:
     """Reject GeoServer's bicubic or a misspelt mode (the route's 400), rather than chart it as something else."""
     with pytest.raises(KeyError):

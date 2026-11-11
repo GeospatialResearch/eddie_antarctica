@@ -22,9 +22,10 @@ TIMESERIES_ROUTE = "/sea-ice-forecast-timeseries"
 DISPLAY_NAME = "Display"
 
 #: GeoServer ``interpolations`` value -> (form label, chart method). The first entry is the default.
-#: Keys must stay exact GeoServer values: any other string throws in GeoServer instead of drawing.
+#: None sends no ``interpolations`` at all, so GeoServer draws the cells as they are. Any other key must stay an
+#: exact GeoServer value: any other string throws in GeoServer instead of drawing.
 DISPLAY_MODES = {
-    "nearest neighbor": ("Raw 1° cells", "nearest"),
+    None: ("Raw 1° cells", "nearest"),
     "bilinear": ("Smoothed", "linear"),
 }
 
@@ -94,8 +95,8 @@ def chart_method(interpolation: Optional[str]) -> str:
     Parameters
     ----------
     interpolation : Optional[str]
-        The ``interpolations`` value Terria sends with the click. Absent or empty charts bilinear, as layers
-        added before the display dropdown do.
+        The ``interpolations`` value Terria sends with the click. Absent or empty charts the clicked cell, as the
+        raw display sends none.
 
     Returns
     -------
@@ -107,11 +108,11 @@ def chart_method(interpolation: Optional[str]) -> str:
     KeyError
         If the value has no chart mode, such as GeoServer's ``bicubic``.
     """
-    return DISPLAY_MODES[interpolation or "bilinear"][1]
+    return DISPLAY_MODES[interpolation or None][1]
 
 
 def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
-                 interpolation: str = next(iter(DISPLAY_MODES))) -> str:
+                 interpolation: Optional[str] = next(iter(DISPLAY_MODES))) -> str:
     """
     Build the Terria catalog member JSON for one published forecast week.
 
@@ -125,15 +126,16 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
         Public GeoServer root, e.g. ``http://localhost:8088``.
     backend_url : str
         Public backend root, e.g. ``http://localhost:5000``.
-    interpolation : str
+    interpolation : Optional[str]
         A ``DISPLAY_MODES`` key: how GeoServer draws the layer. Terria sends it with every click too, so the chart
-        follows the map. Defaults to the first mode.
+        follows the map. None sets no interpolation on the layer. Defaults to the first mode.
 
     Returns
     -------
     str
         A WMS catalog member, in format ``application/vnd.terriajs.catalog-member+json``.
     """
+    parameters = {"parameters": {"interpolations": interpolation}} if interpolation else {}
     return json.dumps({
         "type": "wms",
         "name": f"Sea ice concentration -- week {week} ({date})",
@@ -143,5 +145,5 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
         "crs": "EPSG:4326",
         "supportsGetTimeseries": True,
         "getFeatureInfoUrl": f"{backend_url}{TIMESERIES_ROUTE}",
-        "parameters": {"interpolations": interpolation},
+        **parameters,
     })
