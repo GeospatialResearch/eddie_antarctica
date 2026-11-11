@@ -98,7 +98,7 @@ def forecast_sea_ice(inputs_path: str) -> str:
         The written ``sic_forecast_<weeks>w_<week 1>.nc``, which the chart route now reads.
     """
     nc_path = sic_gnn_model.main(pathlib.Path(inputs_path), EnvVariable.SIC_MODEL_DIR, EnvVariable.FORECAST_NETCDF_DIR)
-    serve_model.add_forecast_to_geoserver(nc_path)
+    serve_model.add_forecast_to_geoserver(nc_path, pathlib.Path(inputs_path) / "land_sea_mask.nc")
     return nc_path.as_posix()
 
 

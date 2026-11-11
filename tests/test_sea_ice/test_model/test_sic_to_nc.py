@@ -28,6 +28,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 import rasterio as rio
 import xarray as xr
 
@@ -188,28 +189,86 @@ def test_geotiff_from_a_native_order_file_is_north_up_on_minus_180_to_180(tmp_pa
     assert pixels == [week8[node(10, -41.0)], week8[node(350, -43.0)]]
 
 
-def test_land_mask_blanks_land_cells_and_leaves_sea_cells(tmp_path: Path) -> None:
-    """A raw GeoTIFF gets NaN, never 0, where the land fraction reaches the threshold; every other cell is unchanged."""
+def land_sea_mask(path: Path, step: float, land: np.ndarray, wrapped: bool = False, time: bool = False) -> Path:
+    """
+    Write a ``land_sea_mask.nc`` that is all sea except for some boxes.
+
+    Parameters
+    ----------
+    path : Path
+        Where to write the file.
+    step : float
+        Resolution of the mask in degrees.
+    land : numpy.ndarray
+        Rows of ``(west, east, south, north)`` in 0..360 longitudes: mask cells centred inside a box are all land.
+    wrapped : bool
+        Label longitudes -180..180 and put the north first, instead of 0..360 with the south first.
+    time : bool
+        Give the land fraction a leading ``time`` dimension.
+
+    Returns
+    -------
+    Path
+        The written file.
+    """
+    fraction = xr.DataArray(0.0, dims=("lat", "lon"), name="land_sea_mask",
+                            coords={"lat": np.arange(-42.5 + step / 2, -40.5, step), "lon": np.arange(0, 360, step)})
+    for west, east, south, north in land:
+        in_box = (fraction.lon >= west) & (fraction.lon <= east) & (fraction.lat >= south) & (fraction.lat <= north)
+        fraction = fraction.where(~in_box, 1.0)
+    if wrapped:
+        fraction = fraction.assign_coords(lon=((fraction.lon + 180) % 360) - 180).sortby("lat", ascending=False)
+    if time:
+        fraction = fraction.expand_dims(time=INPUT_TIMES[:2])
+    fraction.to_dataset().to_netcdf(path)
+    return path
+
+
+def test_raw_display_geotiff_is_the_model_cells_cut_along_a_finer_coast(tmp_path: Path) -> None:
+    """Each fine pixel holds its model cell's value, or NaN on land: a half-land cell is half drawn."""
     nc_path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
-    tif_path = sic_to_nc.nc_to_gtiff(nc_path, tmp_path / "raw.tif")
-    with rio.open(tif_path) as raster:
-        before, transform = raster.read(1), raster.transform
-    fraction = xr.DataArray(np.zeros((2, LATITUDES.size, LONGITUDES.size), dtype="float32"),
-                            dims=("time", "lat", "lon"), name="land_sea_mask",
-                            coords={"time": INPUT_TIMES[:2], "lat": LATITUDES, "lon": LONGITUDES})
-    fraction.loc[{"lat": -42.0, "lon": 10.0}] = sic_to_nc.LAND_FRACTION_THRESHOLD
-    fraction.loc[{"lat": -42.0, "lon": 11.0}] = sic_to_nc.LAND_FRACTION_THRESHOLD - 0.01
-    fraction.loc[{"lat": -41.0, "lon": 180.0}] = 1.0
-    fraction.to_dataset().to_netcdf(tmp_path / "land_sea_mask.nc")
+    mask_path = land_sea_mask(tmp_path / "land_sea_mask.nc", 0.25,
+                              np.array([(9.5, 10.5, -42.5, -41.5), (20.25, 20.5, -42.5, -41.5)]))
 
-    assert sic_to_nc.mask_land(tif_path, tmp_path / "land_sea_mask.nc") == tif_path
+    tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "raw.tif", 7, mask_path, smooth=False)
 
+    week8 = encoded_forecast()[:, -1].astype("float32")
     with rio.open(tif_path) as raster:
-        after = raster.read(1)
+        assert raster.crs.to_epsg() == 4326
+        assert (raster.count, raster.dtypes[0], raster.compression.name) == (1, "float32", "lzw")
         assert np.isnan(raster.nodata)
-    land = np.zeros(before.shape, dtype=bool)
-    for longitude, latitude in [(10.0, -42.0), (-180.0, -41.0), (180.0, -41.0)]:
-        land[rio.transform.rowcol(transform, longitude, latitude)] = True
-    assert np.isnan(after[land]).all()
-    np.testing.assert_array_equal(after[~land], before[~land])
-    assert not np.isnan(before[land]).any()
+        assert (raster.width, raster.height) == (7200, 60)
+        np.testing.assert_allclose(raster.bounds, (-180.0, -43.5, 180.0, -40.5))
+        np.testing.assert_allclose(raster.res, sic_to_nc.DISPLAY_RESOLUTION)
+        points = [(30.3, -41.3), (10.0, -43.2), (179.99, -41.0), (-179.99, -41.0), (10.0, -42.0), (19.8, -42.0),
+                  (20.3, -42.0)]
+        sea, south_of_the_mask, west_of_180, east_of_180, land, half_sea, half_land = (
+            value[0] for value in raster.sample(points))
+    assert sea == week8[node(30, -41.0)]
+    assert south_of_the_mask == week8[node(10, -43.0)]
+    assert west_of_180 == east_of_180 == week8[node(180, -41.0)]
+    assert half_sea == week8[node(20, -42.0)]
+    assert np.isnan([land, half_land]).all()
+
+
+def test_smooth_display_geotiff_blends_sea_cells_only(tmp_path: Path) -> None:
+    """A high value the model gives a land cell never reaches the sea around it, and 180 degrees shows no seam."""
+    forecast = np.full_like(encoded_forecast(), 0.2)
+    forecast[node(179, -41.0)] = 0.1
+    forecast[node(10, -42.0)] = 0.9
+    nc_path = sic_to_nc.forecast_to_nc(forecast, model_inputs(), tmp_path)
+    mask_path = land_sea_mask(tmp_path / "land_sea_mask.nc", 1.0, np.array([(10.0, 10.0, -42.0, -42.0)]),
+                              wrapped=True, time=True)
+
+    tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "smooth.tif", 0, mask_path, smooth=True)
+
+    with rio.open(tif_path) as raster:
+        pixels = raster.read(1)
+        land, beside_land, west_of_180, east_of_180 = (value[0] for value in raster.sample(
+            [(10.0, -42.0), (10.8, -42.0), (179.99, -41.0), (-179.99, -41.0)]))
+    assert np.isnan(land)
+    assert beside_land == pytest.approx(0.2)
+    assert np.nanmax(pixels) <= np.float32(0.2) + 1e-6
+    assert np.isnan(pixels).sum() < 21 * 21
+    assert west_of_180 == pytest.approx(0.1975, abs=1e-4)
+    assert east_of_180 == pytest.approx(0.2)

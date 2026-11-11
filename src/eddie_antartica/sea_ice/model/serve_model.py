@@ -31,19 +31,27 @@ from src.eddie_antartica.sea_ice.model import sic_to_nc
 from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import layer_name
 
 
-def add_forecast_to_geoserver(nc_path: pathlib.Path) -> None:
+def add_forecast_to_geoserver(nc_path: pathlib.Path, land_sea_mask_path: pathlib.Path) -> None:
     """
-    Publish each forecast week as its own layer (``sea_ice_forecast_layer.layer_name``), which Run Analysis shows.
+    Publish each forecast week as two layers (``sea_ice_forecast_layer.layer_name``), which Run Analysis shows.
+
+    One layer blends between the model's sea cells, the raw layer draws each cell as it is. Both are cut along the
+    coast.
 
     Parameters
     ----------
     nc_path : pathlib.Path
         A forecast written by ``sic_gnn_model.main``.
+    land_sea_mask_path : pathlib.Path
+        The ``land_sea_mask.nc`` of the inputs the forecast was run on.
     """
     with xr.open_dataset(nc_path) as dataset:
         n_weeks = dataset.sizes["time"]
     # add_gtiff_to_geoserver copies the file into GeoServer's data dir, so the week GeoTIFFs are throwaway.
     with tempfile.TemporaryDirectory() as tmp_dir:
         for week in range(1, n_weeks + 1):
-            week_gtiff = sic_to_nc.nc_to_gtiff(nc_path, pathlib.Path(tmp_dir) / f"{layer_name(week)}.tif", week - 1)
-            geoserver.add_gtiff_to_geoserver(week_gtiff, geoserver.Workspaces.STATIC_FILES_WORKSPACE, layer_name(week))
+            for raw in (False, True):
+                name = layer_name(week, raw)
+                week_gtiff = sic_to_nc.display_gtiff(nc_path, pathlib.Path(tmp_dir) / f"{name}.tif", week - 1,
+                                                     land_sea_mask_path, smooth=not raw)
+                geoserver.add_gtiff_to_geoserver(week_gtiff, geoserver.Workspaces.STATIC_FILES_WORKSPACE, name)
