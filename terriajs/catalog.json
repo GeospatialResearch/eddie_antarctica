@@ -87,19 +87,6 @@
         },
         {
           "type": "wms",
-          "name": "Sea Ice Concentration Forecast (8 weeks)",
-          "description": "Weekly sea ice concentration forecast, as a fraction from 0 (open water) and >15% ice sheet to 1 (fully covered). Click a point on the layer to chart how it changes over the forecast.",
-          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
-          "layers": "sic_forecast_8w",
-          "styles": "sic_forecast_8w",
-          "supportsGetTimeseries": true,
-          "getFeatureInfoUrl": "$BACKEND_URL/sea-ice-timeseries-netcdf",
-          "parameters": {
-            "interpolations": "bilinear"
-          }
-        },
-        {
-          "type": "wms",
           "name": "Ice thickness: band 9",
           "description": "Modelled ice thickness in metres for condition X at T years BCE.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",

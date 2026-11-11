@@ -19,7 +19,7 @@
 """
 Publish the sea ice forecast to GeoServer as map layers: step 4 of the weekly pipeline.
 
-The layer name never changes, so ``terriajs/catalog.json`` and ``sic_forecast_8w.sld`` never do either.
+The layer names never change, so the layers Terria already shows follow the newest forecast.
 """
 import pathlib
 import tempfile
@@ -30,28 +30,16 @@ from eddie import geoserver
 from src.eddie_antartica.sea_ice.model import sic_to_nc
 from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import layer_name
 
-#: The map layer, and its file's name: ``add_gtiff_to_geoserver`` replaces the layer each week.
-LAYER_NAME = "sic_forecast_8w"
 
-
-def add_forecast_to_geoserver(nc_path: pathlib.Path) -> pathlib.Path:
+def add_forecast_to_geoserver(nc_path: pathlib.Path) -> None:
     """
-    Publish the forecast: week 8 as layer ``LAYER_NAME`` (GeoTIFF kept beside it), and each week as its own layer.
-
-    The week layers (``sea_ice_forecast_layer.layer_name``) are what Run Analysis and the story scenes show.
+    Publish each forecast week as its own layer (``sea_ice_forecast_layer.layer_name``), which Run Analysis shows.
 
     Parameters
     ----------
     nc_path : pathlib.Path
         A forecast written by ``sic_gnn_model.main``.
-
-    Returns
-    -------
-    pathlib.Path
-        The published GeoTIFF, overwritten weekly.
     """
-    gtiff_path = sic_to_nc.nc_to_gtiff(nc_path, nc_path.with_name(f"{LAYER_NAME}.tif"))
-    geoserver.add_gtiff_to_geoserver(gtiff_path, geoserver.Workspaces.STATIC_FILES_WORKSPACE, LAYER_NAME)
     with xr.open_dataset(nc_path) as dataset:
         n_weeks = dataset.sizes["time"]
     # add_gtiff_to_geoserver copies the file into GeoServer's data dir, so the week GeoTIFFs are throwaway.
@@ -59,4 +47,3 @@ def add_forecast_to_geoserver(nc_path: pathlib.Path) -> pathlib.Path:
         for week in range(1, n_weeks + 1):
             week_gtiff = sic_to_nc.nc_to_gtiff(nc_path, pathlib.Path(tmp_dir) / f"{layer_name(week)}.tif", week - 1)
             geoserver.add_gtiff_to_geoserver(week_gtiff, geoserver.Workspaces.STATIC_FILES_WORKSPACE, layer_name(week))
-    return gtiff_path

@@ -31,9 +31,8 @@ class EnvVariable(EnvVarBase):  # pylint: disable=too-few-public-methods
     # Terrain tileset built offline by ctb-tile; served by the /terrain routes in app.py.
     TERRAIN_DIR = pathlib.Path(EnvVarBase._get_env_variable("TERRAIN_DATA_DIR"))
 
-    # Weekly sea ice forecasts, sic_forecast_<weeks>w_<YYYY-MM-DD of week 1>.nc, plus the stable
-    # sic_forecast_8w.tif GeoServer copies, written by the Celery task forecast_sea_ice. The chart
-    # reads the newest .nc. Own env var, like FORECAST_RASTER_FILE.
+    # Weekly sea ice forecasts, sic_forecast_<weeks>w_<YYYY-MM-DD of week 1>.nc, written by the Celery task
+    # forecast_sea_ice. The chart reads the newest .nc. Own env var, like FORECAST_RASTER_FILE.
     FORECAST_NETCDF_DIR = pathlib.Path(EnvVarBase._get_env_variable("FORECAST_NETCDF_DIR"))
 
     # Weekly sea ice model inputs, sic_inputs_<YYYY-MM-DD>.nc, written by the Celery beat task
