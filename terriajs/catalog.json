@@ -97,11 +97,12 @@
       "type": "group",
       "name": "Sea ice forecast",
       "isOpen": true,
+      "description": "<h3>What this shows</h3><p>An 8-week forecast of sea ice concentration around Antarctica, one map per week. Concentration is the fraction of each 1-degree cell covered by sea ice, from 0 (open water) to 1 (fully covered). The legend shows it as a percentage, and cells below 1% are left clear.</p><h3>How it is made</h3><p>The forecast comes from a graph neural network by Tobias Milz. It is driven by ECMWF ERA5 data (10 m wind, 2 m air temperature, mean sea level pressure, total precipitation and sea surface temperature) and NSIDC sea ice concentration, taken from the most recent four weeks. A new forecast is made every Monday, and each map is titled with the date of its week.</p><h3>How to use it</h3><p>Open the process below, choose a week and run it to add that week's map. Click a point on the map to chart all 8 weeks at that point.</p><h3>Known limits</h3><p>The pole hole reads as 0.</p>",
       "members": [
         {
           "type": "wps",
           "name": "Sea ice concentration forecast",
-          "description": "Map one week of the newest 8-week sea ice concentration forecast. Concentration is the fraction of each 1-degree cell covered by sea ice, from 0 (open water) to 1 (fully covered); the legend shows it as a percentage. The forecast is made each week by a graph neural network by Tobias Milz, driven by ECMWF ERA5 and NSIDC sea ice data, and each layer is titled with the date of its week. The pole hole reads as 0. Click the map layer it adds to chart all 8 weeks at that point.",
+          "description": "Map one week of the newest 8-week sea ice concentration forecast, then click the map to chart all 8 weeks at that point. Please click the parent 'Sea ice forecast' folder for a detailed description.",
           "url": "$BACKEND_URL/wps",
           "identifier": "sea_ice_forecast"
         }
