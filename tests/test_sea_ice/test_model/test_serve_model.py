@@ -24,6 +24,7 @@ from typing import Dict, Iterator
 import numpy as np
 import pytest
 import rasterio as rio
+import xarray as xr
 
 from src.eddie_antartica.sea_ice.model import sic_to_nc
 from tests.test_sea_ice.test_model.test_sic_to_nc import N_WEEKS, encoded_forecast, model_inputs, node
@@ -62,15 +63,23 @@ def fixture_published(monkeypatch: pytest.MonkeyPatch) -> Iterator[Dict[str, flo
 
 def test_the_forecast_run_publishes_every_week_layer(published: Dict[str, float], tmp_path: Path) -> None:
     """
-    The weekly run publishes every week's own layer, as FReDT's model run publishes its output.
+    The weekly run publishes every week's layer and its raw twin, which alone has land blanked.
 
     Run Analysis only points at these layers, so it shows the newest forecast with no redraw.
     """
     nc_path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
 
-    importlib.import_module(SERVE_MODEL).add_forecast_to_geoserver(nc_path)
+    inputs = model_inputs()
+    fraction = xr.DataArray(np.zeros((inputs.time.size, inputs.lat.size, inputs.lon.size), dtype="float32"),
+                            dims=("time", "lat", "lon"), coords=inputs.coords, name="land_sea_mask")
+    fraction.loc[{"lat": -41.0, "lon": 10.0}] = 1.0
+    fraction.to_dataset().to_netcdf(tmp_path / "land_sea_mask.nc")
+
+    importlib.import_module(SERVE_MODEL).add_forecast_to_geoserver(nc_path, tmp_path / "land_sea_mask.nc")
 
     weeks = encoded_forecast()[node(10, -41.0)]
-    assert list(published) == [f"sic_forecast_week{week}" for week in range(1, N_WEEKS + 1)]
+    assert list(published) == [f"sic_forecast_week{week}{suffix}" for week in range(1, N_WEEKS + 1)
+                               for suffix in ("", "_raw")]
+    assert np.isnan([published[f"sic_forecast_week{week}_raw"] for week in range(1, N_WEEKS + 1)]).all()
     np.testing.assert_allclose([published[f"sic_forecast_week{week}"] for week in range(1, N_WEEKS + 1)], weeks,
                                rtol=1e-6)

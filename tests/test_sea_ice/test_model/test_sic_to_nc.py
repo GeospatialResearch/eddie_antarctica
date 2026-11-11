@@ -186,3 +186,30 @@ def test_geotiff_from_a_native_order_file_is_north_up_on_minus_180_to_180(tmp_pa
         assert raster.bounds.left == -181.5                                 # the -180 column, centred on its label
         pixels = [value[0] for value in raster.sample([(10.0, -41.0), (-10.0, -43.0)])]
     assert pixels == [week8[node(10, -41.0)], week8[node(350, -43.0)]]
+
+
+def test_land_mask_blanks_land_cells_and_leaves_sea_cells(tmp_path: Path) -> None:
+    """A raw GeoTIFF gets NaN, never 0, where the land fraction reaches the threshold; every other cell is unchanged."""
+    nc_path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
+    tif_path = sic_to_nc.nc_to_gtiff(nc_path, tmp_path / "raw.tif")
+    with rio.open(tif_path) as raster:
+        before, transform = raster.read(1), raster.transform
+    fraction = xr.DataArray(np.zeros((2, LATITUDES.size, LONGITUDES.size), dtype="float32"),
+                            dims=("time", "lat", "lon"), name="land_sea_mask",
+                            coords={"time": INPUT_TIMES[:2], "lat": LATITUDES, "lon": LONGITUDES})
+    fraction.loc[{"lat": -42.0, "lon": 10.0}] = sic_to_nc.LAND_FRACTION_THRESHOLD
+    fraction.loc[{"lat": -42.0, "lon": 11.0}] = sic_to_nc.LAND_FRACTION_THRESHOLD - 0.01
+    fraction.loc[{"lat": -41.0, "lon": 180.0}] = 1.0
+    fraction.to_dataset().to_netcdf(tmp_path / "land_sea_mask.nc")
+
+    assert sic_to_nc.mask_land(tif_path, tmp_path / "land_sea_mask.nc") == tif_path
+
+    with rio.open(tif_path) as raster:
+        after = raster.read(1)
+        assert np.isnan(raster.nodata)
+    land = np.zeros(before.shape, dtype=bool)
+    for longitude, latitude in [(10.0, -42.0), (-180.0, -41.0), (180.0, -41.0)]:
+        land[rio.transform.rowcol(transform, longitude, latitude)] = True
+    assert np.isnan(after[land]).all()
+    np.testing.assert_array_equal(after[~land], before[~land])
+    assert not np.isnan(before[land]).any()
