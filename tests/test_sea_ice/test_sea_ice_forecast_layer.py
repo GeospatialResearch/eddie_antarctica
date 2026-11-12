@@ -33,7 +33,7 @@ def test_catalog_item_is_a_charted_wms_layer_for_the_week() -> None:
         "type": "wms",
         "name": "Sea ice concentration -- week 3 (2026-10-08)",
         "url": "http://gs:8088/geoserver/static_files/wms",
-        "layers": "sic_forecast_week3",
+        "layers": "sic_forecast_week3_raw",
         "styles": "sic_forecast_8w",
         "crs": "EPSG:4326",
         "supportsGetTimeseries": True,
@@ -47,11 +47,13 @@ def test_the_layer_draws_and_charts_the_display_chosen_in_the_form() -> None:
         item = json.loads(sea_ice_forecast_layer.catalog_item(3, "2026-10-08", "http://gs:8088", "http://be:5000",
                                                               interpolation))
         assert item.get("parameters") == {"Raw 1° cells": None, "Smoothed": {"interpolations": "bilinear"}}[label]
+        assert item["layers"] == {"Raw 1° cells": "sic_forecast_week3_raw", "Smoothed": "sic_forecast_week3"}[label]
     assert list(sea_ice_forecast_layer.DISPLAY_LABELS) == ["Raw 1° cells", "Smoothed"]
 
 
 @pytest.mark.parametrize("layers, week", [(sea_ice_forecast_layer.layer_name(3), 3),
                                           (sea_ice_forecast_layer.layer_name(8), 8),
+                                          (sea_ice_forecast_layer.layer_name(8, raw=True), 8),
                                           ("sic_forecast_8w", None), ("sic_forecast_week0", None), (None, None)])
 def test_layer_week_reads_the_week_back_from_its_layer_name(layers: str, week: int) -> None:
     """The click's ``layers`` names the week the map shows; any other layer gives no week, so the chart is whole."""

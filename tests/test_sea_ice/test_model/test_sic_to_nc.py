@@ -28,9 +28,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 import rasterio as rio
 import xarray as xr
 
+from src.eddie_antartica.sea_ice.inputs import land_mask_from_nsidc
 from src.eddie_antartica.sea_ice.model import sic_data_from_nc, sic_to_nc
 
 LATITUDES = np.array([-43.0, -42.0, -41.0])     # ascending, as the model holds them
@@ -186,3 +188,106 @@ def test_geotiff_from_a_native_order_file_is_north_up_on_minus_180_to_180(tmp_pa
         assert raster.bounds.left == -181.5                                 # the -180 column, centred on its label
         pixels = [value[0] for value in raster.sample([(10.0, -41.0), (-10.0, -43.0)])]
     assert pixels == [week8[node(10, -41.0)], week8[node(350, -43.0)]]
+
+
+#: NSIDC-0780 class names, with values of the test's own choosing.
+NSIDC_CLASSES = {"ocean_no_region_specified": 0, "ross_sea": 4, "land": 30, "fresh_free_water": 32, "ice_on_land": 33,
+                 "floating_ice_shelf": 34, "ocean_disconnected": 35}
+
+
+def nsidc_mask(path: Path, step: float, land: np.ndarray, south: float = -42.5, north: float = -40.5) -> Path:
+    """
+    Write an NSIDC-0780-shaped file on a lat/lon grid that is all sea except for some boxes of land.
+
+    Parameters
+    ----------
+    path : Path
+        Where to write the file.
+    step : float
+        Resolution of the grid in degrees, its cells centred on multiples of ``step`` in longitude.
+    land : numpy.ndarray
+        Rows of ``(west, east, south, north)`` in 0..360 longitudes: cells centred inside a box are land.
+    south : float
+        Southern edge of the grid; south of it is off the grid, so sea.
+    north : float
+        Northern edge of the grid.
+
+    Returns
+    -------
+    Path
+        The written file.
+    """
+    x = np.arange(-180, 180, step)
+    y = np.arange(north - step / 2, south, -step)
+    surface = np.zeros((y.size, x.size), dtype="uint8")
+    for west, east, box_south, box_north in land:
+        in_box = (((x % 360) >= west) & ((x % 360) <= east))[None, :] & ((y >= box_south) & (y <= box_north))[:, None]
+        surface[in_box] = NSIDC_CLASSES["land"]
+    regions = xr.DataArray(surface, dims=("y", "x"), coords={"x": x, "y": y},
+                           name=land_mask_from_nsidc.MASK_VARIABLE,
+                           attrs={"flag_values": np.array(list(NSIDC_CLASSES.values()), dtype="uint8"),
+                                  "flag_meanings": " ".join(NSIDC_CLASSES)})
+    regions.rio.write_crs("EPSG:4326").to_dataset().to_netcdf(path)
+    return path
+
+
+def test_display_geotiff_is_cut_along_a_coast_finer_than_the_model_grid(tmp_path: Path) -> None:
+    """The fine grid is cut where the mask is land: a half-land model cell is half drawn, and unmasked rows are sea."""
+    nc_path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
+    mask_path = nsidc_mask(tmp_path / "nsidc.nc", 0.25,
+                           np.array([(9.5, 10.5, -42.5, -41.5), (20.25, 20.5, -42.5, -41.5)]))
+
+    tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "display.tif", 7, mask_path)
+
+    week8 = encoded_forecast()[:, -1].astype("float32")
+    with rio.open(tif_path) as raster:
+        assert raster.crs.to_epsg() == 4326
+        assert (raster.count, raster.dtypes[0], raster.compression.name) == (1, "float32", "lzw")
+        assert np.isnan(raster.nodata)
+        assert (raster.width, raster.height) == (7200, 60)
+        np.testing.assert_allclose(raster.bounds, (-180.0, -43.5, 180.0, -40.5))
+        np.testing.assert_allclose(raster.res, sic_to_nc.DISPLAY_RESOLUTION)
+        points = [(30.025, -41.025), (10.025, -43.025), (10.0, -42.0), (19.8, -42.0), (20.3, -42.0)]
+        sea, south_of_the_mask, land, half_sea, half_land = (value[0] for value in raster.sample(points))
+    assert sea == pytest.approx(week8[node(30, -41.0)], abs=2e-3)
+    assert south_of_the_mask == pytest.approx(week8[node(10, -43.0)], abs=2e-3)
+    assert not np.isnan(half_sea)
+    assert np.isnan([land, half_land]).all()
+
+
+def test_a_model_cell_that_is_mostly_land_is_left_out_of_the_blend(tmp_path: Path) -> None:
+    """A fine mask is averaged over the model cell, so a strip of sea through the cell's centre does not make it sea."""
+    forecast = np.full_like(encoded_forecast(), 0.2)
+    forecast[node(10, -42.0)] = 0.9
+    nc_path = sic_to_nc.forecast_to_nc(forecast, model_inputs(), tmp_path)
+    mask_path = nsidc_mask(tmp_path / "nsidc.nc", 0.25,
+                           np.array([(9.5, 9.9, -42.5, -41.5), (10.1, 10.5, -42.5, -41.5)]))
+
+    tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "display.tif", 0, mask_path)
+
+    with rio.open(tif_path) as raster:
+        strip_of_sea = next(raster.sample([(10.025, -42.025)]))[0]
+        assert np.nanmax(raster.read(1)) <= np.float32(0.2) + 1e-6
+    assert strip_of_sea == pytest.approx(0.2)
+
+
+def test_smooth_display_geotiff_blends_sea_cells_only(tmp_path: Path) -> None:
+    """A high value the model gives a land cell never reaches the sea around it, and 180 degrees shows no seam."""
+    forecast = np.full_like(encoded_forecast(), 0.2)
+    forecast[node(179, -41.0)] = 0.1
+    forecast[node(10, -42.0)] = 0.9
+    nc_path = sic_to_nc.forecast_to_nc(forecast, model_inputs(), tmp_path)
+    mask_path = nsidc_mask(tmp_path / "nsidc.nc", 1.0, np.array([(10.0, 10.0, -42.0, -42.0)]))
+
+    tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "smooth.tif", 0, mask_path)
+
+    with rio.open(tif_path) as raster:
+        pixels = raster.read(1)
+        land, beside_land, west_of_180, east_of_180 = (value[0] for value in raster.sample(
+            [(10.0, -42.0), (10.8, -42.0), (179.99, -41.0), (-179.99, -41.0)]))
+    assert np.isnan(land)
+    assert beside_land == pytest.approx(0.2)
+    assert np.nanmax(pixels) <= np.float32(0.2) + 1e-6
+    assert np.isnan(pixels).sum() < 21 * 21
+    assert west_of_180 == pytest.approx(0.1975, abs=1e-4)
+    assert east_of_180 == pytest.approx(0.2)

@@ -33,7 +33,7 @@ DISPLAY_MODES = {
 DISPLAY_LABELS = {label: interpolation for interpolation, (label, _) in DISPLAY_MODES.items()}
 
 
-def layer_name(week: int) -> str:
+def layer_name(week: int, raw: bool = False) -> str:
     """
     Name the GeoServer layer for one forecast week.
 
@@ -41,13 +41,15 @@ def layer_name(week: int) -> str:
     ----------
     week : int
         Forecast week, 1-based.
+    raw : bool
+       True for the week's raw layer, the model output as it is; False for the layer drawn smoothed.
 
     Returns
     -------
     str
-        ``sic_forecast_week<week>``.
+        ``sic_forecast_week<week>``, or ``sic_forecast_week<week>_raw``.
     """
-    return f"sic_forecast_week{week}"
+    return f"sic_forecast_week{week}{'_raw' if raw else ''}"
 
 
 def layer_week(layers: Optional[str]) -> Optional[int]:
@@ -64,7 +66,7 @@ def layer_week(layers: Optional[str]) -> Optional[int]:
     Optional[int]
         The 1-based week, or None if ``layers`` is not one week's layer.
     """
-    week = re.fullmatch(r"sic_forecast_week([1-9][0-9]*)", layers or "")
+    week = re.fullmatch(r"sic_forecast_week([1-9][0-9]*)(_raw)?", layers or "")
     return int(week[1]) if week else None
 
 
@@ -140,7 +142,7 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
         "type": "wms",
         "name": f"Sea ice concentration -- week {week} ({date})",
         "url": f"{geoserver_url}/geoserver/static_files/wms",
-        "layers": layer_name(week),
+        "layers": layer_name(week, raw=chart_method(interpolation) == "nearest"),
         "styles": STYLE,
         "crs": "EPSG:4326",
         "supportsGetTimeseries": True,

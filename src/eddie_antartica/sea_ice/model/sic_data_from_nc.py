@@ -41,6 +41,7 @@ from rasterio.crs import CRS
 from rasterio.warp import transform
 import xarray as xr
 
+from src.eddie_antartica.sea_ice.inputs.land_mask_from_nsidc import land_at
 from src.eddie_antartica.sea_ice.model.sic_data_from_raster import (
     OPEN_WATER, TIME_COLUMN, VALUE_COLUMN, _empty_series, bilinear_series)
 
@@ -62,7 +63,9 @@ def point_series(longitude: float,
                  latitude: float,
                  source: Union[str, pathlib.Path],
                  method: str = "linear",
-                 week: Optional[int] = None) -> pd.DataFrame:
+                 week: Optional[int] = None,
+                 *,
+                 nsidc_path: Optional[pathlib.Path] = None) -> pd.DataFrame:
     """
     Extract the forecast time series at a point, as the map draws it: blended, or the clicked cell.
 
@@ -81,12 +84,16 @@ def point_series(longitude: float,
     week : Optional[int]
         The 1-based week the clicked layer shows. If the map draws nothing there that week, the chart is empty.
         None charts every week.
+    nsidc_path : Optional[pathlib.Path]
+        The NSIDC-0780 file the smoothed map is cut with. A ``"linear"`` chart is empty where it is land, as the
+        map is. None cuts nothing.
 
     Returns
     -------
     pandas.DataFrame
         Columns ``Time (UTC)`` and ``Sea ice concentration (fraction)``, one row per
-        forecast step. Zero rows if the point falls outside the grid, or the map draws nothing there in ``week``.
+        forecast step. Zero rows if the point falls outside the grid, or the map draws nothing there in ``week``
+        or on land.
 
     Raises
     ------
@@ -95,6 +102,8 @@ def point_series(longitude: float,
     KeyError
         If the file does not hold the forecast variable, or states no CRS.
     """
+    if method == "linear" and nsidc_path is not None and land_at(nsidc_path, np.array(longitude), np.array(latitude)):
+        return _empty_series()
     with xr.open_dataset(source, decode_coords="all") as dataset:
         data = dataset[VARIABLE]
         grid_crs = CRS.from_user_input(dataset[data.encoding["grid_mapping"]].attrs["crs_wkt"])
