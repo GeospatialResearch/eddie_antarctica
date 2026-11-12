@@ -100,4 +100,4 @@ def test_every_catalog_interpolation_is_a_display_mode() -> None:
     """Every interpolations the catalog sends is a display mode, so a story's WPS layer still charts."""
     interpolations = set(re.findall(r'\\?"interpolations\\?": *\\?"([^"\\]+)', CATALOG_PATH.read_text()))
 
-    assert interpolations and interpolations - set(sea_ice_forecast_layer.DISPLAY_MODES) == set()
+    assert interpolations and interpolations - set(sea_ice_forecast_layer.CHART_METHODS) == set()

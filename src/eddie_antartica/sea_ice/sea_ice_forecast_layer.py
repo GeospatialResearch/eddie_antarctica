@@ -6,7 +6,6 @@ week's date and points Terria at that layer: nothing is drawn per request, and t
 """
 import json
 import pathlib
-import re
 from typing import Optional, Union
 
 import pandas as pd
@@ -18,19 +17,13 @@ STYLE = "sic_forecast_8w"
 #: Chart route in ``src/eddie_antartica/blueprint.py``; Terria appends the GetFeatureInfo query to it.
 TIMESERIES_ROUTE = "/sea-ice-forecast-timeseries"
 
-#: Name of the display dropdown on the sea_ice_forecast process form.
-DISPLAY_NAME = "Display"
+#: Form label -> GeoServer ``interpolations`` value; the first entry is the form default. None sends no
+#: ``interpolations`` at all, so GeoServer draws the cells as they are. Any other value must stay an exact
+#: GeoServer value: any other string throws in GeoServer instead of drawing.
+DISPLAY_LABELS = {"Raw 1° cells": None, "Smoothed": "bilinear"}
 
-#: GeoServer ``interpolations`` value -> (form label, chart method). The first entry is the default.
-#: None sends no ``interpolations`` at all, so GeoServer draws the cells as they are. Any other key must stay an
-#: exact GeoServer value: any other string throws in GeoServer instead of drawing.
-DISPLAY_MODES = {
-    None: ("Raw 1° cells", "nearest"),
-    "bilinear": ("Smoothed", "linear"),
-}
-
-#: Form label -> GeoServer ``interpolations`` value, in the same order.
-DISPLAY_LABELS = {label: interpolation for interpolation, (label, _) in DISPLAY_MODES.items()}
+#: GeoServer ``interpolations`` from a click -> ``xarray`` interpolation method; anything else is the route's 400.
+CHART_METHODS = {None: "nearest", "bilinear": "linear"}
 
 
 def layer_name(week: int) -> str:
@@ -48,24 +41,6 @@ def layer_name(week: int) -> str:
         ``sic_forecast_week<week>``.
     """
     return f"sic_forecast_week{week}"
-
-
-def layer_week(layers: Optional[str]) -> Optional[int]:
-    """
-    Read the forecast week back from a ``layer_name``, as a click's GetFeatureInfo ``layers`` sends it.
-
-    Parameters
-    ----------
-    layers : Optional[str]
-        The ``layers`` value of the click.
-
-    Returns
-    -------
-    Optional[int]
-        The 1-based week, or None if ``layers`` is not one week's layer.
-    """
-    week = re.fullmatch(r"sic_forecast_week([1-9][0-9]*)", layers or "")
-    return int(week[1]) if week else None
 
 
 def week_date(forecast: Union[str, pathlib.Path], week: int) -> str:
@@ -88,31 +63,8 @@ def week_date(forecast: Union[str, pathlib.Path], week: int) -> str:
         return pd.Timestamp(dataset["time"].values[week - 1]).strftime("%Y-%m-%d")
 
 
-def chart_method(interpolation: Optional[str]) -> str:
-    """
-    Find the chart method for the map's display mode, so a click charts what the map draws.
-
-    Parameters
-    ----------
-    interpolation : Optional[str]
-        The ``interpolations`` value Terria sends with the click. Absent or empty charts the clicked cell, as the
-        raw display sends none.
-
-    Returns
-    -------
-    str
-        The ``xarray`` interpolation method: ``"nearest"`` or ``"linear"``.
-
-    Raises
-    ------
-    KeyError
-        If the value has no chart mode, such as GeoServer's ``bicubic``.
-    """
-    return DISPLAY_MODES[interpolation or None][1]
-
-
 def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
-                 interpolation: Optional[str] = next(iter(DISPLAY_MODES))) -> str:
+                 interpolation: Optional[str] = None) -> str:
     """
     Build the Terria catalog member JSON for one published forecast week.
 
@@ -127,8 +79,8 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
     backend_url : str
         Public backend root, e.g. ``http://localhost:5000``.
     interpolation : Optional[str]
-        A ``DISPLAY_MODES`` key: how GeoServer draws the layer. Terria sends it with every click too, so the chart
-        follows the map. None sets no interpolation on the layer. Defaults to the first mode.
+        A ``DISPLAY_LABELS`` value: how GeoServer draws the layer. Terria sends it with every click too, so the
+        chart follows the map. None, the default, sets no interpolation and draws the raw cells.
 
     Returns
     -------
