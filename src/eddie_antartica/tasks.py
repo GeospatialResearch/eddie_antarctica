@@ -98,7 +98,7 @@ def forecast_sea_ice(inputs_path: str) -> str:
         The written ``sic_forecast_<weeks>w_<week 1>.nc``, which the chart route now reads.
     """
     nc_path = sic_gnn_model.main(pathlib.Path(inputs_path), EnvVariable.SIC_MODEL_DIR, EnvVariable.FORECAST_NETCDF_DIR)
-    serve_model.add_forecast_to_geoserver(nc_path, pathlib.Path(inputs_path) / "land_sea_mask.nc")
+    serve_model.add_forecast_to_geoserver(nc_path, EnvVariable.SIC_LAND_MASK)
     return nc_path.as_posix()
 
 
@@ -123,7 +123,8 @@ def sea_ice_forecast_point_series(longitude: float, latitude: float, method: str
     method : str
         ``"linear"`` charts the blend the smoothed map draws, ``"nearest"`` the clicked model cell.
     week : Optional[int]
-        The week the clicked layer shows; the chart is empty where the map draws nothing that week.
+        The week the clicked layer shows; the chart is empty where the map draws nothing that week, or the smoothed
+        map cuts out land.
 
     Returns
     -------
@@ -131,4 +132,5 @@ def sea_ice_forecast_point_series(longitude: float, latitude: float, method: str
         The two-column CSV Terria plots: time, then concentration; just the header off the grid.
     """
     forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
-    return point_series(longitude, latitude, forecast, method, week).to_csv(index=False)
+    series = point_series(longitude, latitude, forecast, method, week, land_sea_mask_path=EnvVariable.SIC_LAND_MASK)
+    return series.to_csv(index=False)
