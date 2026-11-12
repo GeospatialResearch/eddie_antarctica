@@ -63,23 +63,24 @@ def fixture_published(monkeypatch: pytest.MonkeyPatch) -> Iterator[Dict[str, Lis
 
 def test_the_forecast_run_publishes_every_week_layer(published: Dict[str, List[float]], tmp_path: Path) -> None:
     """
-    The weekly run publishes every week's layer and its raw twin, both blank on land.
+    The weekly run publishes every week's layer, blank on land, and its raw twin, which is the model output as it is.
 
     Run Analysis only points at these layers, so it shows the newest forecast with no redraw.
     """
     nc_path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
 
     inputs = model_inputs()
-    fraction = xr.DataArray(np.zeros((inputs.time.size, inputs.lat.size, inputs.lon.size), dtype="float32"),
-                            dims=("time", "lat", "lon"), coords=inputs.coords, name="land_sea_mask")
+    fraction = xr.DataArray(np.zeros((inputs.lat.size, inputs.lon.size), dtype="uint8"),
+                            dims=("lat", "lon"), coords={"lat": inputs.lat, "lon": inputs.lon}, name="land_sea_mask")
     fraction.loc[{"lat": -41.0, "lon": 10.0}] = 1.0
     fraction.to_dataset().to_netcdf(tmp_path / "land_sea_mask.nc")
 
     importlib.import_module(SERVE_MODEL).add_forecast_to_geoserver(nc_path, tmp_path / "land_sea_mask.nc")
 
-    weeks = encoded_forecast()[node(30, -42.0)].astype("float32")
+    forecast = encoded_forecast().astype("float32")
     layers = [f"sic_forecast_week{week}{suffix}" for week in range(1, N_WEEKS + 1) for suffix in ("", "_raw")]
     assert list(published) == layers
-    assert np.isnan([published[layer][0] for layer in layers]).all()
-    assert [published[layer][1] for layer in layers[1::2]] == list(weeks)
-    np.testing.assert_allclose([published[layer][1] for layer in layers[::2]], weeks, atol=2e-3)
+    assert np.isnan([published[layer][0] for layer in layers[::2]]).all()
+    np.testing.assert_allclose([published[layer][1] for layer in layers[::2]], forecast[node(30, -42.0)], atol=2e-3)
+    assert [published[layer] for layer in layers[1::2]] == [
+        [week[node(10, -41.0)], week[node(30, -42.0)]] for week in forecast.T]

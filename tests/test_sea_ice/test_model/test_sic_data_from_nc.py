@@ -325,3 +325,19 @@ def test_chart_is_blank_where_the_map_draws_nothing_in_its_week(tmp_path: Path, 
     assert len(sic_data_from_nc.point_series(LON0, LAT0, netcdf, method, week=2)) == N_BANDS
     # No week, as from the catalog layer's route: every week is charted, as before.
     assert len(sic_data_from_nc.point_series(LON0, LAT0, netcdf, method)) == N_BANDS
+
+
+def test_smoothed_chart_is_blank_where_the_mask_cuts_out_land(tmp_path: Path) -> None:
+    """The smoothed map draws nothing on the mask's land, so its chart is empty there; the raw chart is not cut."""
+    netcdf = forecast_nc(tmp_path)
+    fraction = xr.DataArray(np.zeros((40, 7200), dtype="uint8"), dims=("lat", "lon"), name="land_sea_mask",
+                            coords={"lat": LAT0 + 1 - 0.05 * np.arange(40), "lon": -179.975 + 0.05 * np.arange(7200)})
+    fraction.loc[{"lat": slice(LAT0 + 0.01, LAT0 - 0.21), "lon": slice(LON0 - 0.01, LON0 + 0.21)}] = 1
+    fraction.to_dataset().to_netcdf(tmp_path / "land_sea_mask.nc")
+
+    assert sic_data_from_nc.point_series(LON0 + 0.1, LAT0 - 0.1, netcdf,
+                                         land_sea_mask_path=tmp_path / "land_sea_mask.nc").empty
+    assert len(sic_data_from_nc.point_series(LON0 + 360.3, LAT0 - 0.3, netcdf,
+                                             land_sea_mask_path=tmp_path / "land_sea_mask.nc")) == N_BANDS
+    assert len(sic_data_from_nc.point_series(LON0 + 0.1, LAT0 - 0.1, netcdf, method="nearest",
+                                             land_sea_mask_path=tmp_path / "land_sea_mask.nc")) == N_BANDS

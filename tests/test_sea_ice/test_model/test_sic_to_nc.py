@@ -189,7 +189,7 @@ def test_geotiff_from_a_native_order_file_is_north_up_on_minus_180_to_180(tmp_pa
     assert pixels == [week8[node(10, -41.0)], week8[node(350, -43.0)]]
 
 
-def land_sea_mask(path: Path, step: float, land: np.ndarray, wrapped: bool = False, time: bool = False) -> Path:
+def land_sea_mask(path: Path, step: float, land: np.ndarray, wrapped: bool = False) -> Path:
     """
     Write a ``land_sea_mask.nc`` that is all sea except for some boxes.
 
@@ -203,8 +203,6 @@ def land_sea_mask(path: Path, step: float, land: np.ndarray, wrapped: bool = Fal
         Rows of ``(west, east, south, north)`` in 0..360 longitudes: mask cells centred inside a box are all land.
     wrapped : bool
         Label longitudes -180..180 and put the north first, instead of 0..360 with the south first.
-    time : bool
-        Give the land fraction a leading ``time`` dimension.
 
     Returns
     -------
@@ -218,19 +216,17 @@ def land_sea_mask(path: Path, step: float, land: np.ndarray, wrapped: bool = Fal
         fraction = fraction.where(~in_box, 1.0)
     if wrapped:
         fraction = fraction.assign_coords(lon=((fraction.lon + 180) % 360) - 180).sortby("lat", ascending=False)
-    if time:
-        fraction = fraction.expand_dims(time=INPUT_TIMES[:2])
     fraction.to_dataset().to_netcdf(path)
     return path
 
 
-def test_raw_display_geotiff_is_the_model_cells_cut_along_a_finer_coast(tmp_path: Path) -> None:
-    """Each fine pixel holds its model cell's value, or NaN on land: a half-land cell is half drawn."""
+def test_display_geotiff_is_cut_along_a_coast_finer_than_the_model_grid(tmp_path: Path) -> None:
+    """The fine grid is cut where the mask is land: a half-land model cell is half drawn, and unmasked rows are sea."""
     nc_path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
     mask_path = land_sea_mask(tmp_path / "land_sea_mask.nc", 0.25,
                               np.array([(9.5, 10.5, -42.5, -41.5), (20.25, 20.5, -42.5, -41.5)]))
 
-    tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "raw.tif", 7, mask_path, smooth=False)
+    tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "display.tif", 7, mask_path)
 
     week8 = encoded_forecast()[:, -1].astype("float32")
     with rio.open(tif_path) as raster:
@@ -240,15 +236,28 @@ def test_raw_display_geotiff_is_the_model_cells_cut_along_a_finer_coast(tmp_path
         assert (raster.width, raster.height) == (7200, 60)
         np.testing.assert_allclose(raster.bounds, (-180.0, -43.5, 180.0, -40.5))
         np.testing.assert_allclose(raster.res, sic_to_nc.DISPLAY_RESOLUTION)
-        points = [(30.3, -41.3), (10.0, -43.2), (179.99, -41.0), (-179.99, -41.0), (10.0, -42.0), (19.8, -42.0),
-                  (20.3, -42.0)]
-        sea, south_of_the_mask, west_of_180, east_of_180, land, half_sea, half_land = (
-            value[0] for value in raster.sample(points))
-    assert sea == week8[node(30, -41.0)]
-    assert south_of_the_mask == week8[node(10, -43.0)]
-    assert west_of_180 == east_of_180 == week8[node(180, -41.0)]
-    assert half_sea == week8[node(20, -42.0)]
+        points = [(30.025, -41.025), (10.025, -43.025), (10.0, -42.0), (19.8, -42.0), (20.3, -42.0)]
+        sea, south_of_the_mask, land, half_sea, half_land = (value[0] for value in raster.sample(points))
+    assert sea == pytest.approx(week8[node(30, -41.0)], abs=2e-3)
+    assert south_of_the_mask == pytest.approx(week8[node(10, -43.0)], abs=2e-3)
+    assert not np.isnan(half_sea)
     assert np.isnan([land, half_land]).all()
+
+
+def test_a_model_cell_that_is_mostly_land_is_left_out_of_the_blend(tmp_path: Path) -> None:
+    """A fine mask is averaged over the model cell, so a strip of sea through the cell's centre does not make it sea."""
+    forecast = np.full_like(encoded_forecast(), 0.2)
+    forecast[node(10, -42.0)] = 0.9
+    nc_path = sic_to_nc.forecast_to_nc(forecast, model_inputs(), tmp_path)
+    mask_path = land_sea_mask(tmp_path / "land_sea_mask.nc", 0.25,
+                              np.array([(9.5, 9.9, -42.5, -41.5), (10.1, 10.5, -42.5, -41.5)]))
+
+    tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "display.tif", 0, mask_path)
+
+    with rio.open(tif_path) as raster:
+        strip_of_sea = next(raster.sample([(10.025, -42.025)]))[0]
+        assert np.nanmax(raster.read(1)) <= np.float32(0.2) + 1e-6
+    assert strip_of_sea == pytest.approx(0.2)
 
 
 def test_smooth_display_geotiff_blends_sea_cells_only(tmp_path: Path) -> None:
@@ -258,9 +267,9 @@ def test_smooth_display_geotiff_blends_sea_cells_only(tmp_path: Path) -> None:
     forecast[node(10, -42.0)] = 0.9
     nc_path = sic_to_nc.forecast_to_nc(forecast, model_inputs(), tmp_path)
     mask_path = land_sea_mask(tmp_path / "land_sea_mask.nc", 1.0, np.array([(10.0, 10.0, -42.0, -42.0)]),
-                              wrapped=True, time=True)
+                              wrapped=True)
 
-    tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "smooth.tif", 0, mask_path, smooth=True)
+    tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "smooth.tif", 0, mask_path)
 
     with rio.open(tif_path) as raster:
         pixels = raster.read(1)
