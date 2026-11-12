@@ -26,19 +26,17 @@ written NetCDF with ``rio.to_raster``, so the map and the chart read one grid.
 the preprocessed NSIDC/ERA5 inputs alike. ``rioxarray`` comes in with ``geocube``.
 """
 import pathlib
-from typing import Union
+from typing import Tuple, Union
 
 import numpy as np
 import pandas as pd
 import rioxarray  # noqa: F401  # pylint: disable=unused-import  # registers the .rio accessor
 import xarray as xr
 
-from src.eddie_antartica.sea_ice.model.sic_data_from_nc import VARIABLE
+from src.eddie_antartica.sea_ice.model.sic_data_from_nc import LAND_FRACTION_THRESHOLD, VARIABLE
 
 #: Values above this are NSIDC land/coast/pole-hole flags (251-254), not concentrations.
 FLAG_THRESHOLD = 1.0
-
-LAND_FRACTION_THRESHOLD = 0.5
 
 DISPLAY_RESOLUTION = 0.05
 
@@ -162,9 +160,9 @@ def nc_to_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int = -1)
     return gtiff_path
 
 
-def _resample(grid: xr.DataArray, lon: np.ndarray, lat: np.ndarray, method: str) -> np.ndarray:
+def _resample(grid: xr.DataArray, lon: np.ndarray, lat: np.ndarray) -> np.ndarray:
     """
-    Interpolate a global ``(lat, lon)`` grid of cell centres onto other cell centres, continuous across 180 degrees.
+    Interpolate a global ``(lat, lon)`` grid of cell centres linearly onto other cell centres, continuous across 180.
 
     Parameters
     ----------
@@ -174,8 +172,6 @@ def _resample(grid: xr.DataArray, lon: np.ndarray, lat: np.ndarray, method: str)
         Longitudes to interpolate at, within -180..180.
     lat : numpy.ndarray
         Latitudes to interpolate at.
-    method : str
-        ``xarray`` interpolation: ``"nearest"`` or ``"linear"``.
 
     Returns
     -------
@@ -188,14 +184,38 @@ def _resample(grid: xr.DataArray, lon: np.ndarray, lat: np.ndarray, method: str)
                       west.assign_coords(lon=float(west.lon) + 360)], dim="lon")
     south, north = float(grid.lat[0]), float(grid.lat[-1])
     half = float(grid.lat.diff("lat").max()) / 2
-    values = grid.interp(lon=lon, lat=np.clip(lat, south, north), method=method).values
+    values = grid.interp(lon=lon, lat=np.clip(lat, south, north)).values
     return np.where(((lat >= south - half) & (lat <= north + half))[:, None], values, np.nan)
 
 
-def display_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int, land_sea_mask_path: pathlib.Path,
-                  smooth: bool) -> pathlib.Path:
+def display_grid(north: float, south: float) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Write one week of the forecast as a ``DISPLAY_RESOLUTION`` GeoTIFF with the land cut out along the coast.
+    Give the ``DISPLAY_RESOLUTION`` pixel centres between two latitudes, all the way round the globe.
+
+    Parameters
+    ----------
+    north : float
+        Northern edge of the grid in degrees.
+    south : float
+        Southern edge of the grid in degrees.
+
+    Returns
+    -------
+    Tuple[numpy.ndarray, numpy.ndarray]
+        Latitudes north first, then longitudes from -180 eastwards.
+    """
+    lat = north - (np.arange(round((north - south) / DISPLAY_RESOLUTION)) + 0.5) * DISPLAY_RESOLUTION
+    lon = -180 + (np.arange(round(360 / DISPLAY_RESOLUTION)) + 0.5) * DISPLAY_RESOLUTION
+    return lat, lon
+
+
+def display_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int,
+                  land_sea_mask_path: pathlib.Path) -> pathlib.Path:
+    """
+    Write one week of the forecast blended onto a ``DISPLAY_RESOLUTION`` GeoTIFF, with the land cut out of it.
+
+    The blend is between the centres of the model's sea cells only, so what the model gives a land cell never
+    reaches the sea beside it.
 
     Parameters
     ----------
@@ -206,11 +226,8 @@ def display_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int, la
     week : int
         Index into ``time`` of the week to write.
     land_sea_mask_path : pathlib.Path
-        A ``land_sea_mask(lat, lon)`` land fraction from 0 to 1, with or without a leading ``time``, on a regular
-        global grid of any resolution. Latitudes it does not cover are sea.
-    smooth : bool
-        Blend between the centres of the model's sea cells, instead of giving each pixel its model cell's value.
-        Either way a model cell that is land itself draws nothing.
+        A ``land_sea_mask(lat, lon)`` land fraction from 0 to 1 on a regular global grid of any resolution, such as
+        ``land_mask_from_nsidc.main`` writes. Latitudes it does not cover are sea.
 
     Returns
     -------
@@ -221,22 +238,19 @@ def display_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int, la
     with xr.open_dataset(nc_path) as dataset:
         sic = dataset[VARIABLE].isel(time=week).load()
     with xr.open_dataset(land_sea_mask_path) as dataset:
-        fraction = dataset["land_sea_mask"]
-        fraction = (fraction.isel(time=0) if "time" in fraction.dims else fraction).load()
+        fraction = dataset["land_sea_mask"].astype("float64").load()
     sic = sic.assign_coords(lon=((sic.lon + 180) % 360) - 180).sortby("lon").sortby("lat", ascending=False)
-    half = float(abs(sic.lat.diff("lat")).max()) / 2
-    north, south = float(sic.lat[0]) + half, float(sic.lat[-1]) - half
-    lat = north - (np.arange(round((north - south) / DISPLAY_RESOLUTION)) + 0.5) * DISPLAY_RESOLUTION
-    lon = -180 + (np.arange(round(360 / DISPLAY_RESOLUTION)) + 0.5) * DISPLAY_RESOLUTION
-    land_cells = _resample(fraction, sic.lon.values, sic.lat.values, "linear") >= LAND_FRACTION_THRESHOLD
-    sea = sic.notnull() & ~land_cells
-    if smooth:
-        weight = _resample(sea.astype("float64"), lon, lat, "linear")
-        with np.errstate(invalid="ignore", divide="ignore"):
-            values = np.where(weight > 0, _resample(sic.where(sea, 0), lon, lat, "linear") / weight, np.nan)
-    else:
-        values = _resample(sic.where(sea), lon, lat, "nearest")
-    values[_resample(fraction, lon, lat, "linear") >= LAND_FRACTION_THRESHOLD] = np.nan
+    step = float(abs(sic.lat.diff("lat")).max())
+    north, south = float(sic.lat[0]) + step / 2, float(sic.lat[-1]) - step / 2
+    lat, lon = display_grid(north, south)
+    mask_cells_per_model_cell = max(1, round(step / float(abs(fraction.lat.diff("lat")).max())))
+    cell_fraction = fraction.coarsen(lat=mask_cells_per_model_cell, lon=mask_cells_per_model_cell,
+                                     boundary="trim").mean()
+    sea = sic.notnull() & ~(_resample(cell_fraction, sic.lon.values, sic.lat.values) >= LAND_FRACTION_THRESHOLD)
+    weight = _resample(sea.astype("float64"), lon, lat)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        values = np.where(weight > 0, _resample(sic.where(sea, 0), lon, lat) / weight, np.nan)
+    values[_resample(fraction, lon, lat) >= LAND_FRACTION_THRESHOLD] = np.nan
     display = xr.DataArray(values.astype("float32"), dims=("lat", "lon"), coords={"lat": lat, "lon": lon})
     (display.rio.set_spatial_dims(x_dim="lon", y_dim="lat").rio.write_crs("EPSG:4326").rio.write_nodata(np.nan)
             .rio.to_raster(gtiff_path, compress="LZW"))
