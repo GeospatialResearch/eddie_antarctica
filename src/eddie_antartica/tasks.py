@@ -33,7 +33,7 @@ from eddie.digitaltwin.utils import setup_logging
 from eddie.tasks import OnFailureStateTask, app
 from src.eddie_antartica.config import EnvVariable
 from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
-from src.eddie_antartica.sea_ice.inputs import main_sea_ice_inputs
+from src.eddie_antartica.sea_ice.inputs import land_mask_from_nsidc, main_sea_ice_inputs
 from src.eddie_antartica.sea_ice.model import serve_model, sic_gnn_model
 from src.eddie_antartica.sea_ice.model.sic_data_from_nc import latest_forecast, point_series
 
@@ -98,7 +98,7 @@ def forecast_sea_ice(inputs_path: str) -> str:
         The written ``sic_forecast_<weeks>w_<week 1>.nc``, which the chart route now reads.
     """
     nc_path = sic_gnn_model.main(pathlib.Path(inputs_path), EnvVariable.SIC_MODEL_DIR, EnvVariable.FORECAST_NETCDF_DIR)
-    serve_model.add_forecast_to_geoserver(nc_path, EnvVariable.SIC_LAND_MASK)
+    serve_model.add_forecast_to_geoserver(nc_path, EnvVariable.SIC_MODEL_DIR / land_mask_from_nsidc.FILE_NAME)
     return nc_path.as_posix()
 
 
@@ -132,5 +132,6 @@ def sea_ice_forecast_point_series(longitude: float, latitude: float, method: str
         The two-column CSV Terria plots: time, then concentration; just the header off the grid.
     """
     forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
-    series = point_series(longitude, latitude, forecast, method, week, land_sea_mask_path=EnvVariable.SIC_LAND_MASK)
+    series = point_series(longitude, latitude, forecast, method, week,
+                          nsidc_path=EnvVariable.SIC_MODEL_DIR / land_mask_from_nsidc.FILE_NAME)
     return series.to_csv(index=False)

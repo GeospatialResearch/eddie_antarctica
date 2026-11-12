@@ -43,10 +43,6 @@ class EnvVariable(EnvVarBase):  # pylint: disable=too-few-public-methods
     # the model's data/historical/sic_climatology.nc. Never recomputed from live data.
     SIC_CLIMATOLOGY = pathlib.Path(EnvVarBase._get_env_variable("SIC_CLIMATOLOGY_FILE"))
 
-    # The land the smoothed sea ice layers and their charts cut out: NSIDC-0780 converted once onto the display grid
-    # by inputs.land_mask_from_nsidc. Kept out of SEA_ICE_INPUTS_DIR, where the model reads every .nc.
-    SIC_LAND_MASK = pathlib.Path(EnvVarBase._get_env_variable("SIC_LAND_MASK_FILE"))
-
     # The sea ice model, kept out of this repo: the reference Code/{util,models}, checkpoint, mesh bundle and
     # train_stats.npz (model.sic_gnn_model).
     SIC_MODEL_DIR = pathlib.Path(EnvVarBase._get_env_variable("SIC_MODEL_DIR"))

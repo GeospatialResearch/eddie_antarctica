@@ -24,10 +24,9 @@ from typing import Dict, Iterator, List
 import numpy as np
 import pytest
 import rasterio as rio
-import xarray as xr
 
 from src.eddie_antartica.sea_ice.model import sic_to_nc
-from tests.test_sea_ice.test_model.test_sic_to_nc import N_WEEKS, encoded_forecast, model_inputs, node
+from tests.test_sea_ice.test_model.test_sic_to_nc import N_WEEKS, encoded_forecast, model_inputs, node, nsidc_mask
 
 SERVE_MODEL = "src.eddie_antartica.sea_ice.model.serve_model"
 
@@ -69,13 +68,9 @@ def test_the_forecast_run_publishes_every_week_layer(published: Dict[str, List[f
     """
     nc_path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
 
-    inputs = model_inputs()
-    fraction = xr.DataArray(np.zeros((inputs.lat.size, inputs.lon.size), dtype="uint8"),
-                            dims=("lat", "lon"), coords={"lat": inputs.lat, "lon": inputs.lon}, name="land_sea_mask")
-    fraction.loc[{"lat": -41.0, "lon": 10.0}] = 1.0
-    fraction.to_dataset().to_netcdf(tmp_path / "land_sea_mask.nc")
+    nsidc_path = nsidc_mask(tmp_path / "nsidc.nc", 1.0, np.array([(10.0, 10.0, -41.0, -41.0)]))
 
-    importlib.import_module(SERVE_MODEL).add_forecast_to_geoserver(nc_path, tmp_path / "land_sea_mask.nc")
+    importlib.import_module(SERVE_MODEL).add_forecast_to_geoserver(nc_path, nsidc_path)
 
     forecast = encoded_forecast().astype("float32")
     layers = [f"sic_forecast_week{week}{suffix}" for week in range(1, N_WEEKS + 1) for suffix in ("", "_raw")]

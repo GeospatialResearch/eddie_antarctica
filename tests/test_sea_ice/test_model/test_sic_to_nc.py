@@ -32,6 +32,7 @@ import pytest
 import rasterio as rio
 import xarray as xr
 
+from src.eddie_antartica.sea_ice.inputs import land_mask_from_nsidc
 from src.eddie_antartica.sea_ice.model import sic_data_from_nc, sic_to_nc
 
 LATITUDES = np.array([-43.0, -42.0, -41.0])     # ascending, as the model holds them
@@ -189,42 +190,52 @@ def test_geotiff_from_a_native_order_file_is_north_up_on_minus_180_to_180(tmp_pa
     assert pixels == [week8[node(10, -41.0)], week8[node(350, -43.0)]]
 
 
-def land_sea_mask(path: Path, step: float, land: np.ndarray, wrapped: bool = False) -> Path:
+#: NSIDC-0780 class names, with values of the test's own choosing.
+NSIDC_CLASSES = {"ocean_no_region_specified": 0, "ross_sea": 4, "land": 30, "fresh_free_water": 32, "ice_on_land": 33,
+                 "floating_ice_shelf": 34, "ocean_disconnected": 35}
+
+
+def nsidc_mask(path: Path, step: float, land: np.ndarray, south: float = -42.5, north: float = -40.5) -> Path:
     """
-    Write a ``land_sea_mask.nc`` that is all sea except for some boxes.
+    Write an NSIDC-0780-shaped file on a lat/lon grid that is all sea except for some boxes of land.
 
     Parameters
     ----------
     path : Path
         Where to write the file.
     step : float
-        Resolution of the mask in degrees.
+        Resolution of the grid in degrees, its cells centred on multiples of ``step`` in longitude.
     land : numpy.ndarray
-        Rows of ``(west, east, south, north)`` in 0..360 longitudes: mask cells centred inside a box are all land.
-    wrapped : bool
-        Label longitudes -180..180 and put the north first, instead of 0..360 with the south first.
+        Rows of ``(west, east, south, north)`` in 0..360 longitudes: cells centred inside a box are land.
+    south : float
+        Southern edge of the grid; south of it is off the grid, so sea.
+    north : float
+        Northern edge of the grid.
 
     Returns
     -------
     Path
         The written file.
     """
-    fraction = xr.DataArray(0.0, dims=("lat", "lon"), name="land_sea_mask",
-                            coords={"lat": np.arange(-42.5 + step / 2, -40.5, step), "lon": np.arange(0, 360, step)})
-    for west, east, south, north in land:
-        in_box = (fraction.lon >= west) & (fraction.lon <= east) & (fraction.lat >= south) & (fraction.lat <= north)
-        fraction = fraction.where(~in_box, 1.0)
-    if wrapped:
-        fraction = fraction.assign_coords(lon=((fraction.lon + 180) % 360) - 180).sortby("lat", ascending=False)
-    fraction.to_dataset().to_netcdf(path)
+    x = np.arange(-180, 180, step)
+    y = np.arange(north - step / 2, south, -step)
+    surface = np.zeros((y.size, x.size), dtype="uint8")
+    for west, east, box_south, box_north in land:
+        in_box = (((x % 360) >= west) & ((x % 360) <= east))[None, :] & ((y >= box_south) & (y <= box_north))[:, None]
+        surface[in_box] = NSIDC_CLASSES["land"]
+    regions = xr.DataArray(surface, dims=("y", "x"), coords={"x": x, "y": y},
+                           name=land_mask_from_nsidc.MASK_VARIABLE,
+                           attrs={"flag_values": np.array(list(NSIDC_CLASSES.values()), dtype="uint8"),
+                                  "flag_meanings": " ".join(NSIDC_CLASSES)})
+    regions.rio.write_crs("EPSG:4326").to_dataset().to_netcdf(path)
     return path
 
 
 def test_display_geotiff_is_cut_along_a_coast_finer_than_the_model_grid(tmp_path: Path) -> None:
     """The fine grid is cut where the mask is land: a half-land model cell is half drawn, and unmasked rows are sea."""
     nc_path = sic_to_nc.forecast_to_nc(encoded_forecast(), model_inputs(), tmp_path)
-    mask_path = land_sea_mask(tmp_path / "land_sea_mask.nc", 0.25,
-                              np.array([(9.5, 10.5, -42.5, -41.5), (20.25, 20.5, -42.5, -41.5)]))
+    mask_path = nsidc_mask(tmp_path / "nsidc.nc", 0.25,
+                           np.array([(9.5, 10.5, -42.5, -41.5), (20.25, 20.5, -42.5, -41.5)]))
 
     tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "display.tif", 7, mask_path)
 
@@ -249,8 +260,8 @@ def test_a_model_cell_that_is_mostly_land_is_left_out_of_the_blend(tmp_path: Pat
     forecast = np.full_like(encoded_forecast(), 0.2)
     forecast[node(10, -42.0)] = 0.9
     nc_path = sic_to_nc.forecast_to_nc(forecast, model_inputs(), tmp_path)
-    mask_path = land_sea_mask(tmp_path / "land_sea_mask.nc", 0.25,
-                              np.array([(9.5, 9.9, -42.5, -41.5), (10.1, 10.5, -42.5, -41.5)]))
+    mask_path = nsidc_mask(tmp_path / "nsidc.nc", 0.25,
+                           np.array([(9.5, 9.9, -42.5, -41.5), (10.1, 10.5, -42.5, -41.5)]))
 
     tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "display.tif", 0, mask_path)
 
@@ -266,8 +277,7 @@ def test_smooth_display_geotiff_blends_sea_cells_only(tmp_path: Path) -> None:
     forecast[node(179, -41.0)] = 0.1
     forecast[node(10, -42.0)] = 0.9
     nc_path = sic_to_nc.forecast_to_nc(forecast, model_inputs(), tmp_path)
-    mask_path = land_sea_mask(tmp_path / "land_sea_mask.nc", 1.0, np.array([(10.0, 10.0, -42.0, -42.0)]),
-                              wrapped=True)
+    mask_path = nsidc_mask(tmp_path / "nsidc.nc", 1.0, np.array([(10.0, 10.0, -42.0, -42.0)]))
 
     tif_path = sic_to_nc.display_gtiff(nc_path, tmp_path / "smooth.tif", 0, mask_path)
 

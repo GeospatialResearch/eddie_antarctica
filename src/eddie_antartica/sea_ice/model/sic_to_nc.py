@@ -25,6 +25,7 @@ written NetCDF with ``rio.to_raster``, so the map and the chart read one grid.
 ``to_cf_netcdf`` is the contract for every gridded sea ice file: the forecast written here and
 the preprocessed NSIDC/ERA5 inputs alike. ``rioxarray`` comes in with ``geocube``.
 """
+import functools
 import pathlib
 from typing import Tuple, Union
 
@@ -33,10 +34,14 @@ import pandas as pd
 import rioxarray  # noqa: F401  # pylint: disable=unused-import  # registers the .rio accessor
 import xarray as xr
 
-from src.eddie_antartica.sea_ice.model.sic_data_from_nc import LAND_FRACTION_THRESHOLD, VARIABLE
+from src.eddie_antartica.sea_ice.inputs import land_mask_from_nsidc
+from src.eddie_antartica.sea_ice.model.sic_data_from_nc import VARIABLE
 
 #: Values above this are NSIDC land/coast/pole-hole flags (251-254), not concentrations.
 FLAG_THRESHOLD = 1.0
+
+#: A model cell this much land or more is left out of the smoothed layer's blend.
+LAND_FRACTION_THRESHOLD = 0.5
 
 DISPLAY_RESOLUTION = 0.05
 
@@ -209,8 +214,30 @@ def display_grid(north: float, south: float) -> Tuple[np.ndarray, np.ndarray]:
     return lat, lon
 
 
-def display_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int,
-                  land_sea_mask_path: pathlib.Path) -> pathlib.Path:
+@functools.lru_cache(maxsize=1)
+def _display_land(nsidc_path: pathlib.Path, north: float, south: float) -> np.ndarray:
+    """
+    Look up the NSIDC-0780 land at every ``display_grid`` pixel centre, once per worker for all the weeks.
+
+    Parameters
+    ----------
+    nsidc_path : pathlib.Path
+        The NSIDC-0780 file.
+    north : float
+        Northern edge of the grid in degrees.
+    south : float
+        Southern edge of the grid in degrees.
+
+    Returns
+    -------
+    numpy.ndarray
+        ``(lat, lon)``, True on land.
+    """
+    lat, lon = display_grid(north, south)
+    return land_mask_from_nsidc.land_at(nsidc_path, *np.meshgrid(lon, lat))
+
+
+def display_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int, nsidc_path: pathlib.Path) -> pathlib.Path:
     """
     Write one week of the forecast blended onto a ``DISPLAY_RESOLUTION`` GeoTIFF, with the land cut out of it.
 
@@ -225,32 +252,30 @@ def display_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int,
         Where to write the GeoTIFF.
     week : int
         Index into ``time`` of the week to write.
-    land_sea_mask_path : pathlib.Path
-        A ``land_sea_mask(lat, lon)`` land fraction from 0 to 1 on a regular global grid of any resolution, such as
-        ``land_mask_from_nsidc.main`` writes. Latitudes it does not cover are sea.
+    nsidc_path : pathlib.Path
+        The NSIDC-0780 file whose land, lakes and ice shelves are cut out. Points off its grid are sea.
 
     Returns
     -------
     pathlib.Path
-        The written GeoTIFF: -180..180 by the outer edges of the model's rows, NaN where the land fraction
-        interpolated onto the pixel is ``LAND_FRACTION_THRESHOLD`` or more.
+        The written GeoTIFF: -180..180 by the outer edges of the model's rows, NaN on the pixels NSIDC-0780 makes
+        land. A model cell that is ``LAND_FRACTION_THRESHOLD`` land or more is left out of the blend.
     """
     with xr.open_dataset(nc_path) as dataset:
         sic = dataset[VARIABLE].isel(time=week).load()
-    with xr.open_dataset(land_sea_mask_path) as dataset:
-        fraction = dataset["land_sea_mask"].astype("float64").load()
     sic = sic.assign_coords(lon=((sic.lon + 180) % 360) - 180).sortby("lon").sortby("lat", ascending=False)
     step = float(abs(sic.lat.diff("lat")).max())
     north, south = float(sic.lat[0]) + step / 2, float(sic.lat[-1]) - step / 2
     lat, lon = display_grid(north, south)
-    mask_cells_per_model_cell = max(1, round(step / float(abs(fraction.lat.diff("lat")).max())))
-    cell_fraction = fraction.coarsen(lat=mask_cells_per_model_cell, lon=mask_cells_per_model_cell,
-                                     boundary="trim").mean()
+    land = _display_land(nsidc_path, north, south)
+    pixels_per_cell = round(step / DISPLAY_RESOLUTION)
+    cell_fraction = xr.DataArray(land, dims=("lat", "lon"), coords={"lat": lat, "lon": lon}).coarsen(
+        lat=pixels_per_cell, lon=pixels_per_cell, boundary="trim").mean()
     sea = sic.notnull() & ~(_resample(cell_fraction, sic.lon.values, sic.lat.values) >= LAND_FRACTION_THRESHOLD)
     weight = _resample(sea.astype("float64"), lon, lat)
     with np.errstate(invalid="ignore", divide="ignore"):
         values = np.where(weight > 0, _resample(sic.where(sea, 0), lon, lat) / weight, np.nan)
-    values[_resample(fraction, lon, lat) >= LAND_FRACTION_THRESHOLD] = np.nan
+    values[land] = np.nan
     display = xr.DataArray(values.astype("float32"), dims=("lat", "lon"), coords={"lat": lat, "lon": lon})
     (display.rio.set_spatial_dims(x_dim="lon", y_dim="lat").rio.write_crs("EPSG:4326").rio.write_nodata(np.nan)
             .rio.to_raster(gtiff_path, compress="LZW"))

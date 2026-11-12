@@ -37,6 +37,7 @@ from rasterio.crs import CRS
 import xarray as xr
 
 from src.eddie_antartica.sea_ice.model import sic_data_from_nc, sic_data_from_raster, sic_to_nc
+from tests.test_sea_ice.test_model.test_sic_to_nc import nsidc_mask
 from tests.test_sea_ice.test_model.test_sic_data_from_raster import (
     N_BANDS, N_LAT, N_LON, NORTH, TIMES, VALUES, WEST, _write_fixture)
 
@@ -330,14 +331,10 @@ def test_chart_is_blank_where_the_map_draws_nothing_in_its_week(tmp_path: Path, 
 def test_smoothed_chart_is_blank_where_the_mask_cuts_out_land(tmp_path: Path) -> None:
     """The smoothed map draws nothing on the mask's land, so its chart is empty there; the raw chart is not cut."""
     netcdf = forecast_nc(tmp_path)
-    fraction = xr.DataArray(np.zeros((40, 7200), dtype="uint8"), dims=("lat", "lon"), name="land_sea_mask",
-                            coords={"lat": LAT0 + 1 - 0.05 * np.arange(40), "lon": -179.975 + 0.05 * np.arange(7200)})
-    fraction.loc[{"lat": slice(LAT0 + 0.01, LAT0 - 0.21), "lon": slice(LON0 - 0.01, LON0 + 0.21)}] = 1
-    fraction.to_dataset().to_netcdf(tmp_path / "land_sea_mask.nc")
+    nsidc_path = nsidc_mask(tmp_path / "nsidc.nc", 0.05, np.array([(LON0 + 360, LON0 + 360.2, LAT0 - 0.2, LAT0)]),
+                            south=LAT0 - 1, north=LAT0 + 0.5)
 
-    assert sic_data_from_nc.point_series(LON0 + 0.1, LAT0 - 0.1, netcdf,
-                                         land_sea_mask_path=tmp_path / "land_sea_mask.nc").empty
-    assert len(sic_data_from_nc.point_series(LON0 + 360.3, LAT0 - 0.3, netcdf,
-                                             land_sea_mask_path=tmp_path / "land_sea_mask.nc")) == N_BANDS
+    assert sic_data_from_nc.point_series(LON0 + 0.1, LAT0 - 0.1, netcdf, nsidc_path=nsidc_path).empty
+    assert len(sic_data_from_nc.point_series(LON0 + 360.4, LAT0 - 0.4, netcdf, nsidc_path=nsidc_path)) == N_BANDS
     assert len(sic_data_from_nc.point_series(LON0 + 0.1, LAT0 - 0.1, netcdf, method="nearest",
-                                             land_sea_mask_path=tmp_path / "land_sea_mask.nc")) == N_BANDS
+                                             nsidc_path=nsidc_path)) == N_BANDS

@@ -41,6 +41,7 @@ from rasterio.crs import CRS
 from rasterio.warp import transform
 import xarray as xr
 
+from src.eddie_antartica.sea_ice.inputs.land_mask_from_nsidc import land_at
 from src.eddie_antartica.sea_ice.model.sic_data_from_raster import (
     OPEN_WATER, TIME_COLUMN, VALUE_COLUMN, _empty_series, bilinear_series)
 
@@ -54,9 +55,6 @@ VARIABLE = "sic"
 #: Dated forecasts, ``sic_forecast_<weeks>w_<YYYY-MM-DD of week 1>.nc``, as ``sic_to_nc.forecast_to_nc`` names them.
 FORECAST_GLOB = "sic_forecast_*w_????-??-??.nc"
 
-#: A pixel whose land fraction is this or more is land, and the smoothed map draws nothing there.
-LAND_FRACTION_THRESHOLD = 0.5
-
 #: Matches the GeoTIFF's per-band TIME tags, so the two routes' CSVs agree byte for byte.
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -67,7 +65,7 @@ def point_series(longitude: float,
                  method: str = "linear",
                  week: Optional[int] = None,
                  *,
-                 land_sea_mask_path: Optional[pathlib.Path] = None) -> pd.DataFrame:
+                 nsidc_path: Optional[pathlib.Path] = None) -> pd.DataFrame:
     """
     Extract the forecast time series at a point, as the map draws it: blended, or the clicked cell.
 
@@ -86,9 +84,9 @@ def point_series(longitude: float,
     week : Optional[int]
         The 1-based week the clicked layer shows. If the map draws nothing there that week, the chart is empty.
         None charts every week.
-    land_sea_mask_path : Optional[pathlib.Path]
-        The land fraction the smoothed map is cut with, as ``sic_to_nc.display_gtiff`` takes it. A ``"linear"``
-        chart is empty where it is land, as the map is. None cuts nothing.
+    nsidc_path : Optional[pathlib.Path]
+        The NSIDC-0780 file the smoothed map is cut with. A ``"linear"`` chart is empty where it is land, as the
+        map is. None cuts nothing.
 
     Returns
     -------
@@ -104,11 +102,8 @@ def point_series(longitude: float,
     KeyError
         If the file does not hold the forecast variable, or states no CRS.
     """
-    if method == "linear" and land_sea_mask_path is not None:
-        with xr.open_dataset(land_sea_mask_path) as dataset:
-            land = dataset["land_sea_mask"].sel(lat=latitude, lon=((longitude + 180) % 360) - 180, method="nearest")
-            if float(land) >= LAND_FRACTION_THRESHOLD:
-                return _empty_series()
+    if method == "linear" and nsidc_path is not None and land_at(nsidc_path, np.array(longitude), np.array(latitude)):
+        return _empty_series()
     with xr.open_dataset(source, decode_coords="all") as dataset:
         data = dataset[VARIABLE]
         grid_crs = CRS.from_user_input(dataset[data.encoding["grid_mapping"]].attrs["crs_wkt"])
