@@ -111,6 +111,5 @@
   "baseMaps": {
     "defaultBaseMapId": "basemap-bing-aerial-with-labels",
     "previewBaseMapId": "basemap-bing-aerial-with-labels"
-  },
-  "stories": []
+  }
 }
