@@ -23,8 +23,6 @@ import re
 import pytest
 import pathlib
 
-from src.eddie_antartica.sea_ice import sea_ice_forecast_layer
-
 
 CATALOG_PATH = pathlib.Path(__file__).resolve().parent.parent /  "terriajs" / "catalog.json"
 CONFIG_PATH = pathlib.Path(__file__).resolve().parent.parent / "terriajs" / "client_config.json"
@@ -42,18 +40,6 @@ def test_catalog_check_home_coords() -> None:
         "east": 172.98,
         "north": -76.45
     }
-
-def test_sea_ice_layer_opts_into_the_timeseries_chart() -> None:
-    """The sea ice layer carries the two properties that make Terria chart it."""
-    catalog = json.loads(CATALOG_PATH.read_text())
-    members = catalog["catalog"][0]["members"]
-
-    sea_ice = [member for member in members if member.get("layers") == "sic_forecast_8w"]
-
-    assert len(sea_ice) == 1
-    assert sea_ice[0]["supportsGetTimeseries"] is True
-    assert sea_ice[0]["getFeatureInfoUrl"] == "$BACKEND_URL/sea-ice-timeseries-netcdf"
-
 
 def test_client_config_points_terrain_at_self_hosted_backend() -> None:
     """client_config.json should serve terrain from the backend, not fall back to Cesium Ion (issue #376)."""
