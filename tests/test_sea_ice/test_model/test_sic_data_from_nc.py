@@ -306,22 +306,3 @@ def test_raw_cells_chart_the_clicked_cell_as_the_model_wrote_it(tmp_path: Path) 
             np.testing.assert_allclose(series[VALUES], [value] * N_BANDS, rtol=1e-6, err_msg=str((longitude, latitude)))
         # Smoothed, the same trace ice still charts as open water.
         np.testing.assert_allclose(reader(LON0, LAT0, source)[VALUES], [0.0] * N_BANDS)
-
-
-@pytest.mark.parametrize("method", ["linear", "nearest"])
-def test_chart_is_blank_where_the_map_draws_nothing_in_its_week(tmp_path: Path, method: str) -> None:
-    """
-    A click where the layer's week draws nothing, under ``OPEN_WATER`` or land, charts nothing; elsewhere all weeks.
-
-    The clicked cell is open water in week 1 and ice from week 2; the cell south of it is land.
-    """
-    values = np.zeros((N_BANDS, N_LAT, N_LON), dtype="float32")
-    values[1:, 0, 0] = 0.5
-    values[:, 1, 0] = np.nan
-    netcdf = forecast_nc(tmp_path, values)
-
-    assert sic_data_from_nc.point_series(LON0, LAT0, netcdf, method, week=1).empty
-    assert sic_data_from_nc.point_series(LON0, float(LATITUDES[1]), netcdf, method, week=2).empty
-    assert len(sic_data_from_nc.point_series(LON0, LAT0, netcdf, method, week=2)) == N_BANDS
-    # No week, as from the catalog layer's route: every week is charted, as before.
-    assert len(sic_data_from_nc.point_series(LON0, LAT0, netcdf, method)) == N_BANDS

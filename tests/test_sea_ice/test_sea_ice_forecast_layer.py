@@ -50,25 +50,17 @@ def test_the_layer_draws_and_charts_the_display_chosen_in_the_form() -> None:
     assert list(sea_ice_forecast_layer.DISPLAY_LABELS) == ["Raw 1° cells", "Smoothed"]
 
 
-@pytest.mark.parametrize("layers, week", [(sea_ice_forecast_layer.layer_name(3), 3),
-                                          (sea_ice_forecast_layer.layer_name(8), 8),
-                                          ("sic_forecast_8w", None), ("sic_forecast_week0", None), (None, None)])
-def test_layer_week_reads_the_week_back_from_its_layer_name(layers: str, week: int) -> None:
-    """The click's ``layers`` names the week the map shows; any other layer gives no week, so the chart is whole."""
-    assert sea_ice_forecast_layer.layer_week(layers) == week
-
-
 @pytest.mark.parametrize("interpolation, method", [(None, "nearest"), ("", "nearest"), ("bilinear", "linear")])
 def test_chart_method_follows_the_display_mode(interpolation: str, method: str) -> None:
     """The chart follows the map; a click with no mode comes from the raw display, so it charts the clicked cell."""
-    assert sea_ice_forecast_layer.chart_method(interpolation) == method
+    assert sea_ice_forecast_layer.CHART_METHODS[interpolation or None] == method
 
 
 @pytest.mark.parametrize("interpolation", ["bicubic", "nearest", "nearest neighbor", "junk"])
 def test_chart_method_rejects_values_with_no_chart_mode(interpolation: str) -> None:
     """Reject GeoServer's bicubic or a misspelt mode (the route's 400), rather than chart it as something else."""
     with pytest.raises(KeyError):
-        sea_ice_forecast_layer.chart_method(interpolation)
+        sea_ice_forecast_layer.CHART_METHODS[interpolation]  # noqa: B018
 
 
 def test_week_date_is_read_from_the_forecast(tmp_path: Path) -> None:
