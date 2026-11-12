@@ -120,6 +120,8 @@ def test_samples_the_clicked_cell_across_every_step(tmp_path: Path) -> None:
     assert list(corner[VALUES]) == [100.0 + last, 200.0 + last, 300.0 + last]
     # An interior point blends the four centres around it, as the map draws it: 1.4 rows and 1.6 columns in.
     assert sic_data_from_nc.point_series(-177.9, -41.9, netcdf)[VALUES].iloc[0] == pytest.approx(115.6)
+    # The raw map draws the cell containing it, not a neighbour.
+    assert sic_data_from_nc.point_series(-177.9, -41.9, netcdf, method="nearest")[VALUES].iloc[0] == 112.0
 
 
 def test_longitude_beyond_180_is_wrapped(tmp_path: Path) -> None:
@@ -129,7 +131,8 @@ def test_longitude_beyond_180_is_wrapped(tmp_path: Path) -> None:
     assert list(wrapped[VALUES]) == list(sic_data_from_nc.point_series(-177.5, LAT0, netcdf)[VALUES])
 
 
-def test_click_inside_the_westernmost_cell_is_not_wrapped_off_the_grid(tmp_path: Path) -> None:
+@pytest.mark.parametrize("method", ["linear", "nearest"])
+def test_click_inside_the_westernmost_cell_is_not_wrapped_off_the_grid(tmp_path: Path, method: str) -> None:
     """
     A click west of the westernmost cell *centre* still lands in that cell.
 
@@ -140,7 +143,7 @@ def test_click_inside_the_westernmost_cell_is_not_wrapped_off_the_grid(tmp_path:
     netcdf = forecast_nc(tmp_path)
     inside_first_cell = float(LONGITUDES[0]) - 0.4
 
-    series = sic_data_from_nc.point_series(inside_first_cell, LAT0, netcdf)
+    series = sic_data_from_nc.point_series(inside_first_cell, LAT0, netcdf, method)
     assert list(series[VALUES]) == [100.0, 200.0, 300.0]
 
 
@@ -159,7 +162,8 @@ def test_missing_values_chart_as_gaps(tmp_path: Path) -> None:
     assert sic_data_from_nc.point_series(LON0, LAT0, forecast_nc(tmp_path, values))[VALUES].isna().all()
 
 
-def test_netcdf_and_geotiff_routes_return_the_same_csv(tmp_path: Path) -> None:
+@pytest.mark.parametrize("method", ["linear", "nearest"])
+def test_netcdf_and_geotiff_routes_return_the_same_csv(tmp_path: Path, method: str) -> None:
     """
     The same forecast charts identically whichever file it is read from.
 
@@ -179,8 +183,8 @@ def test_netcdf_and_geotiff_routes_return_the_same_csv(tmp_path: Path) -> None:
               (float(LONGITUDES[0]) - 0.4, LAT0),
               (float(LONGITUDES[-1]) + 0.4, LAT0)]
     for longitude, latitude in probes:
-        from_raster = sic_data_from_raster.sic_forecast_series(longitude, latitude, geotiff)
-        from_netcdf = sic_data_from_nc.point_series(longitude, latitude, netcdf)
+        from_raster = sic_data_from_raster.sic_forecast_series(longitude, latitude, geotiff, method)
+        from_netcdf = sic_data_from_nc.point_series(longitude, latitude, netcdf, method)
         assert from_netcdf.to_csv(index=False) == from_raster.to_csv(index=False), (longitude, latitude)
 
 
@@ -253,9 +257,11 @@ def test_a_land_neighbour_does_not_blank_the_chart(tmp_path: Path) -> None:
         np.testing.assert_allclose(reader(LON0, LAT0 - 0.5, source)[VALUES], [0.4] * N_BANDS, rtol=1e-5)
 
 
-def test_chart_blends_across_180_degrees_as_the_map_does(tmp_path: Path) -> None:
+@pytest.mark.parametrize("method, expected", [("linear", {179.75: 0.06, -180.25: 0.06, 179.25: 0.02}),
+                                              ("nearest", {179.75: 0.08, -180.25: 0.08, 179.25: 0.0})])
+def test_chart_blends_across_180_degrees_as_the_map_does(tmp_path: Path, method: str, expected: dict) -> None:
     """
-    A click near 180 degrees blends the cells on both sides of it, as the map draws it.
+    A click near 180 degrees blends the cells on both sides of it, as the map draws it; raw, it reads the cell it is in.
 
     The forecast NetCDF runs -180..179, so its westernmost and easternmost columns meet at 180 degrees. The map's
     GeoTIFF repeats the westernmost column one turn east and draws the blend there; the chart read one cell.
@@ -268,9 +274,35 @@ def test_chart_blends_across_180_degrees_as_the_map_does(tmp_path: Path) -> None
     geotiff = sic_to_nc.nc_to_gtiff(netcdf, tmp_path / "forecast.tif", week=0)
 
     # A quarter of the way from the easternmost cell's centre (179) to the westernmost (-180), across 180 degrees,
-    # in both longitude conventions.
-    for longitude in (179.75, -180.25):
-        series = sic_data_from_nc.point_series(longitude, LAT0, netcdf)
-        np.testing.assert_allclose(series[VALUES], [0.06] * N_BANDS, rtol=1e-5)
-        map_week_1 = sic_data_from_raster.sic_forecast_series(longitude, LAT0, geotiff)
-        np.testing.assert_allclose(map_week_1[VALUES], [0.06], rtol=1e-5)
+    # in both longitude conventions; and a quarter of the way back the other side of 180, in the 179 cell.
+    for longitude, value in expected.items():
+        series = sic_data_from_nc.point_series(longitude, LAT0, netcdf, method)
+        np.testing.assert_allclose(series[VALUES], [value] * N_BANDS, rtol=1e-5, err_msg=str(longitude))
+        map_week_1 = sic_data_from_raster.sic_forecast_series(longitude, LAT0, geotiff, method)
+        np.testing.assert_allclose(map_week_1[VALUES], [value], rtol=1e-5, err_msg=str(longitude))
+
+
+def test_raw_cells_chart_the_clicked_cell_as_the_model_wrote_it(tmp_path: Path) -> None:
+    """
+    With the raw display, a click anywhere in a cell charts that cell's own value, unrounded: no neighbour leaks in.
+
+    The clicked cell holds trace ice under ``OPEN_WATER``, its eastern neighbour ice, its southern neighbour land.
+    """
+    values = np.zeros((N_BANDS, N_LAT, N_LON), dtype="float32")
+    values[:, 0, 0] = 0.003
+    values[:, 0, 1] = 0.08
+    values[:, 1, 0] = np.nan
+    netcdf = forecast_nc(tmp_path, values)
+    geotiff = _write_fixture(tmp_path / "forecast.tif", values, TIMES)
+
+    for reader, source in ((sic_data_from_nc.point_series, netcdf),
+                           (sic_data_from_raster.sic_forecast_series, geotiff)):
+        for longitude, latitude, value in ((LON0 + 0.25, LAT0, 0.003),         # under 1 %, charted as it is
+                                           (LON0 + 0.45, LAT0, 0.003),         # still inside, beside ice
+                                           (LON0 + 0.55, LAT0, 0.08),          # across the edge, the ice cell
+                                           (LON0, LAT0 - 0.45, 0.003),         # beside land, its own value
+                                           (LON0 + 0.3, LAT0 - 0.8, np.nan)):  # inside the land cell, a gap
+            series = reader(longitude, latitude, source, method="nearest")
+            np.testing.assert_allclose(series[VALUES], [value] * N_BANDS, rtol=1e-6, err_msg=str((longitude, latitude)))
+        # Smoothed, the same trace ice still charts as open water.
+        np.testing.assert_allclose(reader(LON0, LAT0, source)[VALUES], [0.0] * N_BANDS)

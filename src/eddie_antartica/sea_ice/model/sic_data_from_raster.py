@@ -78,12 +78,14 @@ def _empty_series() -> pd.DataFrame:
                          VALUE_COLUMN: pd.Series(dtype="float32")})
 
 
-def bilinear_series(grid: xr.DataArray, longitude: float, latitude: float) -> Optional[np.ndarray]:
+def bilinear_series(grid: xr.DataArray, longitude: float, latitude: float,
+                    method: str = "linear") -> Optional[np.ndarray]:
     """
-    Blend the four cell centres around a point, as the map's bilinear interpolation draws it.
+    Blend the four cell centres around a point, as the map's bilinear interpolation draws it, or read the cell.
 
     The catalog draws the forecast with ``"interpolations": "bilinear"``, so a near-zero cell beside an icy one
-    is drawn as trace ice. Charting only the clicked cell put a 0 under that colour.
+    is drawn as trace ice. Charting only the clicked cell put a 0 under that colour. With ``"nearest"`` the data
+    weight is 0 or 1, so the same steps return the clicked cell's own value, as the raw map draws it.
 
     Parameters
     ----------
@@ -93,6 +95,8 @@ def bilinear_series(grid: xr.DataArray, longitude: float, latitude: float) -> Op
         Longitude of the point in degrees, in either the -180..180 or 0..360 convention.
     latitude : float
         Latitude of the point in degrees.
+    method : str
+        ``xarray`` interpolation: ``"linear"`` blends, ``"nearest"`` reads the clicked cell.
 
     Returns
     -------
@@ -123,17 +127,18 @@ def bilinear_series(grid: xr.DataArray, longitude: float, latitude: float) -> Op
     # Land is NaN, and a plain linear interp is NaN if any neighbour is, so blend only the neighbours with data:
     # interpolate the values with NaN as 0 and a 0/1 data mask alike, then divide.
     grid = grid.sortby("lat")
-    weight = grid.notnull().astype("float64").interp(point).values
-    blend = grid.fillna(0).interp(point).values
+    weight = grid.notnull().astype("float64").interp(point, method=method).values
+    blend = grid.fillna(0).interp(point, method=method).values
     with np.errstate(invalid="ignore", divide="ignore"):
         return np.where(weight > 0, blend / weight, np.nan).astype("float32")
 
 
 def sic_forecast_series(longitude: float,
                         latitude: float,
-                        raster_path: Union[str, os.PathLike]) -> pd.DataFrame:
+                        raster_path: Union[str, os.PathLike],
+                        method: str = "linear") -> pd.DataFrame:
     """
-    Extract the forecast time series at a point, blended from the cells around it as the map draws it.
+    Extract the forecast time series at a point, as the map draws it: blended, or the clicked cell.
 
     Parameters
     ----------
@@ -144,6 +149,8 @@ def sic_forecast_series(longitude: float,
     raster_path : Union[str, os.PathLike]
         Path to the multi-band forecast GeoTIFF. The caller owns its location: the raster
         holds unpublished data and is not committed to this repository.
+    method : str
+        ``"linear"`` charts the blend, with values under ``OPEN_WATER`` as 0; ``"nearest"`` the cell, unrounded.
 
     Returns
     -------
@@ -164,7 +171,9 @@ def sic_forecast_series(longitude: float,
             coords={"lon": transform.c + transform.a * (np.arange(raster.width) + 0.5),
                     "lat": transform.f + transform.e * (np.arange(raster.height) + 0.5)})
         timestamps = _band_timestamps(raster)
-    values = bilinear_series(grid, longitude, latitude)
+    values = bilinear_series(grid, longitude, latitude, method)
     if values is None:
         return _empty_series()
-    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: np.where(values < OPEN_WATER, 0, values)})
+    if method == "linear":
+        values = np.where(values < OPEN_WATER, 0, values)
+    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})

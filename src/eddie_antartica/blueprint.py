@@ -6,7 +6,7 @@ from eddie.check_celery_alive import check_celery_alive
 from flask import Blueprint, Response, make_response, request
 
 from src.eddie_antartica import tasks
-from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import TIMESERIES_ROUTE
+from src.eddie_antartica.sea_ice.sea_ice_forecast_layer import CHART_METHODS, TIMESERIES_ROUTE
 from src.eddie_antartica.sea_ice.sea_ice_forecast_process_service import SeaIceForecastProcessService
 from src.eddie_antartica.wms_point import point_from_get_feature_info
 
@@ -54,11 +54,13 @@ def sea_ice_forecast_timeseries() -> Response:
     Returns
     -------
     Response
-        OK carrying ``text/csv``, or BAD_REQUEST if the GetFeatureInfo parameters are missing or malformed.
+        OK carrying ``text/csv``, or BAD_REQUEST if the GetFeatureInfo parameters are missing or malformed, or
+        ``interpolations`` names no display mode.
     """
     try:
         longitude, latitude = point_from_get_feature_info(request.args)
+        method = CHART_METHODS[request.args.get("interpolations") or None]
     except (KeyError, ValueError) as request_error:
         return make_response(f"Invalid GetFeatureInfo request: {request_error}", BAD_REQUEST)
-    csv = tasks.sea_ice_forecast_point_series.delay(longitude, latitude).get()
+    csv = tasks.sea_ice_forecast_point_series.delay(longitude, latitude, method).get()
     return Response(csv, OK, mimetype="text/csv")

@@ -60,9 +60,10 @@ TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 def point_series(longitude: float,
                  latitude: float,
-                 source: Union[str, pathlib.Path]) -> pd.DataFrame:
+                 source: Union[str, pathlib.Path],
+                 method: str = "linear") -> pd.DataFrame:
     """
-    Extract the forecast time series at a point, blended from the cells around it as the map draws it.
+    Extract the forecast time series at a point, as the map draws it: blended, or the clicked cell.
 
     Parameters
     ----------
@@ -74,6 +75,8 @@ def point_series(longitude: float,
     source : Union[str, pathlib.Path]
         Path to the forecast NetCDF. The caller owns its location: the forecast holds
         unpublished data and is not committed to this repository.
+    method : str
+        ``"linear"`` charts the blend, with values under ``OPEN_WATER`` as 0; ``"nearest"`` the cell, unrounded.
 
     Returns
     -------
@@ -92,12 +95,14 @@ def point_series(longitude: float,
         data = dataset[VARIABLE]
         grid_crs = CRS.from_user_input(dataset[data.encoding["grid_mapping"]].attrs["crs_wkt"])
         eastings, northings = transform(CLICK_CRS, grid_crs, [longitude], [latitude])
-        values = bilinear_series(data, eastings[0], northings[0])
+        values = bilinear_series(data, eastings[0], northings[0], method)
         if values is None:
             return _empty_series()
         timestamps = pd.DatetimeIndex(data["time"].values).strftime(TIME_FORMAT)
 
-    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: np.where(values < OPEN_WATER, 0, values)})
+    if method == "linear":
+        values = np.where(values < OPEN_WATER, 0, values)
+    return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})
 
 
 def latest_forecast(directory: pathlib.Path) -> Optional[pathlib.Path]:
