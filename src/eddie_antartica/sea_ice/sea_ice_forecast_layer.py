@@ -42,7 +42,7 @@ def layer_name(week: int, raw: bool = False) -> str:
     week : int
         Forecast week, 1-based.
     raw : bool
-        True for the week's raw layer, which has its land cells blanked; False for the layer drawn smoothed.
+       True for the week's raw layer, the model output as it is; False for the layer drawn smoothed.
 
     Returns
     -------

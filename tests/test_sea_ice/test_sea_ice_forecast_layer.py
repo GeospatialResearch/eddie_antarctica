@@ -47,8 +47,8 @@ def test_the_layer_draws_and_charts_the_display_chosen_in_the_form() -> None:
         item = json.loads(sea_ice_forecast_layer.catalog_item(3, "2026-10-08", "http://gs:8088", "http://be:5000",
                                                               interpolation))
         assert item["parameters"] == {"interpolations": interpolation}, label
-        assert item["layers"] == {"Raw 1° cells": "sic_forecast_week3_raw", "Smoothed": "sic_forecast_week3"}[label]
         assert item.get("parameters") == {"Raw 1° cells": None, "Smoothed": {"interpolations": "bilinear"}}[label]
+        assert item["layers"] == {"Raw 1° cells": "sic_forecast_week3_raw", "Smoothed": "sic_forecast_week3"}[label]
     assert list(sea_ice_forecast_layer.DISPLAY_LABELS) == ["Raw 1° cells", "Smoothed"]
 
 
