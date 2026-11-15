@@ -6,7 +6,7 @@ week's date and points Terria at that layer: nothing is drawn per request, and t
 """
 import json
 import pathlib
-from typing import Optional, Union
+from typing import Union
 
 import pandas as pd
 import xarray as xr
@@ -66,7 +66,7 @@ def week_date(forecast: Union[str, pathlib.Path], week: int) -> str:
 
 
 def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
-                 interpolation: Optional[str] = None) -> str:
+                 interpolation: str = "nearest neighbor") -> str:
     """
     Build the Terria catalog member JSON for one published forecast week.
 
@@ -80,16 +80,15 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
         Public GeoServer root, e.g. ``http://localhost:8088``.
     backend_url : str
         Public backend root, e.g. ``http://localhost:5000``.
-    interpolation : Optional[str]
+    interpolation : str
         A ``DISPLAY_LABELS`` value: how GeoServer draws the layer. Terria sends it with every click too, so the
-        chart follows the map. None, the default, sets no interpolation and draws the raw cells.
+        chart follows the map. Defaults to nearest neighbour, the raw cells.
 
     Returns
     -------
     str
         A WMS catalog member, in format ``application/vnd.terriajs.catalog-member+json``.
     """
-    parameters = {"parameters": {"interpolations": interpolation}} if interpolation else {}
     return json.dumps({
         "type": "wms",
         "name": f"Sea ice concentration -- week {week} ({date})",
@@ -99,5 +98,5 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
         "crs": "EPSG:4326",
         "supportsGetTimeseries": True,
         "getFeatureInfoUrl": f"{backend_url}{TIMESERIES_ROUTE}",
-        **parameters,
+        "parameters": {"interpolations": interpolation},
     })
