@@ -32,6 +32,7 @@ import rasterio as rio
 import xarray as xr
 
 from src.eddie_antartica.sea_ice.model import sic_data_from_nc, sic_to_nc
+from src.eddie_antartica.sea_ice.sea_ice_enum import ChartMethod
 
 LATITUDES = np.array([-43.0, -42.0, -41.0])     # ascending, as the model holds them
 LONGITUDES = np.arange(360, dtype="float64")    # 0..359
@@ -108,7 +109,8 @@ def test_chart_returns_the_model_values_for_the_clicked_cell(tmp_path: Path) -> 
     blend = 0.2 * encoded_forecast()[node(179, -42.0)] + 0.8 * encoded_forecast()[node(180, -42.0)]
     np.testing.assert_allclose(sic_data_from_nc.point_series(179.8, -42.0, path).iloc[:, 1], blend, rtol=1e-6)
     # Raw, 179.8 is inside the 180 cell, which straddles 180 degrees.
-    np.testing.assert_array_equal(sic_data_from_nc.point_series(179.8, -42.0, path, "nearest").iloc[:, 1].to_numpy(),
+    raw = sic_data_from_nc.point_series(179.8, -42.0, path, ChartMethod.NEAREST)
+    np.testing.assert_array_equal(raw.iloc[:, 1].to_numpy(),
                                   encoded_forecast()[node(180, -42.0)].astype("float32"))
 
 

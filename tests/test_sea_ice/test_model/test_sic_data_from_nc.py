@@ -37,6 +37,7 @@ from rasterio.crs import CRS
 import xarray as xr
 
 from src.eddie_antartica.sea_ice.model import sic_data_from_nc, sic_data_from_raster, sic_to_nc
+from src.eddie_antartica.sea_ice.sea_ice_enum import ChartMethod
 from tests.test_sea_ice.test_model.test_sic_data_from_raster import (
     N_BANDS, N_LAT, N_LON, NORTH, TIMES, VALUES, WEST, _write_fixture)
 
@@ -121,7 +122,7 @@ def test_samples_the_clicked_cell_across_every_step(tmp_path: Path) -> None:
     # An interior point blends the four centres around it, as the map draws it: 1.4 rows and 1.6 columns in.
     assert sic_data_from_nc.point_series(-177.9, -41.9, netcdf)[VALUES].iloc[0] == pytest.approx(115.6)
     # The raw map draws the cell containing it, not a neighbour.
-    assert sic_data_from_nc.point_series(-177.9, -41.9, netcdf, method="nearest")[VALUES].iloc[0] == 112.0
+    assert sic_data_from_nc.point_series(-177.9, -41.9, netcdf, method=ChartMethod.NEAREST)[VALUES].iloc[0] == 112.0
 
 
 def test_longitude_beyond_180_is_wrapped(tmp_path: Path) -> None:
@@ -131,8 +132,8 @@ def test_longitude_beyond_180_is_wrapped(tmp_path: Path) -> None:
     assert list(wrapped[VALUES]) == list(sic_data_from_nc.point_series(-177.5, LAT0, netcdf)[VALUES])
 
 
-@pytest.mark.parametrize("method", ["linear", "nearest"])
-def test_click_inside_the_westernmost_cell_is_not_wrapped_off_the_grid(tmp_path: Path, method: str) -> None:
+@pytest.mark.parametrize("method", list(ChartMethod))
+def test_click_inside_the_westernmost_cell_is_not_wrapped_off_the_grid(tmp_path: Path, method: ChartMethod) -> None:
     """
     A click west of the westernmost cell *centre* still lands in that cell.
 
@@ -162,8 +163,8 @@ def test_missing_values_chart_as_gaps(tmp_path: Path) -> None:
     assert sic_data_from_nc.point_series(LON0, LAT0, forecast_nc(tmp_path, values))[VALUES].isna().all()
 
 
-@pytest.mark.parametrize("method", ["linear", "nearest"])
-def test_netcdf_and_geotiff_routes_return_the_same_csv(tmp_path: Path, method: str) -> None:
+@pytest.mark.parametrize("method", list(ChartMethod))
+def test_netcdf_and_geotiff_routes_return_the_same_csv(tmp_path: Path, method: ChartMethod) -> None:
     """
     The same forecast charts identically whichever file it is read from.
 
@@ -257,9 +258,9 @@ def test_a_land_neighbour_does_not_blank_the_chart(tmp_path: Path) -> None:
         np.testing.assert_allclose(reader(LON0, LAT0 - 0.5, source)[VALUES], [0.4] * N_BANDS, rtol=1e-5)
 
 
-@pytest.mark.parametrize("method, expected", [("linear", {179.75: 0.06, -180.25: 0.06, 179.25: 0.02}),
-                                              ("nearest", {179.75: 0.08, -180.25: 0.08, 179.25: 0.0})])
-def test_chart_blends_across_180_degrees_as_the_map_does(tmp_path: Path, method: str, expected: dict) -> None:
+@pytest.mark.parametrize("method, expected", [(ChartMethod.LINEAR, {179.75: 0.06, -180.25: 0.06, 179.25: 0.02}),
+                                              (ChartMethod.NEAREST, {179.75: 0.08, -180.25: 0.08, 179.25: 0.0})])
+def test_chart_blends_across_180_degrees_as_the_map_does(tmp_path: Path, method: ChartMethod, expected: dict) -> None:
     """
     A click near 180 degrees blends the cells on both sides of it, as the map draws it; raw, it reads the cell it is in.
 
@@ -302,7 +303,7 @@ def test_raw_cells_chart_the_clicked_cell_as_the_model_wrote_it(tmp_path: Path) 
                                            (LON0 + 0.55, LAT0, 0.08),          # across the edge, the ice cell
                                            (LON0, LAT0 - 0.45, 0.003),         # beside land, its own value
                                            (LON0 + 0.3, LAT0 - 0.8, np.nan)):  # inside the land cell, a gap
-            series = reader(longitude, latitude, source, method="nearest")
+            series = reader(longitude, latitude, source, method=ChartMethod.NEAREST)
             np.testing.assert_allclose(series[VALUES], [value] * N_BANDS, rtol=1e-6, err_msg=str((longitude, latitude)))
         # Smoothed, the same trace ice still charts as open water.
         np.testing.assert_allclose(reader(LON0, LAT0, source)[VALUES], [0.0] * N_BANDS)
