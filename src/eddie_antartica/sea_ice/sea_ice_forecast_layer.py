@@ -19,13 +19,13 @@ STYLE = "sic_forecast_8w"
 # Chart route in ``src/eddie_antartica/blueprint.py``; Terria appends the GetFeatureInfo query to it.
 TIMESERIES_ROUTE = "/sea-ice-forecast-timeseries"
 
-# Form label -> GeoServer ``interpolations`` value; the first entry is the form default. None sends no
-# ``interpolations`` at all, so GeoServer draws the cells as they are. Any other value must stay an exact
-# GeoServer value: any other string throws in GeoServer instead of drawing.
-DISPLAY_LABELS = {"Raw 1° cells": None, "Smoothed": "bilinear"}
+# Form label -> GeoServer ``interpolations`` value; the first entry is the form default. The map is always
+# resampled, and nearest neighbour is the closest to the raw cells. Values must stay exact GeoServer values:
+# any other string throws in GeoServer instead of drawing.
+DISPLAY_LABELS = {"Raw 1° cells": "nearest neighbor", "Smoothed": "bilinear"}
 
 # GeoServer ``interpolations`` from a click -> how the chart reads the forecast; anything else is the route's 400.
-CHART_METHODS = {None: ChartMethod.NEAREST, "bilinear": ChartMethod.LINEAR}
+CHART_METHODS = {"nearest neighbor": ChartMethod.NEAREST, "bilinear": ChartMethod.LINEAR}
 
 
 def layer_name(week: int) -> str:
