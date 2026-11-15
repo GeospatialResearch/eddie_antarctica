@@ -32,6 +32,8 @@ import pandas as pd
 import rasterio as rio
 import xarray as xr
 
+from src.eddie_antartica.sea_ice.sea_ice_enum import ChartMethod
+
 TIME_COLUMN = "Time (UTC)"
 VALUE_COLUMN = "Sea ice concentration (fraction)"
 #: Below this the map's style draws nothing ("Open water" in ``sic_forecast_8w.sld``), so the chart reads 0 too.
@@ -79,13 +81,13 @@ def _empty_series() -> pd.DataFrame:
 
 
 def bilinear_series(grid: xr.DataArray, longitude: float, latitude: float,
-                    method: str = "linear") -> Optional[np.ndarray]:
+                    method: ChartMethod = ChartMethod.LINEAR) -> Optional[np.ndarray]:
     """
     Blend the four cell centres around a point, as the map's bilinear interpolation draws it, or read the cell.
 
     The catalog draws the forecast with ``"interpolations": "bilinear"``, so a near-zero cell beside an icy one
-    is drawn as trace ice. Charting only the clicked cell put a 0 under that colour. With ``"nearest"`` the data
-    weight is 0 or 1, so the same steps return the clicked cell's own value, as the raw map draws it.
+    is drawn as trace ice. Charting only the clicked cell put a 0 under that colour. With ``ChartMethod.NEAREST``
+    the data weight is 0 or 1, so the same steps return the clicked cell's own value, as the raw map draws it.
 
     Parameters
     ----------
@@ -95,8 +97,8 @@ def bilinear_series(grid: xr.DataArray, longitude: float, latitude: float,
         Longitude of the point in degrees, in either the -180..180 or 0..360 convention.
     latitude : float
         Latitude of the point in degrees.
-    method : str
-        ``xarray`` interpolation: ``"linear"`` blends, ``"nearest"`` reads the clicked cell.
+    method : ChartMethod
+        ``ChartMethod.LINEAR`` blends, ``ChartMethod.NEAREST`` reads the clicked cell.
 
     Returns
     -------
@@ -136,7 +138,7 @@ def bilinear_series(grid: xr.DataArray, longitude: float, latitude: float,
 def sic_forecast_series(longitude: float,
                         latitude: float,
                         raster_path: Union[str, os.PathLike],
-                        method: str = "linear") -> pd.DataFrame:
+                        method: ChartMethod = ChartMethod.LINEAR) -> pd.DataFrame:
     """
     Extract the forecast time series at a point, as the map draws it: blended, or the clicked cell.
 
@@ -149,8 +151,8 @@ def sic_forecast_series(longitude: float,
     raster_path : Union[str, os.PathLike]
         Path to the multi-band forecast GeoTIFF. The caller owns its location: the raster
         holds unpublished data and is not committed to this repository.
-    method : str
-        ``"linear"`` charts the blend, with values under ``OPEN_WATER`` as 0; ``"nearest"`` the cell, unrounded.
+    method : ChartMethod
+        ``LINEAR`` charts the blend, with values under ``OPEN_WATER`` as 0; ``NEAREST`` the cell, unrounded.
 
     Returns
     -------
@@ -174,6 +176,6 @@ def sic_forecast_series(longitude: float,
     values = bilinear_series(grid, longitude, latitude, method)
     if values is None:
         return _empty_series()
-    if method == "linear":
+    if method == ChartMethod.LINEAR:
         values = np.where(values < OPEN_WATER, 0, values)
     return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})

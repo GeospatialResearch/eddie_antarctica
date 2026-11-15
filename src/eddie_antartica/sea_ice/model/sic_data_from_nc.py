@@ -43,6 +43,7 @@ import xarray as xr
 
 from src.eddie_antartica.sea_ice.model.sic_data_from_raster import (
     OPEN_WATER, TIME_COLUMN, VALUE_COLUMN, _empty_series, bilinear_series)
+from src.eddie_antartica.sea_ice.sea_ice_enum import ChartMethod
 
 #: TerriaJS asks in degrees, WGS 84.
 CLICK_CRS = CRS.from_epsg(4326)
@@ -61,7 +62,7 @@ TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 def point_series(longitude: float,
                  latitude: float,
                  source: Union[str, pathlib.Path],
-                 method: str = "linear") -> pd.DataFrame:
+                 method: ChartMethod = ChartMethod.LINEAR) -> pd.DataFrame:
     """
     Extract the forecast time series at a point, as the map draws it: blended, or the clicked cell.
 
@@ -75,8 +76,8 @@ def point_series(longitude: float,
     source : Union[str, pathlib.Path]
         Path to the forecast NetCDF. The caller owns its location: the forecast holds
         unpublished data and is not committed to this repository.
-    method : str
-        ``"linear"`` charts the blend, with values under ``OPEN_WATER`` as 0; ``"nearest"`` the cell, unrounded.
+    method : ChartMethod
+        ``LINEAR`` charts the blend, with values under ``OPEN_WATER`` as 0; ``NEAREST`` the cell, unrounded.
 
     Returns
     -------
@@ -100,7 +101,7 @@ def point_series(longitude: float,
             return _empty_series()
         timestamps = pd.DatetimeIndex(data["time"].values).strftime(TIME_FORMAT)
 
-    if method == "linear":
+    if method == ChartMethod.LINEAR:
         values = np.where(values < OPEN_WATER, 0, values)
     return pd.DataFrame({TIME_COLUMN: timestamps, VALUE_COLUMN: values})
 

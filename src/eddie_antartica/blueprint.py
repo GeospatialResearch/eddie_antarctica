@@ -59,7 +59,8 @@ def sea_ice_forecast_timeseries() -> Response:
     """
     try:
         longitude, latitude = point_from_get_feature_info(request.args)
-        method = CHART_METHODS[request.args.get("interpolations") or None]
+        # No interpolations: GeoServer draws its default, nearest neighbour, as raw layers added before it was sent.
+        method = CHART_METHODS[request.args.get("interpolations") or "nearest neighbor"]
     except (KeyError, ValueError) as request_error:
         return make_response(f"Invalid GetFeatureInfo request: {request_error}", BAD_REQUEST)
     csv = tasks.sea_ice_forecast_point_series.delay(longitude, latitude, method).get()
