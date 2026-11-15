@@ -23,6 +23,7 @@ import re
 import pytest
 import pathlib
 
+from src.eddie_antartica.sea_ice import sea_ice_forecast_layer
 
 CATALOG_PATH = pathlib.Path(__file__).resolve().parent.parent /  "terriajs" / "catalog.json"
 CONFIG_PATH = pathlib.Path(__file__).resolve().parent.parent / "terriajs" / "client_config.json"
