@@ -35,6 +35,7 @@ from src.eddie_antartica.run_all import DEFAULT_MODULES_TO_PARAMETERS
 from src.eddie_antartica.sea_ice.inputs import main_sea_ice_inputs
 from src.eddie_antartica.sea_ice.model import serve_model, sic_gnn_model
 from src.eddie_antartica.sea_ice.model.sic_data_from_nc import latest_forecast, point_series
+from src.eddie_antartica.sea_ice.sea_ice_enum import ChartMethod
 
 setup_logging()
 log = logging.getLogger(__name__)
@@ -108,7 +109,8 @@ def refresh_sea_ice_forecast() -> None:
 
 
 @app.task(base=OnFailureStateTask)
-def sea_ice_forecast_point_series(longitude: float, latitude: float) -> str:
+def sea_ice_forecast_point_series(longitude: float, latitude: float,
+                                  method: ChartMethod = ChartMethod.LINEAR) -> str:
     """
     Chart the newest forecast at a point: the latest in ``FORECAST_NETCDF_DIR``, else ``FORECAST_NETCDF_LATEST``.
 
@@ -118,6 +120,8 @@ def sea_ice_forecast_point_series(longitude: float, latitude: float) -> str:
         Clicked longitude in degrees.
     latitude : float
         Clicked latitude in degrees.
+    method : ChartMethod
+        ``LINEAR`` charts the blend the smoothed map draws, ``NEAREST`` the clicked model cell.
 
     Returns
     -------
@@ -125,4 +129,5 @@ def sea_ice_forecast_point_series(longitude: float, latitude: float) -> str:
         The two-column CSV Terria plots: time, then concentration; just the header off the grid.
     """
     forecast = latest_forecast(EnvVariable.FORECAST_NETCDF_DIR) or EnvVariable.FORECAST_NETCDF_LATEST
-    return point_series(longitude, latitude, forecast).to_csv(index=False)
+    # Celery's JSON serialiser delivers the member as its plain string value, so restore the member.
+    return point_series(longitude, latitude, forecast, ChartMethod(method)).to_csv(index=False)
