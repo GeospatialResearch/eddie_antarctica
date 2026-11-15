@@ -84,7 +84,7 @@ which is in this repository.
    docker compose logs -f celery_worker
    ```
    This downloads the last six weeks of inputs to `/stored_data/sea_ice_inputs`, writes the forecast to
-   `/stored_data/sea_ice_forecasts/sic_forecast_8w_<first week>.nc` and publishes it to GeoServer as `sic_forecast_8w`.
+   `/stored_data/sea_ice_forecasts/sic_forecast_8w_<first week>.nc` and publishes each week to GeoServer as `sic_forecast_week<N>`.
 
    The "Sea ice concentration forecast" process in Terria and its point chart read the newest file in
    `sea_ice_forecasts`, falling back to `FORECAST_NETCDF_LATEST` until the first forecast is written.
