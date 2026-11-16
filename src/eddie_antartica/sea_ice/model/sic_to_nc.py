@@ -30,13 +30,20 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-import rioxarray  # noqa: F401  # pylint: disable=unused-import  # registers the .rio accessor
+from rasterio.enums import Resampling
+import rioxarray
 import xarray as xr
 
+from src.eddie_antartica.sea_ice.inputs import land_mask_from_nsidc
 from src.eddie_antartica.sea_ice.model.sic_data_from_nc import VARIABLE
 
 #: Values above this are NSIDC land/coast/pole-hole flags (251-254), not concentrations.
 FLAG_THRESHOLD = 1.0
+
+#: A model cell this much land or more is left out of the smoothed layer's blend.
+LAND_FRACTION_THRESHOLD = 0.5
+
+DISPLAY_RESOLUTION = 0.05
 
 #: The model forecasts weekly, continuing on from its last input week.
 FORECAST_STEP = pd.Timedelta(weeks=1)
@@ -155,4 +162,58 @@ def nc_to_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int = -1)
                          west.assign_coords(lon=float(west.lon) + 360)], dim="lon")
         sic.rio.set_spatial_dims(x_dim="lon", y_dim="lat").rio.write_crs("EPSG:4326").rio.to_raster(
             gtiff_path, compress="LZW")
+    return gtiff_path
+
+
+def remove_land(grid: xr.DataArray, nsidc_path: pathlib.Path, resampling: Resampling) -> xr.DataArray:
+    """
+    Blank the cells of a georeferenced grid that NSIDC-0780 makes land, a lake or an ice shelf.
+
+    Parameters
+    ----------
+    grid : xarray.DataArray
+        A grid with a CRS, on any projection and resolution.
+    nsidc_path : pathlib.Path
+        The NSIDC-0780 file. Cells off its grid are sea.
+    resampling : rasterio.enums.Resampling
+        How the mask is brought onto ``grid``: ``nearest`` for a grid as fine as the mask, ``average`` for a coarser
+        one, whose cells are then land when ``LAND_FRACTION_THRESHOLD`` of them or more is.
+
+    Returns
+    -------
+    xarray.DataArray
+        ``grid`` with NaN on land.
+    """
+    land = land_mask_from_nsidc.not_sea(nsidc_path).rio.reproject_match(grid, resampling=resampling)
+    return grid.where(~(land >= LAND_FRACTION_THRESHOLD)).rio.write_nodata(np.nan)
+
+
+def display_gtiff(nc_path: pathlib.Path, gtiff_path: pathlib.Path, week: int, nsidc_path: pathlib.Path) -> pathlib.Path:
+    """
+    Write one week of the forecast blended onto a ``DISPLAY_RESOLUTION`` GeoTIFF, with the land cut out of it.
+
+    The model's land cells take the value of their nearest sea cell before the blend, so what the model gives a land
+    cell never reaches the sea beside it, and the sea inside a land cell is still drawn.
+
+    Parameters
+    ----------
+    nc_path : pathlib.Path
+        A forecast ``sic(time, lat, lon)`` in EPSG:4326, as ``nc_to_gtiff`` takes it.
+    gtiff_path : pathlib.Path
+        Where to write the GeoTIFF.
+    week : int
+        Index into ``time`` of the week to write.
+    nsidc_path : pathlib.Path
+        The NSIDC-0780 file whose land, lakes and ice shelves are cut out. Points off its grid are sea.
+
+    Returns
+    -------
+    pathlib.Path
+        The written GeoTIFF: -180..180, NaN on land.
+    """
+    with rioxarray.open_rasterio(nc_to_gtiff(nc_path, gtiff_path, week), masked=True) as cells:
+        sea_cells = remove_land(cells.load(), nsidc_path, Resampling.average).rio.interpolate_na().astype("float32")
+    smooth = sea_cells.rio.reproject(sea_cells.rio.crs, resolution=DISPLAY_RESOLUTION, resampling=Resampling.bilinear)
+    smooth = smooth.sel(x=slice(-180, 180), y=slice(90, -90))
+    remove_land(smooth, nsidc_path, Resampling.nearest).rio.to_raster(gtiff_path, compress="LZW")
     return gtiff_path

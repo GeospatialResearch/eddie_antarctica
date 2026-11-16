@@ -38,6 +38,7 @@ import xarray as xr
 
 from src.eddie_antartica.sea_ice.model import sic_data_from_nc, sic_data_from_raster, sic_to_nc
 from src.eddie_antartica.sea_ice.sea_ice_enum import ChartMethod
+from tests.test_sea_ice.test_model.test_sic_to_nc import nsidc_mask
 from tests.test_sea_ice.test_model.test_sic_data_from_raster import (
     N_BANDS, N_LAT, N_LON, NORTH, TIMES, VALUES, WEST, _write_fixture)
 
@@ -307,3 +308,15 @@ def test_raw_cells_chart_the_clicked_cell_as_the_model_wrote_it(tmp_path: Path) 
             np.testing.assert_allclose(series[VALUES], [value] * N_BANDS, rtol=1e-6, err_msg=str((longitude, latitude)))
         # Smoothed, the same trace ice still charts as open water.
         np.testing.assert_allclose(reader(LON0, LAT0, source)[VALUES], [0.0] * N_BANDS)
+
+
+def test_smoothed_chart_is_blank_where_the_mask_cuts_out_land(tmp_path: Path) -> None:
+    """The smoothed map draws nothing on the mask's land, so its chart is empty there; the raw chart is not cut."""
+    netcdf = forecast_nc(tmp_path)
+    nsidc_path = nsidc_mask(tmp_path / "nsidc.nc", 0.05, np.array([(LON0 + 360, LON0 + 360.2, LAT0 - 0.2, LAT0)]),
+                            south=LAT0 - 1, north=LAT0 + 0.5)
+
+    assert sic_data_from_nc.point_series(LON0 + 0.1, LAT0 - 0.1, netcdf, nsidc_path=nsidc_path).empty
+    assert len(sic_data_from_nc.point_series(LON0 + 360.4, LAT0 - 0.4, netcdf, nsidc_path=nsidc_path)) == N_BANDS
+    assert len(sic_data_from_nc.point_series(LON0 + 0.1, LAT0 - 0.1, netcdf, method=ChartMethod.NEAREST,
+                                             nsidc_path=nsidc_path)) == N_BANDS
