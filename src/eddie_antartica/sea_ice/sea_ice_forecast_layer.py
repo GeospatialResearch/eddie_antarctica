@@ -28,7 +28,7 @@ DISPLAY_LABELS = {"Raw 1° cells": "nearest neighbor", "Smoothed": "bilinear"}
 CHART_METHODS = {"nearest neighbor": ChartMethod.NEAREST, "bilinear": ChartMethod.LINEAR}
 
 
-def layer_name(week: int) -> str:
+def layer_name(week: int, raw: bool = False) -> str:
     """
     Name the GeoServer layer for one forecast week.
 
@@ -36,13 +36,15 @@ def layer_name(week: int) -> str:
     ----------
     week : int
         Forecast week, 1-based.
+    raw : bool
+       True for the week's raw layer, the model output as it is; False for the layer drawn smoothed.
 
     Returns
     -------
     str
-        ``sic_forecast_week<week>``.
+        ``sic_forecast_week<week>``, or ``sic_forecast_week<week>_raw``.
     """
-    return f"sic_forecast_week{week}"
+    return f"sic_forecast_week{week}{'_raw' if raw else ''}"
 
 
 def week_date(forecast: Union[str, pathlib.Path], week: int) -> str:
@@ -93,7 +95,7 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
         "type": "wms",
         "name": f"Sea ice concentration -- week {week} ({date})",
         "url": f"{geoserver_url}/geoserver/static_files/wms",
-        "layers": layer_name(week),
+        "layers": layer_name(week, raw=CHART_METHODS[interpolation] == ChartMethod.NEAREST),
         "styles": STYLE,
         "crs": "EPSG:4326",
         "supportsGetTimeseries": True,

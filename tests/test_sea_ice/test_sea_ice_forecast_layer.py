@@ -34,7 +34,7 @@ def test_catalog_item_is_a_charted_wms_layer_for_the_week() -> None:
         "type": "wms",
         "name": "Sea ice concentration -- week 3 (2026-10-08)",
         "url": "http://gs:8088/geoserver/static_files/wms",
-        "layers": "sic_forecast_week3",
+        "layers": "sic_forecast_week3_raw",
         "styles": "sic_forecast_8w",
         "crs": "EPSG:4326",
         "supportsGetTimeseries": True,
@@ -50,6 +50,7 @@ def test_the_layer_draws_and_charts_the_display_chosen_in_the_form() -> None:
                                                               interpolation))
         assert item["parameters"] == {"interpolations": interpolation}, label
         assert interpolation in sea_ice_forecast_layer.CHART_METHODS, label
+        assert item["layers"] == {"Raw 1° cells": "sic_forecast_week3_raw", "Smoothed": "sic_forecast_week3"}[label]
     assert list(sea_ice_forecast_layer.DISPLAY_LABELS) == ["Raw 1° cells", "Smoothed"]
 
 

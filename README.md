@@ -70,11 +70,14 @@ which is in this repository.
    dataset page, then uncomment `CDSAPI_URL` and `CDSAPI_KEY` in `api_keys.env` and fill in your API key. Sea ice
    concentration comes from NSIDC and needs no key.
 
-1. Get these four files from the reference code (the sea ice model's source) and put them in a folder named
-   `sic_model` next to `docker-compose.yml`. They are the only files you add by hand; the weekly inputs and forecasts
-   are downloaded and written by the worker.
-   * `SIC_production_checkpoint.pt`, `multi_mesh_bundle_K5.npz` and `train_stats.npz`
+1. Put these five files in a folder named `sic_model` next to `docker-compose.yml`. They are the only files you add
+   by hand; the weekly inputs and forecasts are downloaded and written by the worker.
+   * `SIC_production_checkpoint.pt`, `multi_mesh_bundle_K5.npz` and `train_stats.npz`, from the reference code
+     (the sea ice model's source)
    * `sic_climatology.nc`, from the reference code's `data/historical/`
+   * `NSIDC-0780_SeaIceRegions_EASE2-S3.125km_v1.0.nc`, from
+     [NSIDC-0780](https://daacdata.apps.nsidc.org/pub/DATASETS/nsidc0780_seaice_masks_v1/netcdf/) (Earthdata login).
+     The smoothed forecast layer and its chart cut out its land and ice shelves.
 
    The worker reads this folder directly (read-only), so files added or replaced there are used on the next run.
 
