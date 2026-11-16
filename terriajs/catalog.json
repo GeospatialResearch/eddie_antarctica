@@ -26,16 +26,18 @@
           "name": "GIA Model Output - Global Bed Topography Anomaly (Lowry et al. 2024)",
           "description": "Change in modelled global bed topography, in metres, derived by subtraction from the glacial isostatic adjustment (GIA) global bed topography output of Lowry et al. (2024), which is produced at 100 year intervals. It shows a difference in bed elevation rather than an absolute elevation. The legend is in 200 m bands from below -800 m to above 800 m. Please click the parent 'Antarctic Data Layers' folder for a detailed description.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
-          "layers": "gia_anomaly",
-          "styles": "gia_anomaly"
+          "layers": "gia_anomaly_4326",
+          "styles": "gia_anomaly_4326",
+          "crs": "EPSG:4326"
         },
         {
           "type": "wms",
           "name": "GIA Model Output - Global Bed Topography (Lowry et al. 2024)",
           "description": "Modelled global bed topography from the GIA run mv1e21_fr1e24_w0p0_weakEarth_t20, where mv is mantle viscosity and fr lithosphere flexural rigidity. In metres, with the legend from -1000 m to 1000 m. The GIA model output is produced at 100 year intervals; record the run identifier when exporting or comparing this layer. Please click the parent 'Antarctic Data Layers' folder for a detailed description.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
-          "layers": "gia_global_bed_topography_mv1e21_fr1e24_w0p0_weakEarth_t20",
-          "styles": "gia_global_bed_topography_mv1e21_fr1e24_w0p0_weakEarth_t20"
+          "layers": "gia_global_bed_topography_4326_global",
+          "styles": "gia_global_bed_topography_4326_global",
+          "crs": "EPSG:4326"
         },
         {
           "type": "wms",
@@ -45,7 +47,8 @@
           "layers": "lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka",
           "styles": "lowry_2024_ice_sheet_model_ism_hotf0-0_mv7-5e20_fr1e24_9-5ka",
           "supportsGetTimeseries": true,
-          "getFeatureInfoUrl": "$BACKEND_URL/ice-timeseries/thk"
+          "getFeatureInfoUrl": "$BACKEND_URL/ice-timeseries/thk",
+          "crs": "EPSG:4326"
         },
         {
           "type": "wms",
