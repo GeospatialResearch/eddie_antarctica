@@ -5,8 +5,8 @@
       <sld:FeatureTypeConstraint/>
     </sld:LayerFeatureConstraints>
     <sld:UserStyle>
-      <sld:Name>gia_global_bed_topography_mv1e21_fr1e24_w0p0_weakEarth_t20</sld:Name>
-      <sld:FeatureTypeStyle>
+        <sld:Name>gia_anomaly</sld:Name>
+        <sld:FeatureTypeStyle>
         <sld:Rule>
           <sld:RasterSymbolizer>
             <sld:ChannelSelection>
