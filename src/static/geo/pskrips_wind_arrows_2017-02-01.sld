@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc"
-                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<StyledLayerDescriptor xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xmlns="http://www.opengis.net/sld"
                        xsi:schemaLocation="http://www.opengis.net/sld
 http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" version="1.0.0">
     <NamedLayer>
@@ -44,7 +44,7 @@ http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" version="1.0.0">
                             <ogc:Function name="min">
                                 <ogc:Literal>1.0</ogc:Literal>
                                 <ogc:Div>
-                                    <ogc:Literal>10000000</ogc:Literal>
+                                    <ogc:Literal>2600000</ogc:Literal>
                                     <ogc:Function name="env">
                                         <ogc:Literal>wms_scale_denominator</ogc:Literal>
                                     </ogc:Function>
@@ -118,9 +118,9 @@ http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" version="1.0.0">
                                         </ogc:Add>
                                     </ogc:Function>
                                     <ogc:Literal>0</ogc:Literal>
-                                    <ogc:Literal>4</ogc:Literal>
+                                    <ogc:Literal>10</ogc:Literal>
                                     <ogc:Literal>24</ogc:Literal>
-                                    <ogc:Literal>30</ogc:Literal>
+                                    <ogc:Literal>36</ogc:Literal>
                                 </ogc:Function>
                             </Size>
                             <Rotation>
@@ -145,8 +145,13 @@ http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" version="1.0.0">
                         <Graphic>
                             <Mark>
                                 <WellKnownName>extshape://arrow?hr=1&amp;t=0.3&amp;ab=0.6</WellKnownName>
-                                <Fill><CssParameter name="fill">#440154</CssParameter></Fill>
-                                <Stroke><CssParameter name="stroke">#1a1a1a</CssParameter><CssParameter name="stroke-width">0.3</CssParameter></Stroke>
+                                <Fill>
+                                    <CssParameter name="fill">#440154</CssParameter>
+                                </Fill>
+                                <Stroke>
+                                    <CssParameter name="stroke">#1a1a1a</CssParameter>
+                                    <CssParameter name="stroke-width">0.3</CssParameter>
+                                </Stroke>
                             </Mark>
                             <Size>4</Size>
                         </Graphic>
@@ -159,8 +164,13 @@ http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" version="1.0.0">
                         <Graphic>
                             <Mark>
                                 <WellKnownName>extshape://arrow?hr=2.75&amp;t=0.3&amp;ab=0.6</WellKnownName>
-                                <Fill><CssParameter name="fill">#3b528b</CssParameter></Fill>
-                                <Stroke><CssParameter name="stroke">#1a1a1a</CssParameter><CssParameter name="stroke-width">0.3</CssParameter></Stroke>
+                                <Fill>
+                                    <CssParameter name="fill">#3b528b</CssParameter>
+                                </Fill>
+                                <Stroke>
+                                    <CssParameter name="stroke">#1a1a1a</CssParameter>
+                                    <CssParameter name="stroke-width">0.3</CssParameter>
+                                </Stroke>
                             </Mark>
                             <Size>10.5</Size>
                         </Graphic>
@@ -173,8 +183,13 @@ http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" version="1.0.0">
                         <Graphic>
                             <Mark>
                                 <WellKnownName>extshape://arrow?hr=4.5&amp;t=0.3&amp;ab=0.6</WellKnownName>
-                                <Fill><CssParameter name="fill">#21908d</CssParameter></Fill>
-                                <Stroke><CssParameter name="stroke">#1a1a1a</CssParameter><CssParameter name="stroke-width">0.3</CssParameter></Stroke>
+                                <Fill>
+                                    <CssParameter name="fill">#21908d</CssParameter>
+                                </Fill>
+                                <Stroke>
+                                    <CssParameter name="stroke">#1a1a1a</CssParameter>
+                                    <CssParameter name="stroke-width">0.3</CssParameter>
+                                </Stroke>
                             </Mark>
                             <Size>17</Size>
                         </Graphic>
@@ -187,8 +202,13 @@ http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" version="1.0.0">
                         <Graphic>
                             <Mark>
                                 <WellKnownName>extshape://arrow?hr=6.25&amp;t=0.3&amp;ab=0.6</WellKnownName>
-                                <Fill><CssParameter name="fill">#5dc963</CssParameter></Fill>
-                                <Stroke><CssParameter name="stroke">#1a1a1a</CssParameter><CssParameter name="stroke-width">0.3</CssParameter></Stroke>
+                                <Fill>
+                                    <CssParameter name="fill">#5dc963</CssParameter>
+                                </Fill>
+                                <Stroke>
+                                    <CssParameter name="stroke">#1a1a1a</CssParameter>
+                                    <CssParameter name="stroke-width">0.3</CssParameter>
+                                </Stroke>
                             </Mark>
                             <Size>23.5</Size>
                         </Graphic>
@@ -201,8 +221,13 @@ http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" version="1.0.0">
                         <Graphic>
                             <Mark>
                                 <WellKnownName>extshape://arrow?hr=8&amp;t=0.3&amp;ab=0.6</WellKnownName>
-                                <Fill><CssParameter name="fill">#fde725</CssParameter></Fill>
-                                <Stroke><CssParameter name="stroke">#1a1a1a</CssParameter><CssParameter name="stroke-width">0.3</CssParameter></Stroke>
+                                <Fill>
+                                    <CssParameter name="fill">#fde725</CssParameter>
+                                </Fill>
+                                <Stroke>
+                                    <CssParameter name="stroke">#1a1a1a</CssParameter>
+                                    <CssParameter name="stroke-width">0.3</CssParameter>
+                                </Stroke>
                             </Mark>
                             <Size>30</Size>
                         </Graphic>
