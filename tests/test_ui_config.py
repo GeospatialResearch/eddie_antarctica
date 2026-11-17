@@ -79,6 +79,10 @@ def test_every_backend_link_in_the_catalog_is_a_served_route() -> None:
     patterns = [re.compile(re.sub(r"<(?:path:)?\w+>", lambda m: ".+" if "path:" in m[0] else "[^/]+", route) + "$")
                 for route in routes]
     links = set(re.findall(r"\$BACKEND_URL(/[^\"\\?]*)", CATALOG_PATH.read_text()))
+    # A cesium-terrain url is a tileset base; Cesium requests <url>/layer.json, so check that instead.
+    terrain_bases = set(re.findall(r'"type": "cesium-terrain".*?"url": "\$BACKEND_URL(/[^"]*)"',
+                                   CATALOG_PATH.read_text(), re.DOTALL))
+    links = {f"{link}/layer.json" if link in terrain_bases else link for link in links}
 
     assert {link for link in links if not any(p.match(link) for p in patterns)} == set()
 
