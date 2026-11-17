@@ -95,6 +95,14 @@
           "name": "Experimental 3D Ice Thickness Blocks, Ross Sea",
           "description": "Experimental 3D columns derived from an ice sheet model thickness band. Thickness is rounded upward into 250 m classes and positioned on the ETOPO surface. Column height is illustrative and does not represent a reconstructed physical ice surface. Please click the parent 'Antarctic Data Layers' folder for a detailed description.",
           "url": "$BACKEND_URL/terrain/blocks-runA-ross/tileset.json"
+        },
+        {
+          "type": "wms",
+          "name": "Hillshade: REMA 32 m, Ross Sea",
+          "description": "Shaded relief derived from the REMA v2.0 32 m mosaic, sun azimuth 315°, altitude 45°, vertical exaggeration 2×. Illustrative relief only, not a measured surface.",
+          "url": "$GEOSERVER_URL/geoserver/static_files/wms",
+          "layers": "rema_hillshade_ross",
+          "opacity": 0.6
         }
       ]
     },
