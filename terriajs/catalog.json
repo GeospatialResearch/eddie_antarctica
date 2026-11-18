@@ -129,13 +129,6 @@
       "members": [
         {
           "type": "cesium-terrain",
-          "name": "REMA 32 m (Ross Sea)",
-          "description": "Self-hosted quantized-mesh terrain from the REMA v2.0 32 m mosaic, clipped to the Ross Sea area of interest. This is the terrain the map loads with. Heights are above the WGS84 ellipsoid. Enable one terrain item at a time.",
-          "attribution": "Reference Elevation Model of Antarctica (REMA), Polar Geospatial Center, CC-BY 4.0",
-          "url": "$BACKEND_URL/terrain"
-        },
-        {
-          "type": "cesium-terrain",
           "name": "McMurdo Dry Valleys LiDAR (2014-2015)",
           "description": "Self-hosted quantized-mesh terrain from the 2014-2015 McMurdo Dry Valleys airborne LiDAR survey. Much finer than the REMA mosaic, but only over the Dry Valleys; outside that footprint the globe falls back to a smooth ellipsoid, so zoom to the valleys before switching. Heights are above the WGS84 ellipsoid. Enable one terrain item at a time.",
           "url": "$BACKEND_URL/terrain/terrain_lidar"
