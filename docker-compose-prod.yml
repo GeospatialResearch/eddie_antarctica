@@ -138,6 +138,7 @@ services:
       - VIRTUAL_HOST=${WWW_VIRTUAL_HOST}
       - LETSENCRYPT_HOST=${WWW_VIRTUAL_HOST}
       - LETSENCRYPT_EMAIL=gri-enquiries@canterbury.ac.nz
+      - JAVA_TOOL_OPTIONS=-XX:-UseBASE64Intrinsics
     healthcheck:
       test: curl --fail -s http://localhost:3001/ || exit 1
       timeout: 5s
