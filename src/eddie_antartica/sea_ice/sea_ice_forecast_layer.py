@@ -83,8 +83,8 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
     backend_url : str
         Public backend root, e.g. ``http://localhost:5000``.
     interpolation : str
-        A ``DISPLAY_LABELS`` value: how GeoServer draws the layer. Terria sends it with every click too, so the
-        chart follows the map. Defaults to nearest neighbour, the raw cells.
+        A ``DISPLAY_LABELS`` value: which week layer to draw, raw or smoothed. Terria sends it with every
+        click, so the chart reads the forecast the way the map draws it. Defaults to the raw cells.
 
     Returns
     -------
@@ -100,5 +100,5 @@ def catalog_item(week: int, date: str, geoserver_url: str, backend_url: str,
         "crs": "EPSG:4326",
         "supportsGetTimeseries": True,
         "getFeatureInfoUrl": f"{backend_url}{TIMESERIES_ROUTE}",
-        "parameters": {"interpolations": interpolation},
+        "getFeatureInfoParameters": {"interpolations": interpolation},
     })
