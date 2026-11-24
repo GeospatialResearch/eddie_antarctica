@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antarctica/blob/master/LICENSE
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -27,8 +27,8 @@ import numpy as np
 import rasterio as rio
 from rasterio.transform import from_origin
 
-from src.eddie_antartica.sea_ice.model import sic_data_from_raster
-from src.eddie_antartica.sea_ice.sea_ice_enum import ChartMethod
+from src.eddie_antarctica.sea_ice.model import sic_data_from_raster
+from src.eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
 
 # The fixture mirrors the real forecast grid: 1-degree cells, EPSG:4326, north-up, and
 # edge-registered, so WEST/NORTH are cell edges and the full-size raster spans exactly

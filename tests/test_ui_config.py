@@ -23,7 +23,7 @@ import re
 import pytest
 import pathlib
 
-from src.eddie_antartica.sea_ice import sea_ice_forecast_layer
+from src.eddie_antarctica.sea_ice import sea_ice_forecast_layer
 
 CATALOG_PATH = pathlib.Path(__file__).resolve().parent.parent /  "terriajs" / "catalog.json"
 CONFIG_PATH = pathlib.Path(__file__).resolve().parent.parent / "terriajs" / "client_config.json"
@@ -72,7 +72,7 @@ def test_every_catalog_style_has_an_sld() -> None:
 
 def test_every_backend_link_in_the_catalog_is_a_served_route() -> None:
     """A catalog item pointing at a retired route charts nothing, with no error; read the routes from the source."""
-    src = CATALOG_PATH.parent.parent / "src" / "eddie_antartica"
+    src = CATALOG_PATH.parent.parent / "src" / "eddie_antarctica"
     sources = (src / "app.py").read_text() + (src / "blueprint.py").read_text()
     routes = set(re.findall(r"""\.route\(['"]([^'"]+)['"]""", sources))
     routes.add(re.search(r'TIMESERIES_ROUTE = "([^"]+)"', (src / "sea_ice" / "sea_ice_forecast_layer.py").read_text())[1])

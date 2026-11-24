@@ -1,5 +1,5 @@
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antarctica/blob/master/LICENSE
 
 import unittest
 from pathlib import Path
@@ -8,7 +8,7 @@ import numpy as np
 from rasterio.crs import CRS
 from rasterio.warp import transform as warp_transform
 
-from src.eddie_antartica.sampling.xarray_cell import (
+from src.eddie_antarctica.sampling.xarray_cell import (
     CLICK_CRS,
     sample_cell,
 )

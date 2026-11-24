@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antarctica/blob/master/LICENSE
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,7 +19,7 @@
 """Tests for turning a WMS GetFeatureInfo pixel query into a longitude/latitude point."""
 import pytest
 
-from src.eddie_antartica import wms_point
+from src.eddie_antarctica import wms_point
 
 # A whole-world-south request matching the forecast grid: 1-degree pixels, so every
 # expected value is hand-computable as "edge plus half a pixel".

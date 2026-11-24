@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antarctica/blob/master/LICENSE
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -29,8 +29,8 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from src.eddie_antartica.sea_ice.inputs import main_sea_ice_inputs, sic_data_from_era5, sic_data_from_nsidc
-from src.eddie_antartica.sea_ice.model import sic_to_nc
+from src.eddie_antarctica.sea_ice.inputs import main_sea_ice_inputs, sic_data_from_era5, sic_data_from_nsidc
+from src.eddie_antarctica.sea_ice.model import sic_to_nc
 
 LAST_DAY = datetime.date(2025, 6, 30)
 

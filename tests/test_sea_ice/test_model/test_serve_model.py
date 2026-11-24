@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antarctica/blob/master/LICENSE
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,10 +25,10 @@ import numpy as np
 import pytest
 import rasterio as rio
 
-from src.eddie_antartica.sea_ice.model import sic_to_nc
+from src.eddie_antarctica.sea_ice.model import sic_to_nc
 from tests.test_sea_ice.test_model.test_sic_to_nc import N_WEEKS, encoded_forecast, model_inputs, node, nsidc_mask
 
-SERVE_MODEL = "src.eddie_antartica.sea_ice.model.serve_model"
+SERVE_MODEL = "src.eddie_antarctica.sea_ice.model.serve_model"
 
 
 @pytest.fixture(name="published")
