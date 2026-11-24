@@ -27,8 +27,8 @@ import numpy as np
 import rasterio as rio
 from rasterio.transform import from_origin
 
-from src.eddie_antarctica.sea_ice.model import sic_data_from_raster
-from src.eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
+from eddie_antarctica.sea_ice.model import sic_data_from_raster
+from eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
 
 # The fixture mirrors the real forecast grid: 1-degree cells, EPSG:4326, north-up, and
 # edge-registered, so WEST/NORTH are cell edges and the full-size raster spans exactly

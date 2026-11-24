@@ -32,9 +32,9 @@ import pytest
 import rasterio as rio
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.inputs import land_mask_from_nsidc
-from src.eddie_antarctica.sea_ice.model import sic_data_from_nc, sic_to_nc
-from src.eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
+from eddie_antarctica.sea_ice.inputs import land_mask_from_nsidc
+from eddie_antarctica.sea_ice.model import sic_data_from_nc, sic_to_nc
+from eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
 
 LATITUDES = np.array([-43.0, -42.0, -41.0])     # ascending, as the model holds them
 LONGITUDES = np.arange(360, dtype="float64")    # 0..359

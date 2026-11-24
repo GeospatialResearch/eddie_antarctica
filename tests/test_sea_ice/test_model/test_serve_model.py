@@ -25,10 +25,10 @@ import numpy as np
 import pytest
 import rasterio as rio
 
-from src.eddie_antarctica.sea_ice.model import sic_to_nc
+from eddie_antarctica.sea_ice.model import sic_to_nc
 from tests.test_sea_ice.test_model.test_sic_to_nc import N_WEEKS, encoded_forecast, model_inputs, node, nsidc_mask
 
-SERVE_MODEL = "src.eddie_antarctica.sea_ice.model.serve_model"
+SERVE_MODEL = "eddie_antarctica.sea_ice.model.serve_model"
 
 
 @pytest.fixture(name="published")

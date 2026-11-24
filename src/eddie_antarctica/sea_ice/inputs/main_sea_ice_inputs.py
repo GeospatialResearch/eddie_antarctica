@@ -34,7 +34,7 @@ from typing import Optional
 import numpy as np
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.inputs import sic_data_from_era5, sic_data_from_nsidc
+from eddie_antarctica.sea_ice.inputs import sic_data_from_era5, sic_data_from_nsidc
 
 log = logging.getLogger(__name__)
 

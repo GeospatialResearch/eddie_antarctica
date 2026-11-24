@@ -29,8 +29,8 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.inputs import main_sea_ice_inputs, sic_data_from_era5, sic_data_from_nsidc
-from src.eddie_antarctica.sea_ice.model import sic_to_nc
+from eddie_antarctica.sea_ice.inputs import main_sea_ice_inputs, sic_data_from_era5, sic_data_from_nsidc
+from eddie_antarctica.sea_ice.model import sic_to_nc
 
 LAST_DAY = datetime.date(2025, 6, 30)
 

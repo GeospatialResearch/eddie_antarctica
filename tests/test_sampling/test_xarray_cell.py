@@ -8,7 +8,7 @@ import numpy as np
 from rasterio.crs import CRS
 from rasterio.warp import transform as warp_transform
 
-from src.eddie_antarctica.sampling.xarray_cell import (
+from eddie_antarctica.sampling.xarray_cell import (
     CLICK_CRS,
     sample_cell,
 )

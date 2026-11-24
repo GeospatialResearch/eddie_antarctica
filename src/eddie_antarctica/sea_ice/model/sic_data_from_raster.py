@@ -32,7 +32,7 @@ import pandas as pd
 import rasterio as rio
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
+from eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
 
 TIME_COLUMN = "Time (UTC)"
 VALUE_COLUMN = "Sea ice concentration (fraction)"

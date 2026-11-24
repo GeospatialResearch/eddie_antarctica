@@ -11,12 +11,12 @@ from typing import Union
 import pandas as pd
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
+from eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
 
 # The SLD every week's layer is drawn with, already in ``src/static/geo``.
 STYLE = "sic_forecast_8w"
 
-# Chart route in ``src/eddie_antarctica/blueprint.py``; Terria appends the GetFeatureInfo query to it.
+# Chart route in ``eddie_antarctica/blueprint.py``; Terria appends the GetFeatureInfo query to it.
 TIMESERIES_ROUTE = "/sea-ice-forecast-timeseries"
 
 # Form label -> GeoServer ``interpolations`` value; the first entry is the form default. The map is always

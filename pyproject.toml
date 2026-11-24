@@ -49,11 +49,20 @@ dependencies = [
 ]
 requires-python = ">=3.11"
 
-[tool.setuptools]
-packages = ["eddie_floodresilience"]
+[project.entry-points."eddie.plugins"]
+antarctica = "eddie_antarctica"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["eddie_antarctica*"]
+
 
 [project.optional-dependencies]
 dev = ["python-dotenv", "pip-tools", "pytest"]
 
 [project.urls]
 Homepage = "https://github.com/GeospatialResearch/Digital-Twins"
+
+[tool.pytest.ini_options]
+# Import the plugin from src/ without installing it first
+pythonpath = ["src"]

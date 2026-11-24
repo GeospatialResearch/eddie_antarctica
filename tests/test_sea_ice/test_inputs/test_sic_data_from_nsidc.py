@@ -23,8 +23,8 @@ import pytest
 import pandas as pd
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.inputs import sic_data_from_nsidc
-from src.eddie_antarctica.sea_ice.model import sic_to_nc
+from eddie_antarctica.sea_ice.inputs import sic_data_from_nsidc
+from eddie_antarctica.sea_ice.model import sic_to_nc
 
 # A coarse 250 km EPSG:3412 grid over the Southern Ocean, enough to cover the model's band.
 XY = np.arange(-5_000_000, 5_000_001, 250_000, dtype="float64")

@@ -18,7 +18,7 @@
 """This script runs each module in the Digital Twin using a Sample Polygon."""
 import pathlib
 
-from eddie.digitaltwin import cache_new_results, retrieve_from_instructions
+from eddie.digitaltwin import retrieve_from_instructions
 from eddie.digitaltwin.utils import LogLevel
 from eddie.run_all import create_sample_polygon, main
 
@@ -27,9 +27,6 @@ DEFAULT_MODULES_TO_PARAMETERS = {
         "log_level": LogLevel.INFO,
         "instruction_json_path": pathlib.Path("src/eddie_antarctica/static_boundary_instructions.json").as_posix()
     },
-    cache_new_results: {
-        "log_level": LogLevel.INFO,
-    }
 }
 
 if __name__ == '__main__':

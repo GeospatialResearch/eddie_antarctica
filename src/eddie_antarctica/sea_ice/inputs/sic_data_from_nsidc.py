@@ -35,7 +35,7 @@ import pyproj
 from scipy.interpolate import griddata
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.model.sic_to_nc import MODEL_LAT, MODEL_LON
+from eddie_antarctica.sea_ice.model.sic_to_nc import MODEL_LAT, MODEL_LON
 
 log = logging.getLogger(__name__)
 

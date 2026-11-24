@@ -35,9 +35,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from src.eddie_antarctica.sea_ice.model.gnn.util.config import N_LAT, N_LON
-from src.eddie_antarctica.sea_ice.model.gnn.util.data_loader import _grid_adjacency_edges
-from src.eddie_antarctica.sea_ice.model.gnn.models.multi_mesh import MultiMeshGNN, InteractionLayer
+from eddie_antarctica.sea_ice.model.gnn.util.config import N_LAT, N_LON
+from eddie_antarctica.sea_ice.model.gnn.util.data_loader import _grid_adjacency_edges
+from eddie_antarctica.sea_ice.model.gnn.models.multi_mesh import MultiMeshGNN, InteractionLayer
 
 
 class MultiMeshGridGNN(MultiMeshGNN):

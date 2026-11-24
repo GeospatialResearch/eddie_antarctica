@@ -30,7 +30,13 @@ RUN mamba env create -f environment.yml
 # Make RUN commands use the new environment:
 SHELL ["conda", "run", "-n", "eddie_antarctica", "/bin/bash", "-c"]
 COPY lib/ lib
+# lib/eddie versions itself from git tags, and its .git is not copied in (as the core's own src/Dockerfile does)
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_EDDIE=5.0.0.dev0
 RUN pip install lib/eddie
+# Install this plugin so the core finds it through its "eddie.plugins" entry point
+COPY pyproject.toml README.md LICENSE ./
+COPY src src/
+RUN pip install --no-deps .
 
 RUN <<EOF
     # Export conda environment
@@ -88,10 +94,10 @@ RUN <<EOF
         setfacl -R -m u:nonroot:rwx "$NEW_DIRECTORY"
     done
 
-    # tmp holds the beat schedule (-s in celery_worker_entrypoint.sh) and the tmp/pywps dirs blueprint.py makes.
+    # tmp holds the beat schedule (-s in celery_worker_entrypoint.sh).
     # chown all the nonroot-written dirs, as setfacl alone is not enough: some storage drivers
     # (Docker Desktop on WSL2) drop ACLs on image export.
-    mkdir -p tmp/pywps/outputs tmp/pywps/workdir tmp/pywps/logs
+    mkdir tmp
     chown -R nonroot tmp outputs workdir logs
 EOF
 

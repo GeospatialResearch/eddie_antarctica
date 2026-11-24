@@ -120,7 +120,7 @@
           "name": "Sea ice concentration forecast",
           "description": "Choose a week and a display (Raw 1° cells or Smoothed) to map one week of the newest eight week sea ice concentration forecast, then click the map to chart all eight weeks at that point. Please click the parent 'Sea ice forecast' folder for a detailed description.",
           "url": "$BACKEND_URL/wps",
-          "identifier": "sea_ice_forecast"
+          "identifier": "antarctica.sea_ice_forecast"
         }
       ]
     },

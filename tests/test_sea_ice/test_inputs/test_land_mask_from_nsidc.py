@@ -23,7 +23,7 @@ import pytest
 from rasterio.enums import Resampling
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.inputs import land_mask_from_nsidc
+from eddie_antarctica.sea_ice.inputs import land_mask_from_nsidc
 
 #: Made-up class values: the module must go by the names, whatever numbers a file gives them.
 CLASSES = {"ross_sea": 7, "weddell_sea": 8, "land": 40, "fresh_free_water": 42, "ice_on_land": 43,

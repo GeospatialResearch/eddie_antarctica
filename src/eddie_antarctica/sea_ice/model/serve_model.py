@@ -27,8 +27,8 @@ import tempfile
 import xarray as xr
 
 from eddie import geoserver
-from src.eddie_antarctica.sea_ice.model import sic_to_nc
-from src.eddie_antarctica.sea_ice.sea_ice_forecast_layer import layer_name
+from eddie_antarctica.sea_ice.model import sic_to_nc
+from eddie_antarctica.sea_ice.sea_ice_forecast_layer import layer_name
 
 
 def add_forecast_to_geoserver(nc_path: pathlib.Path, nsidc_path: pathlib.Path) -> None:

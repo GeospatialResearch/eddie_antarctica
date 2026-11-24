@@ -34,7 +34,7 @@ import pathlib
 from typing import Dict, Union
 
 import pandas as pd
-from src.eddie_antarctica.sampling.xarray_cell import sample_cell
+from eddie_antarctica.sampling.xarray_cell import sample_cell
 
 ICE_DATASET = pathlib.Path("src/static/geo/ice_ds.nc")
 

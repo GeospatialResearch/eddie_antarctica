@@ -108,7 +108,7 @@ import torch
 import torch.nn as nn
 from torch_geometric.nn import MessagePassing, SAGEConv, GATConv
 
-from src.eddie_antarctica.sea_ice.model.gnn.util.data_loader import _CANDIDATE_EDGE_DIRS
+from eddie_antarctica.sea_ice.model.gnn.util.data_loader import _CANDIDATE_EDGE_DIRS
 
 
 # ─────────────────────────────────────────────────────────────────────

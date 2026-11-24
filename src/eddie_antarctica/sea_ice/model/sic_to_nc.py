@@ -34,8 +34,8 @@ from rasterio.enums import Resampling
 import rioxarray
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.inputs import land_mask_from_nsidc
-from src.eddie_antarctica.sea_ice.model.sic_data_from_nc import VARIABLE
+from eddie_antarctica.sea_ice.inputs import land_mask_from_nsidc
+from eddie_antarctica.sea_ice.model.sic_data_from_nc import VARIABLE
 
 #: Values above this are NSIDC land/coast/pole-hole flags (251-254), not concentrations.
 FLAG_THRESHOLD = 1.0

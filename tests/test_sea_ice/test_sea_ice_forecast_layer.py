@@ -22,8 +22,8 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice import sea_ice_forecast_layer
-from src.eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
+from eddie_antarctica.sea_ice import sea_ice_forecast_layer
+from eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
 
 
 def test_catalog_item_is_a_charted_wms_layer_for_the_week() -> None:

@@ -2,9 +2,9 @@
 from pywps import ComplexOutput, Format, LiteralInput, Process, WPSRequest
 from pywps.response.execute import ExecuteResponse
 
-from src.eddie_antarctica.config import EnvVariable
-from src.eddie_antarctica.sea_ice.model.sic_data_from_nc import latest_forecast
-from src.eddie_antarctica.sea_ice.sea_ice_forecast_layer import DISPLAY_LABELS, catalog_item, week_date
+from eddie_antarctica.config import EnvVariable
+from eddie_antarctica.sea_ice.model.sic_data_from_nc import latest_forecast
+from eddie_antarctica.sea_ice.sea_ice_forecast_layer import DISPLAY_LABELS, catalog_item, week_date
 
 
 class SeaIceForecastProcessService(Process):

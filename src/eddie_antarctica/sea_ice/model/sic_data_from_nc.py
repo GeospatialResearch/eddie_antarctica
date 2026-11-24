@@ -41,10 +41,10 @@ from rasterio.crs import CRS
 from rasterio.warp import transform
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.inputs.land_mask_from_nsidc import is_not_sea
-from src.eddie_antarctica.sea_ice.model.sic_data_from_raster import (
+from eddie_antarctica.sea_ice.inputs.land_mask_from_nsidc import is_not_sea
+from eddie_antarctica.sea_ice.model.sic_data_from_raster import (
     OPEN_WATER, TIME_COLUMN, VALUE_COLUMN, _empty_series, bilinear_series)
-from src.eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
+from eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
 
 #: TerriaJS asks in degrees, WGS 84.
 CLICK_CRS = CRS.from_epsg(4326)

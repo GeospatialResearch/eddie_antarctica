@@ -29,7 +29,7 @@ import pathlib
 import numpy as np
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.model import sic_to_nc
+from eddie_antarctica.sea_ice.model import sic_to_nc
 
 #: Files in ``SIC_MODEL_DIR``, named as in the reference code ``data/``.
 CHECKPOINT = "SIC_production_checkpoint.pt"
@@ -65,10 +65,10 @@ def run_sic_model(inputs_dir: pathlib.Path, model_dir: pathlib.Path) -> np.ndarr
     # Imported here, not at the top: torch is only needed by the worker's weekly run, and gnn/ is the
     # pylint: disable=import-outside-toplevel,import-error,no-name-in-module
     import torch
-    from src.eddie_antarctica.sea_ice.model.gnn.util.config import LOOKBACK_WEEKS
-    from src.eddie_antarctica.sea_ice.model.gnn.util.data_loader import load_train_stats, prepare_live_window
-    from src.eddie_antarctica.sea_ice.model.gnn.util.inference import predict_latest
-    from src.eddie_antarctica.sea_ice.model.gnn.models.multi_mesh_grid_ar import MultiMeshGridARGNN
+    from eddie_antarctica.sea_ice.model.gnn.util.config import LOOKBACK_WEEKS
+    from eddie_antarctica.sea_ice.model.gnn.util.data_loader import load_train_stats, prepare_live_window
+    from eddie_antarctica.sea_ice.model.gnn.util.inference import predict_latest
+    from eddie_antarctica.sea_ice.model.gnn.models.multi_mesh_grid_ar import MultiMeshGridARGNN
     # pylint: enable=import-outside-toplevel,import-error,no-name-in-module
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

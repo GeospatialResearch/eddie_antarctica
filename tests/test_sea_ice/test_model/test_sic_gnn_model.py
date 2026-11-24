@@ -35,10 +35,10 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.model import sic_data_from_nc, sic_gnn_model
+from eddie_antarctica.sea_ice.model import sic_data_from_nc, sic_gnn_model
 from tests.test_sea_ice.test_model.test_sic_to_nc import LATITUDES, LONGITUDES
 
-GNN = "src.eddie_antarctica.sea_ice.model.gnn"
+GNN = "eddie_antarctica.sea_ice.model.gnn"
 
 
 def load_train_stats(path: str) -> tuple:

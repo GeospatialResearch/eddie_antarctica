@@ -25,8 +25,8 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from src.eddie_antarctica.sea_ice.inputs import sic_data_from_era5
-from src.eddie_antarctica.sea_ice.model import sic_to_nc
+from eddie_antarctica.sea_ice.inputs import sic_data_from_era5
+from eddie_antarctica.sea_ice.model import sic_to_nc
 
 # Two days at two hours each: enough to tell a daily mean from a daily sum.
 HOURS = pd.to_datetime(["2025-06-01T00", "2025-06-01T12", "2025-06-02T00", "2025-06-02T12"])
