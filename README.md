@@ -83,7 +83,7 @@ which is in this repository.
 
 1. The worker runs the forecast every Monday at 03:00 New Zealand time. To run it now instead of waiting:
    ```bash
-   docker compose exec celery_worker /venv/bin/celery -A eddie.tasks call eddie_antarctica.tasks.refresh_sea_ice_forecast
+   docker compose exec celery_worker /venv/bin/python -m celery -A eddie.tasks call eddie_antarctica.tasks.refresh_sea_ice_forecast
    docker compose logs -f celery_worker
    ```
    This downloads the last six weeks of inputs to `/stored_data/sea_ice_inputs`, writes the forecast to

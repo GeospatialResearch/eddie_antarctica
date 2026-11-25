@@ -28,7 +28,7 @@ class EnvVariable(EnvVarBase):  # pylint: disable=too-few-public-methods
 
     FORECAST_NETCDF_LATEST = pathlib.Path(EnvVarBase._get_env_variable("FORECAST_NETCDF_LATEST"))
 
-    # Terrain tileset built offline by ctb-tile; served by the /terrain routes in app.py.
+    # Terrain tileset built offline by ctb-tile; served by the /terrain routes in blueprint.py.
     TERRAIN_DIR = pathlib.Path(EnvVarBase._get_env_variable("TERRAIN_DATA_DIR"))
 
     # Weekly sea ice forecasts, sic_forecast_<weeks>w_<YYYY-MM-DD of week 1>.nc, written by the Celery task
