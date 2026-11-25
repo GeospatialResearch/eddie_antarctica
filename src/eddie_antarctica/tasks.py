@@ -27,11 +27,9 @@ from celery.schedules import crontab
 from celery.worker.consumer import Consumer
 import geopandas as gpd
 
-from eddie.digitaltwin import retrieve_from_instructions
 from eddie.digitaltwin.utils import setup_logging
 from eddie.tasks import OnFailureStateTask, app
 from eddie_antarctica.config import EnvVariable
-from eddie_antarctica.run_all import DEFAULT_MODULES_TO_PARAMETERS
 from eddie_antarctica.sea_ice.inputs import land_mask_from_nsidc, main_sea_ice_inputs
 from eddie_antarctica.sea_ice.model import serve_model, sic_gnn_model
 from eddie_antarctica.sea_ice.model.sic_data_from_nc import latest_forecast, point_series
@@ -65,8 +63,8 @@ def on_startup(sender: Consumer, **_kwargs: None) -> None:  # pylint: disable=mi
         # Gather area of interest from file.
         aoi_wkt = gpd.read_file("selected_polygon.geojson").to_crs(4326).geometry[0].wkt
         # Send a task to initialise this area of interest.
-        instruction_json_path = DEFAULT_MODULES_TO_PARAMETERS[retrieve_from_instructions]["instruction_json_path"]
-        sender.app.send_task("eddie.tasks.add_base_data_to_db", args=[aoi_wkt, instruction_json_path], connection=conn)
+        # No instruction file: no base data to download, but the core still sets up its tables and GeoServer.
+        sender.app.send_task("eddie.tasks.add_base_data_to_db", args=[aoi_wkt, None], connection=conn)
 
 
 @app.task(base=OnFailureStateTask)
