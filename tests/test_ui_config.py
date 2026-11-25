@@ -86,3 +86,11 @@ def test_every_backend_link_in_the_catalog_is_a_served_route() -> None:
 
     assert {link for link in links if not any(p.match(link) for p in patterns)} == set()
 
+
+
+def test_every_catalog_wms_layer_is_requested_in_4326() -> None:
+    """Web Mercator stops at 85.05°S; every WMS layer asks GeoServer for EPSG:4326, which reaches the pole."""
+    catalog = json.loads(CATALOG_PATH.read_text())
+    wms = [item for group in catalog["catalog"] for item in group.get("members", []) if item.get("type") == "wms"]
+    assert wms and [item["name"] for item in wms if item.get("crs") != "EPSG:4326"] == []
+
