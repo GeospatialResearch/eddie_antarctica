@@ -28,7 +28,6 @@ dependencies = [
     "geopandas",
     "geovoronoi",
     "lxml",
-    "NewZeaLiDAR",
     "OWSLib",
     "pandas",
     "plotly",

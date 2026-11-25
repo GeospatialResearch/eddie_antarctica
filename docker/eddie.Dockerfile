@@ -40,8 +40,6 @@ RUN pip install --no-deps .
 
 RUN <<EOF
     # Export conda environment
-    echo "Check GeoFabrics is installed to test environment"
-    python -c "import geofabrics"
     echo "Packaging conda environment - eddie_antarctica"
     # Pack conda environment to be shared to runtime image
     # Pack current conda environment to temporary tarball
