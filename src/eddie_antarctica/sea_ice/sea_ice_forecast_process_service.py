@@ -49,7 +49,7 @@ class SeaIceForecastProcessService(Process):
         date = week_date(forecast, week)
         response.outputs["seaIceForecast"].data = catalog_item(
             week, date,
-            geoserver_url=f"{EnvVariable.GEOSERVER_HOST}:{EnvVariable.GEOSERVER_PORT}",
-            backend_url=f"{EnvVariable.BACKEND_HOST}:{EnvVariable.BACKEND_PORT}",
+            geoserver_url=EnvVariable.EDDIE_PUBLIC_URL or f"{EnvVariable.GEOSERVER_HOST}:{EnvVariable.GEOSERVER_PORT}",
+            backend_url=EnvVariable.BACKEND_URL,
             interpolation=DISPLAY_LABELS[request.inputs["display"][0].data],
         )

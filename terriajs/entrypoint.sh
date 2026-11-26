@@ -18,6 +18,11 @@ fi
 
 export GEOSERVER_URL
 
+# Behind an ingress the twin is one origin: the backend at <EDDIE_PUBLIC_URL>/api, GeoServer at <EDDIE_PUBLIC_URL>/geoserver
+if [[ -n "$EDDIE_PUBLIC_URL" ]]; then
+  export BACKEND_URL=${EDDIE_PUBLIC_URL%/}/api GEOSERVER_URL=${EDDIE_PUBLIC_URL%/}
+fi
+
 # List of variables to substitute
 ENV_VARS_TO_FILL='$CESIUM_ACCESS_TOKEN,$LINZ_BASEMAPS_API_KEY,$BACKEND_URL,$GEOSERVER_URL'
 

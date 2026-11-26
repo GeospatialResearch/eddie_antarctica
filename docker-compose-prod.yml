@@ -60,14 +60,15 @@ services:
       - message_broker
       - geoserver
     environment:
-      VIRTUAL_HOST: ${BACKEND_VIRTUAL_HOST}
-      VIRTUAL_PORT: "5000"
-      LETSENCRYPT_HOST: ${BACKEND_VIRTUAL_HOST}
-      LETSENCRYPT_EMAIL: gri-enquiries@canterbury.ac.nz
       # The core builds redis://<MESSAGE_BROKER_HOST>:6379/0, so the password rides in the host part
       MESSAGE_BROKER_HOST: ":${MESSAGE_BROKER_PASSWORD}@message_broker"
+      # Browser-facing links (WPS, catalog, charts) go through the ingress: <url>/api and <url>/geoserver.
+      # The core's own GeoServer calls stay on the stack network.
+      EDDIE_PUBLIC_URL: https://${WWW_VIRTUAL_HOST}
+      GEOSERVER_INTERNAL_HOST: http://geoserver
+      GEOSERVER_INTERNAL_PORT: "8080"
     restart: always
-    networks: [ default, data, webproxy ]
+    networks: [ default, data ]
 
   celery_worker:
     # Performs tasks such as complex computation asynchronously on behalf of backend
@@ -78,6 +79,11 @@ services:
     entrypoint: [ "src/celery_worker_entrypoint.sh" ]
     environment:
       MESSAGE_BROKER_HOST: ":${MESSAGE_BROKER_PASSWORD}@message_broker"
+      # Browser-facing links (WPS, catalog, charts) go through the ingress: <url>/api and <url>/geoserver.
+      # The core's own GeoServer calls stay on the stack network.
+      EDDIE_PUBLIC_URL: https://${WWW_VIRTUAL_HOST}
+      GEOSERVER_INTERNAL_HOST: http://geoserver
+      GEOSERVER_INTERNAL_PORT: "8080"
     restart: always
     env_file:
       - .env
@@ -116,13 +122,10 @@ services:
       - ROOT_WEBAPP_REDIRECT=true
       - GEOSERVER_ADMIN_USER=$GEOSERVER_ADMIN_NAME
       - GEOSERVER_ADMIN_PASSWORD=$GEOSERVER_ADMIN_PASSWORD
-      - PROXY_BASE_URL=${GEOSERVER_HOST}/geoserver
-      - VIRTUAL_HOST=${GEOSERVER_VIRTUAL_HOST}
-      - LETSENCRYPT_HOST=${GEOSERVER_VIRTUAL_HOST}
-      - LETSENCRYPT_EMAIL=gri-enquiries@canterbury.ac.nz
+      - PROXY_BASE_URL=https://${WWW_VIRTUAL_HOST}/geoserver
       - JAVA_TOOL_OPTIONS=-XX:-UseBASE64Intrinsics
     restart: always
-    networks: [ default, data, webproxy ]
+    networks: [ default, data ]
     healthcheck:
       test: curl --fail -s http://localhost:8080/geoserver || exit 1
       timeout: 5s
@@ -136,16 +139,32 @@ services:
       - CESIUM_ACCESS_TOKEN=$CESIUM_ACCESS_TOKEN
       - BACKEND_HOST=$BACKEND_HOST
       - BACKEND_PORT=$BACKEND_PORT
-      - VIRTUAL_HOST=${WWW_VIRTUAL_HOST}
-      - VIRTUAL_PORT=3001
-      - LETSENCRYPT_HOST=${WWW_VIRTUAL_HOST}
-      - LETSENCRYPT_EMAIL=gri-enquiries@canterbury.ac.nz
+      - EDDIE_PUBLIC_URL=https://${WWW_VIRTUAL_HOST}
     healthcheck:
       test: curl --fail -s http://localhost:3001/ || exit 1
       timeout: 5s
       retries: 10
     restart: always
-    networks: [ webproxy ]
+
+  ingress:
+    # The twin's only public entry point: / Terria, /api/ backend, /geoserver/ GeoServer (docker/ingress.conf)
+    image: nginx:1.27-alpine
+    volumes:
+      - ./docker/ingress.conf:/etc/nginx/conf.d/default.conf:ro
+    environment:
+      - VIRTUAL_HOST=${WWW_VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${WWW_VIRTUAL_HOST}
+      - LETSENCRYPT_EMAIL=gri-enquiries@canterbury.ac.nz
+    depends_on:
+      - backend
+      - geoserver
+      - terria_map
+    healthcheck:
+      test: wget -q -O /dev/null http://localhost/healthz || exit 1
+      timeout: 5s
+      retries: 10
+    restart: always
+    networks: [ default, webproxy ]
 
   message_broker:
     # Communicates between backend and workers to assign tasks and store state
