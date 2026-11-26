@@ -36,3 +36,16 @@ def test_prod_keeps_data_services_off_webproxy() -> None:
     assert compose["networks"].get("default", {}).get("name") != "webproxy"
     for name in ("db_postgres", "message_broker", "celery_worker"):
         assert "webproxy" not in compose["services"][name].get("networks", []), name
+
+
+def test_prod_data_services_need_a_password_and_sit_on_an_internal_network() -> None:
+    """The static half of the v5 exposure checks that holds without an ingress: Redis wants a password, and
+    Postgres and Redis are only on networks with no egress."""
+    compose = yaml.safe_load(PROD_COMPOSE_PATH.read_text())
+    assert "--requirepass" in compose["services"]["message_broker"]["command"]
+    for name in ("backend", "celery_worker"):
+        host = compose["services"][name]["environment"]["MESSAGE_BROKER_HOST"]
+        assert host == ":${MESSAGE_BROKER_PASSWORD}@message_broker", name
+    for name in ("db_postgres", "message_broker"):
+        networks = compose["services"][name]["networks"]
+        assert all(compose["networks"][network].get("internal") for network in networks), name

@@ -35,6 +35,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     healthcheck:
       test: pg_isready -h 127.0.0.1 -U $POSTGRES_USER -d $POSTGRES_DB
+    networks: [ data ]
 
   backend:
     # Performs analysis, computation, handles web requests, facilitates database interactions
@@ -63,8 +64,10 @@ services:
       VIRTUAL_PORT: "5000"
       LETSENCRYPT_HOST: ${BACKEND_VIRTUAL_HOST}
       LETSENCRYPT_EMAIL: gri-enquiries@canterbury.ac.nz
+      # The core builds redis://<MESSAGE_BROKER_HOST>:6379/0, so the password rides in the host part
+      MESSAGE_BROKER_HOST: ":${MESSAGE_BROKER_PASSWORD}@message_broker"
     restart: always
-    networks: [ default, webproxy ]
+    networks: [ default, data, webproxy ]
 
   celery_worker:
     # Performs tasks such as complex computation asynchronously on behalf of backend
@@ -73,6 +76,8 @@ services:
       dockerfile: docker/eddie.Dockerfile
     container_name: celery_worker_digital_twin
     entrypoint: [ "src/celery_worker_entrypoint.sh" ]
+    environment:
+      MESSAGE_BROKER_HOST: ":${MESSAGE_BROKER_PASSWORD}@message_broker"
     restart: always
     env_file:
       - .env
@@ -93,6 +98,7 @@ services:
       - db_postgres
       - message_broker
       - geoserver
+    networks: [ default, data ]
 
   geoserver:
     # Serves geospatial web data through interactions with files and database
@@ -116,7 +122,7 @@ services:
       - LETSENCRYPT_EMAIL=gri-enquiries@canterbury.ac.nz
       - JAVA_TOOL_OPTIONS=-XX:-UseBASE64Intrinsics
     restart: always
-    networks: [ default, webproxy ]
+    networks: [ default, data, webproxy ]
     healthcheck:
       test: curl --fail -s http://localhost:8080/geoserver || exit 1
       timeout: 5s
@@ -145,13 +151,21 @@ services:
     # Communicates between backend and workers to assign tasks and store state
     image: redis:7
     container_name: message_broker_digital_twin
+    # Backend and worker reach it as MESSAGE_BROKER_HOST=:<MESSAGE_BROKER_PASSWORD>@message_broker (.env)
+    command: redis-server --requirepass "${MESSAGE_BROKER_PASSWORD:?set MESSAGE_BROKER_PASSWORD in .env}"
+    environment:
+      REDISCLI_AUTH: ${MESSAGE_BROKER_PASSWORD}
     healthcheck:
+      # redis-cli reads REDISCLI_AUTH; without it ping answers NOAUTH
       test: redis-cli ping | grep PONG
       timeout: 1s
       retries: 10
-
     restart: always
+    networks: [ data ]
 
 networks:
+  # Postgres and Redis only: no egress, and nothing but the backend, worker and GeoServer can reach them
+  data:
+    internal: true
   webproxy:
     external: true
