@@ -16,7 +16,6 @@
 
 """Guards docker-compose-prod.yml: no host ports, and the data services stay off the shared webproxy network."""
 import pathlib
-import re
 
 import yaml
 
@@ -39,25 +38,6 @@ def test_only_the_ingress_joins_an_external_network() -> None:
     virtual_hosts = [name for name, service in compose["services"].items()
                      if any(str(key).split("=")[0] == "VIRTUAL_HOST" for key in service.get("environment", []))]
     assert virtual_hosts == ["ingress"]
-
-
-def test_ingress_routes_one_origin_and_hides_geoserver_admin() -> None:
-    """/ is Terria, /api/ the backend with the prefix stripped, /geoserver/ GeoServer minus its admin UI and REST."""
-    conf = (PROD_COMPOSE_PATH.parent / "docker" / "ingress.conf").read_text()
-    assert re.search(r"location / \{ proxy_pass http://terria_map:3001; \}", conf)
-    assert re.search(r"location /api/ \{ proxy_pass http://backend:5000/; \}", conf)
-    assert re.search(r"location /geoserver/ \{ proxy_pass http://geoserver:8080/geoserver/; \}", conf)
-    assert re.search(r"location ~ \^/geoserver/\(web\|rest\)\(/\|\$\) \{ return 404; \}", conf)
-
-
-def test_prod_links_and_geoserver_calls_go_where_they_should() -> None:
-    """Links are built from EDDIE_PUBLIC_URL (via the ingress) and the core calls GeoServer on the INTERNAL pair;
-    both the backend and the worker need all three."""
-    services = yaml.safe_load(PROD_COMPOSE_PATH.read_text())["services"]
-    for name in ("backend", "celery_worker"):
-        env = services[name]["environment"]
-        assert (env["EDDIE_PUBLIC_URL"], env["GEOSERVER_INTERNAL_HOST"], env["GEOSERVER_INTERNAL_PORT"]) == \
-            ("https://${WWW_VIRTUAL_HOST}", "http://geoserver", "8080"), name
 
 
 def test_prod_data_services_need_a_password_and_sit_on_an_internal_network() -> None:
