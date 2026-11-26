@@ -4,8 +4,12 @@
 # Used by docker to import environment variables into a docker container without baking them into the image.
 # Used when runtime environment variables are not enough, for example, when a config file needs to be written.
 
+# The backend's public root: <EDDIE_PUBLIC_URL>/api behind an ingress, else BACKEND_HOST[:BACKEND_PORT]
+PUBLIC_API=${EDDIE_PUBLIC_URL:+${EDDIE_PUBLIC_URL%/}/api}
+export BACKEND_URL=${PUBLIC_API:-$BACKEND_HOST${BACKEND_PORT:+:$BACKEND_PORT}}
+
 # List of variables to substitute
-ENV_VARS_TO_FILL='$BACKEND_HOST,$BACKEND_PORT'
+ENV_VARS_TO_FILL='$BACKEND_URL'
 
 # Substitute variables and save whole file to variable, sponge is not available to buffer.
 SUBBED=`envsubst "$ENV_VARS_TO_FILL" < src/pywps.cfg`

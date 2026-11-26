@@ -50,3 +50,6 @@ class EnvVariable(EnvVarBase):  # pylint: disable=too-few-public-methods
     # Public backend root, for links handed to Terria (getFeatureInfoUrl); the .env values terriajs/entrypoint.sh reads.
     BACKEND_HOST = EnvVarBase._get_env_variable("BACKEND_HOST", default="http://localhost")
     BACKEND_PORT = EnvVarBase._get_env_variable("BACKEND_PORT", default="5000")
+    # Behind the ingress the backend is at <url>/api, as GeoServer is at <url>/geoserver
+    BACKEND_URL = (f"{EnvVarBase.EDDIE_PUBLIC_URL}/api" if EnvVarBase.EDDIE_PUBLIC_URL
+                   else f"{BACKEND_HOST}:{BACKEND_PORT}")
