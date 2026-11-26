@@ -27,8 +27,6 @@ services:
     image: postgis/postgis:16-3.4
     container_name: db_postgres_digital_twin
     restart: always
-    ports:
-      - "${POSTGRES_PORT}:5432"
     volumes:
       - antarctic_postgres_db_vol:/var/lib/postgresql/data
     environment:
@@ -56,17 +54,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-    ports:
-      - "5000:5000"
     depends_on:
       - db_postgres
       - message_broker
       - geoserver
     environment:
       VIRTUAL_HOST: ${BACKEND_VIRTUAL_HOST}
+      VIRTUAL_PORT: "5000"
       LETSENCRYPT_HOST: ${BACKEND_VIRTUAL_HOST}
       LETSENCRYPT_EMAIL: gri-enquiries@canterbury.ac.nz
     restart: always
+    networks: [ default, webproxy ]
 
   celery_worker:
     # Performs tasks such as complex computation asynchronously on behalf of backend
@@ -86,8 +84,6 @@ services:
       - antarctic_geoserver_data:/stored_data/geoserver
       # The sea ice model's files, dropped into ./sic_model by hand (see README). Read-only.
       - ./sic_model:/stored_data/sic_model:ro
-    ports:
-      - "5001:5001"
     healthcheck:
       test: curl --fail -s http://localhost:5001/ || exit 1
       interval: 10s
@@ -120,6 +116,7 @@ services:
       - LETSENCRYPT_EMAIL=gri-enquiries@canterbury.ac.nz
       - JAVA_TOOL_OPTIONS=-XX:-UseBASE64Intrinsics
     restart: always
+    networks: [ default, webproxy ]
     healthcheck:
       test: curl --fail -s http://localhost:8080/geoserver || exit 1
       timeout: 5s
@@ -129,13 +126,12 @@ services:
     # Front-end using terria.js
     build:
       context: terriajs
-    ports:
-      - "${WWW_PORT}:3001"
     environment:
       - CESIUM_ACCESS_TOKEN=$CESIUM_ACCESS_TOKEN
       - BACKEND_HOST=$BACKEND_HOST
       - BACKEND_PORT=$BACKEND_PORT
       - VIRTUAL_HOST=${WWW_VIRTUAL_HOST}
+      - VIRTUAL_PORT=3001
       - LETSENCRYPT_HOST=${WWW_VIRTUAL_HOST}
       - LETSENCRYPT_EMAIL=gri-enquiries@canterbury.ac.nz
     healthcheck:
@@ -143,13 +139,12 @@ services:
       timeout: 5s
       retries: 10
     restart: always
+    networks: [ webproxy ]
 
   message_broker:
     # Communicates between backend and workers to assign tasks and store state
     image: redis:7
     container_name: message_broker_digital_twin
-    ports:
-      - "6379:6379"
     healthcheck:
       test: redis-cli ping | grep PONG
       timeout: 1s
@@ -158,6 +153,5 @@ services:
     restart: always
 
 networks:
-  default:
-    name: webproxy
+  webproxy:
     external: true
