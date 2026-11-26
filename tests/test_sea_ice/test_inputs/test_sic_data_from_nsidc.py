@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antarctica/blob/master/LICENSE
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,8 +23,8 @@ import pytest
 import pandas as pd
 import xarray as xr
 
-from src.eddie_antartica.sea_ice.inputs import sic_data_from_nsidc
-from src.eddie_antartica.sea_ice.model import sic_to_nc
+from eddie_antarctica.sea_ice.inputs import sic_data_from_nsidc
+from eddie_antarctica.sea_ice.model import sic_to_nc
 
 # A coarse 250 km EPSG:3412 grid over the Southern Ocean, enough to cover the model's band.
 XY = np.arange(-5_000_000, 5_000_001, 250_000, dtype="float64")

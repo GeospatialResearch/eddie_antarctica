@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antarctica/blob/master/LICENSE
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,8 +36,8 @@ import pytest
 from rasterio.crs import CRS
 import xarray as xr
 
-from src.eddie_antartica.sea_ice.model import sic_data_from_nc, sic_data_from_raster, sic_to_nc
-from src.eddie_antartica.sea_ice.sea_ice_enum import ChartMethod
+from eddie_antarctica.sea_ice.model import sic_data_from_nc, sic_data_from_raster, sic_to_nc
+from eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
 from tests.test_sea_ice.test_model.test_sic_to_nc import nsidc_mask
 from tests.test_sea_ice.test_model.test_sic_data_from_raster import (
     N_BANDS, N_LAT, N_LON, NORTH, TIMES, VALUES, WEST, _write_fixture)

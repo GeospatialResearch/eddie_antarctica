@@ -23,7 +23,7 @@ import re
 import pytest
 import pathlib
 
-from src.eddie_antartica.sea_ice import sea_ice_forecast_layer
+from eddie_antarctica.sea_ice import sea_ice_forecast_layer
 
 CATALOG_PATH = pathlib.Path(__file__).resolve().parent.parent /  "terriajs" / "catalog.json"
 CONFIG_PATH = pathlib.Path(__file__).resolve().parent.parent / "terriajs" / "client_config.json"
@@ -49,7 +49,7 @@ def test_client_config_points_terrain_at_self_hosted_backend() -> None:
 
 
 def test_sea_ice_forecast_process_is_listed() -> None:
-    """Terria lists the sea_ice_forecast WPS process, which adds the week's layer itself."""
+    """Terria lists the antarctica.sea_ice_forecast WPS process (the core namespaces it), which adds the week's layer."""
     catalog = json.loads(CATALOG_PATH.read_text())
     group = [group for group in catalog["catalog"] if group["name"] == "Sea ice forecast"]
 
@@ -58,7 +58,7 @@ def test_sea_ice_forecast_process_is_listed() -> None:
         "name": "Sea ice concentration forecast",
         "description": group[0]["members"][0]["description"],
         "url": "$BACKEND_URL/wps",
-        "identifier": "sea_ice_forecast",
+        "identifier": "antarctica.sea_ice_forecast",
     }]
 
 
@@ -72,9 +72,9 @@ def test_every_catalog_style_has_an_sld() -> None:
 
 def test_every_backend_link_in_the_catalog_is_a_served_route() -> None:
     """A catalog item pointing at a retired route charts nothing, with no error; read the routes from the source."""
-    src = CATALOG_PATH.parent.parent / "src" / "eddie_antartica"
-    sources = (src / "app.py").read_text() + (src / "blueprint.py").read_text()
-    routes = set(re.findall(r"""\.route\(['"]([^'"]+)['"]""", sources))
+    src = CATALOG_PATH.parent.parent / "src" / "eddie_antarctica"
+    routes = set(re.findall(r"""\.route\(['"]([^'"]+)['"]""", (src / "blueprint.py").read_text()))
+    routes |= {"/", "/health-check", "/terria-catalog.json", "/wps"}  # served by the core app (eddie.app)
     routes.add(re.search(r'TIMESERIES_ROUTE = "([^"]+)"', (src / "sea_ice" / "sea_ice_forecast_layer.py").read_text())[1])
     patterns = [re.compile(re.sub(r"<(?:path:)?\w+>", lambda m: ".+" if "path:" in m[0] else "[^/]+", route) + "$")
                 for route in routes]
@@ -85,4 +85,12 @@ def test_every_backend_link_in_the_catalog_is_a_served_route() -> None:
     links = {f"{link}/layer.json" if link in terrain_bases else link for link in links}
 
     assert {link for link in links if not any(p.match(link) for p in patterns)} == set()
+
+
+
+def test_every_catalog_wms_layer_is_requested_in_4326() -> None:
+    """Web Mercator stops at 85.05°S; every WMS layer asks GeoServer for EPSG:4326, which reaches the pole."""
+    catalog = json.loads(CATALOG_PATH.read_text())
+    wms = [item for group in catalog["catalog"] for item in group.get("members", []) if item.get("type") == "wms"]
+    assert wms and [item["name"] for item in wms if item.get("crs") != "EPSG:4326"] == []
 

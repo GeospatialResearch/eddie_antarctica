@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright © 2021-2026 Geospatial Research Institute Toi Hangarau
-# LICENSE: https://github.com/GeospatialResearch/eddie_antartica/blob/master/LICENSE
+# LICENSE: https://github.com/GeospatialResearch/eddie_antarctica/blob/master/LICENSE
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -32,9 +32,9 @@ import pytest
 import rasterio as rio
 import xarray as xr
 
-from src.eddie_antartica.sea_ice.inputs import land_mask_from_nsidc
-from src.eddie_antartica.sea_ice.model import sic_data_from_nc, sic_to_nc
-from src.eddie_antartica.sea_ice.sea_ice_enum import ChartMethod
+from eddie_antarctica.sea_ice.inputs import land_mask_from_nsidc
+from eddie_antarctica.sea_ice.model import sic_data_from_nc, sic_to_nc
+from eddie_antarctica.sea_ice.sea_ice_enum import ChartMethod
 
 LATITUDES = np.array([-43.0, -42.0, -41.0])     # ascending, as the model holds them
 LONGITUDES = np.arange(360, dtype="float64")    # 0..359

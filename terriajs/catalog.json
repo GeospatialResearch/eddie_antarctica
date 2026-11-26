@@ -19,6 +19,7 @@
           "description": "Daily near-surface air temperature from AntAir ICE for 1 July 2005. Values are stored in tenths of a degree Celsius, so -300 on the legend is -30 ℃; the legend runs from -900 to 0. Please click the parent 'Antarctic Data Layers' folder for a detailed description.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
           "layers": "ant_air_temp_2005-07-01",
+          "crs": "EPSG:4326",
           "styles": "ant_air_temp_2005-07-01"
         },
         {
@@ -56,6 +57,7 @@
           "description": "Daily mean wind speed 10 m above the surface on 1 February 2017, from P-SKRIPS coupled model output. In metres per second, from 0 m/s (dark purple) to 24 m/s (yellow), derived from the eastward and northward wind components as sqrt(u² + v²). Please click the parent 'Antarctic Data Layers' folder for a detailed description.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
           "layers": "pskrips_atmosphere_daily_mean_U10V10_2017-02-01",
+          "crs": "EPSG:4326",
           "styles": "pskrips_atmosphere_daily_mean_U10V10_2017-02-01"
         },
         {
@@ -64,6 +66,7 @@
           "description": "Daily mean wind 10 m above the surface on 1 February 2017 as arrows, from P-SKRIPS coupled model output. Each arrow points the way the wind blows and is coloured by speed in metres per second. Overlay it on the wind speed layer, or use it on its own. Please click the parent 'Antarctic Data Layers' folder for a detailed description.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
           "layers": "pskrips_wind_arrows_2017-02-01",
+          "crs": "EPSG:4326",
           "styles": "pskrips_wind_arrows_2017-02-01",
           "tileWidth": 512,
           "tileHeight": 512
@@ -74,6 +77,7 @@
           "description": "Daily mean air temperature 2 m above the surface on 1 February 2017, from P-SKRIPS coupled model output. In degrees Celsius, with the legend from -30 ℃ to 0 ℃. The same field as the kelvin layer. Please click the parent 'Antarctic Data Layers' folder for a detailed description.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
           "layers": "pskrips_atmosphere_daily_mean_t2C_2017-02-01",
+          "crs": "EPSG:4326",
           "styles": "pskrips_atmosphere_daily_mean_t2C_2017-02-01"
         },
         {
@@ -82,6 +86,7 @@
           "description": "Daily mean air temperature 2 m above the surface on 1 February 2017, from P-SKRIPS coupled model output. In kelvin, with the legend from 243.15 K to 273.15 K. The same field as the Celsius layer. Please click the parent 'Antarctic Data Layers' folder for a detailed description.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
           "layers": "pskrips_atmosphere_daily_mean_t2K_2017-02-01",
+          "crs": "EPSG:4326",
           "styles": "pskrips_atmosphere_daily_mean_t2K_2017-02-01"
         },
         {
@@ -90,6 +95,7 @@
           "description": "Estimated thickness of non-magnetic sedimentary cover above magnetic basement beneath the Ross Ice Shelf and Ross Embayment, from Tankersley et al. (2022). In metres, with the legend from 0 m to 4500 m. This is a geophysical interpretation; use the source uncertainty grids for quantitative work. Please click the parent 'Antarctic Data Layers' folder for a detailed description.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
           "layers": "tankersley_2023_sediment_thick",
+          "crs": "EPSG:4326",
           "styles": "tankersley_2023_sediment_thick"
         },
         {
@@ -104,6 +110,7 @@
           "description": "Shaded relief derived from the REMA v2.0 32 m mosaic (Howat et al., CC BY 4.0, Polar Geospatial Center), sun azimuth 315°, altitude 45°, vertical exaggeration 2×. Illustrative relief only, not a measured surface. Please click the parent 'Antarctic Data Layers' folder for a detailed description.",
           "url": "$GEOSERVER_URL/geoserver/static_files/wms",
           "layers": "rema_hillshade_ross",
+          "crs": "EPSG:4326",
           "opacity": 0.6
         }
       ]
@@ -120,7 +127,7 @@
           "name": "Sea ice concentration forecast",
           "description": "Choose a week and a display (Raw 1° cells or Smoothed) to map one week of the newest eight week sea ice concentration forecast, then click the map to chart all eight weeks at that point. Please click the parent 'Sea ice forecast' folder for a detailed description.",
           "url": "$BACKEND_URL/wps",
-          "identifier": "sea_ice_forecast"
+          "identifier": "antarctica.sea_ice_forecast"
         }
       ]
     },
